@@ -1,72 +1,71 @@
 <!DOCTYPE html>
 <html lang="" class="dark">
-  <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tazko</title>
-    <style>
-      #app-loader {
-        position: fixed;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--loader-bg, #f0f4ff);
-        z-index: 9999;
-        transition: opacity 0.4s ease, visibility 0.4s ease;
-      }
-      .dark #app-loader {
-        --loader-bg: #0f1117;
-      }
-      #app-loader.hidden {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-      }
-      .tazko-spinner {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-      }
-      .tazko-spinner svg {
-        width: 48px;
-        height: 48px;
-        animation: tazko-spin 1.4s linear infinite;
-      }
-      @keyframes tazko-spin {
-        0%   { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      .tazko-spinner-text {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 20px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        color: #6c63ff;
-        opacity: 0.85;
-        animation: tazko-pulse 1.4s ease-in-out infinite;
-      }
-      @keyframes tazko-pulse {
-        0%, 100% { opacity: 0.5; }
-        50%       { opacity: 1; }
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Full-screen loader shown before Vue mounts -->
-    <div id="app-loader">
-      <div class="tazko-spinner">
-        <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="25" cy="25" r="20" stroke="#6c63ff" stroke-opacity="0.15" stroke-width="4"/>
-          <path d="M25 5 a20 20 0 0 1 20 20" stroke="#6c63ff" stroke-width="4" stroke-linecap="round"/>
-        </svg>
-        <span class="tazko-spinner-text">TAZKO</span>
-      </div>
-    </div>
-
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+	<head>
+		<meta charset="UTF-8">
+		<link rel="icon" href="/favicon.ico">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Tazko</title>
+		<style>
+			#app-loader {
+			position: fixed;
+			inset: 0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: var(--loader-bg, #f0f4ff);
+			z-index: 9999;
+			transition: opacity 0.4s ease, visibility 0.4s ease;
+			}
+			.dark #app-loader {
+			--loader-bg: #0f1117;
+			}
+			#app-loader.hidden {
+			opacity: 0;
+			visibility: hidden;
+			pointer-events: none;
+			}
+			.tazko-spinner {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 20px;
+			}
+			.tazko-spinner svg {
+			width: 48px;
+			height: 48px;
+			animation: tazko-spin 1.4s linear infinite;
+			}
+			@keyframes tazko-spin {
+			0%   { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+			}
+			.tazko-spinner-text {
+			font-family: 'Barlow Condensed', sans-serif;
+			font-size: 20px;
+			font-weight: 700;
+			letter-spacing: 0.08em;
+			color: #6c63ff;
+			opacity: 0.85;
+			animation: tazko-pulse 1.4s ease-in-out infinite;
+			}
+			@keyframes tazko-pulse {
+			0%, 100% { opacity: 0.5; }
+			50%       { opacity: 1; }
+			}
+		</style>
+	</head>
+	<body>
+		<!-- Full-screen loader shown before Vue mounts -->
+		<div id="app-loader">
+			<div class="tazko-spinner">
+				<svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<circle cx="25" cy="25" r="20" stroke="#6c63ff" stroke-opacity="0.15" stroke-width="4"/>
+					<path d="M25 5 a20 20 0 0 1 20 20" stroke="#6c63ff" stroke-width="4" stroke-linecap="round"/>
+				</svg>
+				<span class="tazko-spinner-text">TAZKO</span>
+			</div>
+		</div>
+		<div id="app"></div>
+		<script type="module" src="/src/main.js"></script>
+	</body>
 </html>
