@@ -1,0 +1,194 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Merriweather Variable', serif;
+
+    --color-body: #f0f4ff;
+    --color-heading: #1a1f4e;
+    --color-text: #3d4a7a;
+    --color-accent: #6c63ff;
+    --color-panel: #ffffff;
+}
+
+@layer components {
+    .tazko-btn {
+        @apply inline-flex gap-2 items-center justify-center px-6 py-3
+        text-base tracking-wide
+        rounded-sm shadow-sm text-panel bg-accent
+        transition-all duration-200 ease-in-out cursor-pointer
+        hover:shadow-md hover:bg-accent/80
+        active:scale-95
+        disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .tazko-btn-cancel {
+        @apply inline-flex gap-2 items-center justify-center px-6 py-3
+        text-base tracking-wide
+        rounded-sm shadow-sm text-text bg-heading/8
+        transition-all duration-200 ease-in-out cursor-pointer
+        hover:shadow-md
+        hover:bg-heading/12
+        active:scale-95
+        disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .tazko-btn-danger {
+        @apply inline-flex gap-2 items-center justify-center px-6 py-3
+        text-base tracking-wide
+        rounded-sm shadow-sm text-white bg-red-500
+        transition-all duration-200 ease-in-out cursor-pointer
+        hover:shadow-md hover:bg-red-600
+        active:scale-95
+        disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .tazko-btn-delete {
+        @apply inline-flex gap-2 items-center justify-center px-6 py-3
+        text-base tracking-wide
+        rounded-sm text-text bg-heading/8
+        transition-all duration-200 ease-in-out cursor-pointer
+        hover:shadow-md
+        hover:bg-heading/12
+        active:scale-95;
+    }
+
+    .container {
+        @apply mx-auto px-5;
+    }
+
+    /* ── Page Header System ─────────────────────────────────── */
+
+    /* Small eyebrow label above page title (e.g. "Admin", "Workspace") */
+    .page-eyebrow {
+        @apply text-sm font-semibold uppercase  text-text mb-1;
+    }
+
+    /* Main page title — use on <h1> inside page headers */
+    .page-title {
+        @apply text-2xl sm:text-3xl font-bold text-heading leading-tight;
+    }
+
+    /* Subtitle / description under the page title */
+    .page-subtitle {
+        @apply text-base text-text mt-1.5;
+    }
+
+    /* ── Section / Card Header System ──────────────────────── */
+
+    /* Section or card heading — use on <h2>/<h3> inside cards */
+    .section-title {
+        @apply text-lg font-bold text-heading;
+    }
+
+    /* Small descriptor below a section title */
+    .section-desc {
+        @apply text-base text-text mt-0.5;
+    }
+
+    .auth-title {
+        @apply font-display text-heading font-bold leading-tight;
+        font-size: 2rem;
+        letter-spacing: 0.01em;
+        line-height: 1.1;
+    }
+}
+
+@layer base {
+    body {
+        @apply font-sans antialiased;
+        background: var(--color-body);
+        color: var(--color-heading);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-display;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    img, svg, video {
+        max-width: 100%;
+        height: auto;
+    }
+
+    a {
+        @apply text-accent;
+    }
+
+    h1 { font-size: 56px; }
+    h2 { font-size: 40px; }
+    h3 { font-size: 36px; }
+    h4 { font-size: 24px; }
+    h5 { font-size: 20px; }
+    h6 { font-size: 18px; }
+
+    select option {
+        background: var(--color-panel);
+    }
+
+    .input-field {
+        @apply w-full px-4 py-3  rounded-sm border bg-panel focus:border-accent border-heading focus:outline-none text-base leading-tight;
+    }
+    .input-field.has-icon {
+        @apply pl-10;
+    }
+    .input-field.has-eye {
+        @apply pr-10;
+    }
+    .input-field.radius-left-0 {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    /* Rich text rendered content (read-only display) */
+    .rich-content p { margin: 0 0 0.3em 0; }
+    .rich-content p:last-child { margin-bottom: 0; }
+    .rich-content strong { font-weight: 700; }
+    .rich-content em { font-style: italic; }
+    .rich-content s { opacity: 0.5; text-decoration: line-through; }
+    .rich-content code {
+    font-family: monospace;
+    font-size: 0.82em;
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+    color: var(--color-accent);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    }
+    .rich-content ul { list-style: disc; padding-left: 1.4em; margin: 0.2em 0; }
+    .rich-content ol { list-style: decimal; padding-left: 1.4em; margin: 0.2em 0; }
+    .rich-content blockquote {
+    border-left: 3px solid var(--color-accent);
+    padding-left: 0.8em;
+    opacity: 0.65;
+    margin: 0.3em 0;
+    }
+    .rich-content .mention-chip {
+    display: inline-block;
+    background: color-mix(in srgb, var(--color-accent) 13%, transparent);
+    color: var(--color-accent);
+    font-weight: 600;
+    font-size: 0.82em;
+    padding: 0.1em 0.4em;
+    border-radius: 5px;
+    }
+
+}
+
+.toast-close {
+    color: var(--color-heading);
+}
+
+.os-scrollbar-handle {
+    background: var(--color-accent);
+}
+
+.os-scrollbar-handle:hover {
+    background: var(--color-accent);
+    cursor: grabbing;
+}
+
+body > .os-scrollbar {
+    z-index: 9999;
+    background-color: var(--color-panel);
+}
