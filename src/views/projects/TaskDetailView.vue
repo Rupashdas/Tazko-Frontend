@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { addIcons } from 'oh-vue-icons'
 import { BiChevronRight } from 'oh-vue-icons/icons'
@@ -13,6 +13,13 @@ addIcons(BiChevronRight)
 
 const router = useRouter()
 const route = useRoute()
+
+// Route-param guard — a direct hit to /projects/:id/tasks/ with a missing
+// or non-numeric taskId previously rendered the hardcoded mock silently.
+const hasValidTaskId = computed(() => {
+	const id = route.params.taskId
+	return id !== undefined && id !== null && String(id).trim() !== ''
+})
 
 // ── Task data ─────────────────────────────────────────
 const task = ref({
@@ -95,10 +102,6 @@ const activity = [
 	{ initials: 'AH', color: 'bg-accent', text: 'Created this task', time: 'Feb 20, 10:00 AM', type: 'create' },
 ]
 
-// ── Header card action handlers (placeholders) ────────
-const handleEdit = () => { /* TODO: open edit modal */ }
-const handleArchive = () => { /* TODO: archive confirmation */ }
-const handleDelete = () => { /* TODO: delete confirmation */ }
 </script>
 
 <template>
@@ -118,19 +121,26 @@ const handleDelete = () => { /* TODO: delete confirmation */ }
 			<span class="text-text font-semibold truncate max-w-xs">{{ task.title }}</span>
 		</div>
 
+		<!-- ── Missing / invalid task id ─────────────── -->
+		<div v-if="!hasValidTaskId" class="text-center py-24">
+			<h3 class="section-title mb-2">Task not found</h3>
+			<p class="page-subtitle mb-6">The task you're looking for doesn't exist or has been removed.</p>
+			<button @click="router.push({ name: 'projects' })"
+				class="inline-flex items-center gap-2 px-4 py-2 rounded-sm border border-heading/10 text-base font-semibold text-text hover:bg-heading/5 transition-colors">
+				Back to projects
+			</button>
+		</div>
+
 		<!-- ── MAIN TWO-COLUMN LAYOUT ─────────────────── -->
-		<div class="flex gap-6 items-start">
+		<div v-else class="flex flex-col lg:flex-row gap-6 items-start">
 
 			<!-- LEFT: Main content -->
-			<div class="flex-1 min-w-0 space-y-4">
+			<div class="flex-1 min-w-0 w-full space-y-4">
 				<TaskHeaderCard
 					v-model:task="task"
 					:members="members"
 					:status-config="statusConfig"
-					:priority-config="priorityConfig"
-					@edit="handleEdit"
-					@archive="handleArchive"
-					@delete="handleDelete" />
+					:priority-config="priorityConfig" />
 
 				<TaskSubtasksCard v-model:subtasks="subtasks" />
 

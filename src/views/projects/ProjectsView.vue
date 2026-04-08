@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { addIcons } from 'oh-vue-icons'
 import {
@@ -68,6 +68,18 @@ const closeFormModal = () => {
 	editingProject.value = null
 }
 
+// Monotonic local id generator — avoids Date.now() collisions on rapid creates
+// and reuses the max of any seeded numeric IDs as the starting seed.
+const nextLocalId = (() => {
+	let seed = 0
+	return (all) => {
+		if (seed === 0) {
+			seed = Math.max(0, ...all.map(p => Number(p.id) || 0))
+		}
+		return ++seed
+	}
+})()
+
 const handleFormSave = (data) => {
 	if (formMode.value === 'edit' && editingProject.value) {
 		const idx = projects.value.findIndex(p => p.id === editingProject.value.id)
@@ -76,7 +88,7 @@ const handleFormSave = (data) => {
 		}
 	} else {
 		projects.value.push({
-			id: Date.now(),
+			id: nextLocalId(projects.value),
 			name: data.name,
 			description: data.description,
 			goal: data.goal,
@@ -206,12 +218,15 @@ const projects = ref([
 const activeProjects = computed(() => projects.value.filter(p => !p.is_archived))
 
 const filteredProjects = computed(() => {
+	const q = searchQuery.value.trim().toLowerCase()
+	const s = statusFilter.value
+	const pr = priorityFilter.value
 	return activeProjects.value.filter(p => {
-		const matchSearch = p.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-			p.description.toLowerCase().includes(searchQuery.value.toLowerCase())
-		const matchStatus = statusFilter.value === 'All' || p.status === statusFilter.value
-		const matchPriority = priorityFilter.value === 'All' || p.priority === priorityFilter.value
-		return matchSearch && matchStatus && matchPriority
+		if (s !== 'All' && p.status !== s) return false
+		if (pr !== 'All' && p.priority !== pr) return false
+		if (!q) return true
+		return p.name.toLowerCase().includes(q) ||
+			(p.description || '').toLowerCase().includes(q)
 	})
 })
 
@@ -238,6 +253,11 @@ const priorityConfig = {
 	Medium: { cls: 'bg-blue-500/15 text-blue-500' },
 	Low:    { cls: 'bg-slate-400/15 text-slate-500' },
 }
+// Fallbacks so an unknown status/priority value can't crash the template.
+const UNKNOWN_STATUS = { cls: 'bg-slate-400/15 text-slate-500', dot: 'bg-slate-400' }
+const UNKNOWN_PRIORITY = { cls: 'bg-slate-400/15 text-slate-500' }
+const statusOf = (s) => statusConfig[s] || UNKNOWN_STATUS
+const priorityOf = (p) => priorityConfig[p] || UNKNOWN_PRIORITY
 
 const progressColor = (p) => {
 	if (p >= 100) return 'bg-emerald-500'
@@ -246,16 +266,15 @@ const progressColor = (p) => {
 	return 'bg-red-400'
 }
 
+const MS_PER_DAY = 86_400_000
 const daysLeft = (endDate) => {
-	const diff = Math.ceil((new Date(endDate) - new Date()) / (1000 * 60 * 60 * 24))
+	if (!endDate) return { label: 'No due date', cls: 'text-text' }
+	const diff = Math.ceil((new Date(endDate) - new Date()) / MS_PER_DAY)
 	if (diff < 0)  return { label: 'Overdue',   cls: 'text-red-500' }
 	if (diff === 0) return { label: 'Due today', cls: 'text-red-500' }
 	if (diff <= 7) return { label: `${diff}d left`, cls: 'text-amber-500' }
 	return { label: `${diff}d left`, cls: 'text-text' }
 }
-
-const formatDate = (d) =>
-	new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
 const toggleMenu = (id) => { openMenuId.value = openMenuId.value === id ? null : id }
 
@@ -276,6 +295,45 @@ const handleArchive = () => {
 
 const getProjectColor = (project, idx) =>
 	project.color || projectColors[idx % projectColors.length]
+
+// Pre-compute per-card derived values once per render so the template
+// doesn't invoke daysLeft()/statusOf()/priorityOf() multiple times per row.
+const decoratedProjects = computed(() =>
+	filteredProjects.value.map((p, idx) => ({
+		project: p,
+		idx,
+		color: getProjectColor(p, idx),
+		due: daysLeft(p.endDate),
+		status: statusOf(p.status),
+		priority: priorityOf(p.priority),
+	}))
+)
+
+// ── Delete confirm (was an unwired no-op menu item) ───────────
+const showDeleteConfirm = ref(false)
+const pendingDeleteId = ref(null)
+const requestDelete = (id) => {
+	openMenuId.value = null
+	pendingDeleteId.value = id
+	showDeleteConfirm.value = true
+}
+const handleDelete = () => {
+	// TODO: axios.delete(`/api/projects/${pendingDeleteId.value}`)
+	projects.value = projects.value.filter(p => p.id !== pendingDeleteId.value)
+	showDeleteConfirm.value = false
+	pendingDeleteId.value = null
+}
+
+// ── Keyboard: Escape closes the topmost overlay ───────────────
+const onKeydown = (e) => {
+	if (e.key !== 'Escape') return
+	if (showDeleteConfirm.value)  { showDeleteConfirm.value = false; return }
+	if (showArchiveConfirm.value) { showArchiveConfirm.value = false; return }
+	if (showFormModal.value)      { closeFormModal(); return }
+	if (openMenuId.value !== null) openMenuId.value = null
+}
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
 <template>
@@ -357,8 +415,11 @@ const getProjectColor = (project, idx) =>
 					<v-icon name="bi-search" class="absolute left-3 top-1/2 -translate-y-1/2 text-text pointer-events-none" scale="0.85" />
 					<input v-model="searchQuery" type="text" placeholder="Search projects…"
 						class="w-full pl-9 pr-8 py-2 rounded-sm border border-heading/8 bg-heading/3 text-base text-heading placeholder:text-text focus:outline-none focus:border-accent/40 transition-colors" />
-					<button v-if="searchQuery" @click="searchQuery = ''"
-						class="absolute right-2.5 top-1/2 -translate-y-1/2 text-text hover:text-text">
+					<button v-if="searchQuery"
+						type="button"
+						aria-label="Clear search"
+						@click="searchQuery = ''"
+						class="absolute right-2.5 top-1/2 -translate-y-1/2 text-text hover:text-heading">
 						<v-icon name="bi-x" scale="0.8" />
 					</button>
 				</div>
@@ -413,25 +474,28 @@ const getProjectColor = (project, idx) =>
 
 		<!-- ── GRID VIEW ──────────────────────────────── -->
 		<div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-			<div v-for="(project, idx) in filteredProjects" :key="project.id"
+			<div v-for="{ project, color, due, status, priority } in decoratedProjects" :key="project.id"
 				class="bg-panel rounded-sm border border-heading/8 hover:shadow-xl hover:shadow-heading/5 hover:-translate-y-0.5 hover:border-accent/20 transition-all duration-200 group overflow-hidden flex flex-col cursor-pointer"
 				@click="router.push({ name: 'project-detail', params: { id: project.id } })">
 
-				<div :class="`h-1 w-full ${getProjectColor(project, idx)}`" />
+				<div :class="`h-1 w-full ${color}`" />
 
 				<div class="p-5 flex-1">
 					<div class="flex items-start justify-between mb-3">
-						<div :class="`w-10 h-10 rounded-sm ${getProjectColor(project, idx)} flex items-center justify-center shrink-0 shadow-sm`">
+						<div :class="`w-10 h-10 rounded-sm ${color} flex items-center justify-center shrink-0 shadow-sm`">
 							<v-icon name="md-folderspecial-outlined" class="text-white" scale="1.0" />
 						</div>
 						<div class="flex items-center gap-1.5" @click.stop>
-							<span :class="[statusConfig[project.status].cls, 'inline-flex items-center gap-1 text-sm px-2.5 py-1 rounded-full font-semibold']">
-								<span :class="[statusConfig[project.status].dot, 'w-1.5 h-1.5 rounded-full']" />
+							<span :class="[status.cls, 'inline-flex items-center gap-1 text-sm px-2.5 py-1 rounded-full font-semibold']">
+								<span :class="[status.dot, 'w-1.5 h-1.5 rounded-full']" />
 								{{ project.status }}
 							</span>
 							<div class="relative">
-								<button @click="toggleMenu(project.id)"
-									class="w-7 h-7 rounded-sm flex items-center justify-center hover:bg-heading/5 transition-colors text-text hover:text-text">
+								<button type="button"
+									:aria-expanded="openMenuId === project.id"
+									aria-haspopup="menu"
+									@click="toggleMenu(project.id)"
+									class="w-7 h-7 rounded-sm flex items-center justify-center hover:bg-heading/5 transition-colors text-text">
 									<v-icon name="bi-three-dots-vertical" scale="0.8" />
 								</button>
 								<Transition name="fade-drop">
@@ -454,7 +518,8 @@ const getProjectColor = (project, idx) =>
 										</button>
 										<div class="h-px bg-heading/5 mx-2" />
 										<button
-											class="w-full flex items-center gap-2 px-4 py-3 text-base text-red-500 hover:bg-red-50 transition-colors">
+											@click.stop="requestDelete(project.id)"
+											class="w-full flex items-center gap-2 px-4 py-3 text-base text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
 											<v-icon name="bi-trash" scale="0.85" /> Delete
 										</button>
 									</div>
@@ -489,7 +554,7 @@ const getProjectColor = (project, idx) =>
 							<v-icon name="bi-check-circle" scale="0.75" class="text-emerald-500" />
 							{{ project.taskCounts.done }}/{{ project.taskCounts.total }} tasks
 						</span>
-						<span :class="[priorityConfig[project.priority].cls, 'text-sm px-2.5 py-1 rounded-full font-semibold']">
+						<span :class="[priority.cls, 'text-sm px-2.5 py-1 rounded-full font-semibold']">
 							{{ project.priority }}
 						</span>
 					</div>
@@ -507,17 +572,17 @@ const getProjectColor = (project, idx) =>
 							+{{ project.members.length - 3 }}
 						</div>
 					</div>
-					<div class="flex items-center gap-1.5 text-sm font-medium" :class="daysLeft(project.endDate).cls">
+					<div class="flex items-center gap-1.5 text-sm font-medium" :class="due.cls">
 						<v-icon name="bi-calendar3" scale="0.75" />
-						{{ daysLeft(project.endDate).label }}
+						{{ due.label }}
 					</div>
 				</div>
 			</div>
 		</div>
 
 		<!-- ── LIST VIEW ──────────────────────────────── -->
-		<div v-else class="bg-panel rounded-sm border border-heading/8">
-			<table class="w-full">
+		<div v-else class="bg-panel rounded-sm border border-heading/8 overflow-x-auto">
+			<table class="w-full min-w-[960px]">
 				<thead>
 					<tr class="border-b border-heading/8 bg-heading/[0.02]">
 						<th class="text-left px-5 py-3 text-sm font-semibold uppercase tracking-wide text-text">Project</th>
@@ -531,12 +596,12 @@ const getProjectColor = (project, idx) =>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-heading/5">
-					<tr v-for="(project, idx) in filteredProjects" :key="project.id"
+					<tr v-for="{ project, color, due, status, priority } in decoratedProjects" :key="project.id"
 						class="hover:bg-heading/[0.015] transition-colors cursor-pointer group"
 						@click="router.push({ name: 'project-detail', params: { id: project.id } })">
 						<td class="px-5 py-4">
 							<div class="flex items-center gap-3">
-								<div :class="`w-8 h-8 rounded-sm ${getProjectColor(project, idx)} flex items-center justify-center shrink-0`">
+								<div :class="`w-8 h-8 rounded-sm ${color} flex items-center justify-center shrink-0`">
 									<v-icon name="md-folderspecial-outlined" class="text-white" scale="0.85" />
 								</div>
 								<div>
@@ -546,13 +611,13 @@ const getProjectColor = (project, idx) =>
 							</div>
 						</td>
 						<td class="px-4 py-4">
-							<span :class="[statusConfig[project.status].cls, 'inline-flex items-center gap-1.5 text-sm px-2.5 py-1 rounded-full font-semibold']">
-								<span :class="[statusConfig[project.status].dot, 'w-1.5 h-1.5 rounded-full']" />
+							<span :class="[status.cls, 'inline-flex items-center gap-1.5 text-sm px-2.5 py-1 rounded-full font-semibold']">
+								<span :class="[status.dot, 'w-1.5 h-1.5 rounded-full']" />
 								{{ project.status }}
 							</span>
 						</td>
 						<td class="px-4 py-4">
-							<span :class="[priorityConfig[project.priority].cls, 'text-sm px-2.5 py-1 rounded-full font-semibold']">
+							<span :class="[priority.cls, 'text-sm px-2.5 py-1 rounded-full font-semibold']">
 								{{ project.priority }}
 							</span>
 						</td>
@@ -582,13 +647,16 @@ const getProjectColor = (project, idx) =>
 							</div>
 						</td>
 						<td class="px-4 py-4">
-							<span class="text-sm font-medium" :class="daysLeft(project.endDate).cls">
-								{{ daysLeft(project.endDate).label }}
+							<span class="text-sm font-medium" :class="due.cls">
+								{{ due.label }}
 							</span>
 						</td>
 						<td class="px-4 py-4" @click.stop>
 							<div class="relative">
-								<button @click="toggleMenu(project.id)"
+								<button type="button"
+									:aria-expanded="openMenuId === project.id"
+									aria-haspopup="menu"
+									@click="toggleMenu(project.id)"
 									class="w-8 h-8 rounded-sm flex items-center justify-center hover:bg-heading/5 transition-colors text-text">
 									<v-icon name="bi-three-dots-vertical" scale="0.85" />
 								</button>
@@ -612,7 +680,8 @@ const getProjectColor = (project, idx) =>
 										</button>
 										<div class="h-px bg-heading/5 mx-2" />
 										<button
-											class="w-full flex items-center gap-2 px-4 py-3 text-base text-red-500 hover:bg-red-50 transition-colors">
+											@click.stop="requestDelete(project.id)"
+											class="w-full flex items-center gap-2 px-4 py-3 text-base text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
 											<v-icon name="bi-trash" scale="0.85" /> Delete
 										</button>
 									</div>
@@ -630,7 +699,7 @@ const getProjectColor = (project, idx) =>
 				<div v-if="showArchiveConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
 					<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="showArchiveConfirm = false" />
 					<div class="relative w-full max-w-sm bg-panel rounded-sm shadow-2xl border border-heading/10 p-6 transition-all">
-						<div class="w-12 h-12 rounded-sm bg-amber-50 flex items-center justify-center mb-4">
+						<div class="w-12 h-12 rounded-sm bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center mb-4">
 							<v-icon name="bi-archive" class="text-amber-500" scale="1.2" />
 						</div>
 						<h3 class="section-title mb-2">Archive Project?</h3>
@@ -646,6 +715,35 @@ const getProjectColor = (project, idx) =>
 								class="flex-1 inline-flex gap-2 items-center justify-center px-6 py-3 text-base tracking-wide rounded-sm shadow-sm text-white bg-amber-500 hover:bg-amber-600 active:scale-95 transition-all cursor-pointer">
 								<v-icon name="bi-archive" scale="1" />
 								Archive
+							</button>
+						</div>
+					</div>
+				</div>
+			</Transition>
+		</Teleport>
+
+		<!-- ── DELETE CONFIRM MODAL ───────────────────── -->
+		<Teleport to="body">
+			<Transition name="modal">
+				<div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+					<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="showDeleteConfirm = false" />
+					<div class="relative w-full max-w-sm bg-panel rounded-sm shadow-2xl border border-heading/10 p-6 transition-all">
+						<div class="w-12 h-12 rounded-sm bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
+							<v-icon name="bi-trash" class="text-red-500" scale="1.2" />
+						</div>
+						<h3 class="section-title mb-2">Delete Project?</h3>
+						<p class="text-base text-text mb-6">
+							This action cannot be undone. All tasks, comments, and files associated with this project will be permanently removed.
+						</p>
+						<div class="flex gap-3">
+							<button @click="showDeleteConfirm = false" class="flex-1 tazko-btn-cancel">
+								<v-icon name="bi-x" scale="1" />
+								Cancel
+							</button>
+							<button @click="handleDelete"
+								class="flex-1 inline-flex gap-2 items-center justify-center px-6 py-3 text-base tracking-wide rounded-sm shadow-sm text-white bg-red-500 hover:bg-red-600 active:scale-95 transition-all cursor-pointer">
+								<v-icon name="bi-trash" scale="1" />
+								Delete
 							</button>
 						</div>
 					</div>

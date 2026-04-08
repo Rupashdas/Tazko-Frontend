@@ -110,15 +110,16 @@ const syncTabFromQuery = () => {
 	activeTab.value = (typeof q === 'string' && visible) ? q : (tabs.value[0]?.key || 'board')
 }
 
-onMounted(syncTabFromQuery)
 watch(() => route.query.tab, syncTabFromQuery)
 
-// If tabs list changes (permissions), fall back
+// Re-sync whenever the visible tab set changes (permissions can load
+// async, so the first sync on mount may pick the wrong default).
 watch(tabs, (val) => {
-	if (!val.some(t => t.key === activeTab.value) && val.length) {
-		activeTab.value = val[0].key
+	if (!val.length) return
+	if (!val.some(t => t.key === activeTab.value)) {
+		syncTabFromQuery()
 	}
-})
+}, { immediate: true })
 
 const setActiveTab = (key) => {
 	if (key === activeTab.value) return
@@ -129,6 +130,15 @@ const setActiveTab = (key) => {
 // ── Stats used in hero strip ───────────────────────────
 const daysLeft = computed(() => Math.ceil((new Date(project.value.endDate) - new Date()) / (1000 * 60 * 60 * 24)))
 const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+
+// Robust empty-description check: handles '', '<p></p>', '<p><br></p>',
+// whitespace-only, and HTML that strips to nothing.
+const hasDescription = computed(() => {
+	const raw = project.value.description
+	if (!raw) return false
+	const stripped = String(raw).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim()
+	return stripped.length > 0
+})
 
 // ── Add Task modal ─────────────────────────────────────
 const showAddTask = ref(false)
@@ -175,7 +185,11 @@ const openEditProject = (focus = null) => {
 }
 
 const handleEditProjectSave = (data) => {
+	// Preserve members/id/progress etc. the edit form doesn't own, so a partial
+	// payload from ProjectFormModal can't silently wipe the team list.
+	const preserved = { members: project.value.members }
 	project.value = { ...project.value, ...data }
+	if (!Array.isArray(data?.members)) project.value.members = preserved.members
 	showEditProject.value = false
 }
 
@@ -187,7 +201,12 @@ const toggleMoreMenu = (e) => {
 }
 const closeMoreMenu = () => { moreMenuOpen.value = false }
 
-onMounted(() => document.addEventListener('click', closeMoreMenu))
+// Single mount hook: wire the outside-click listener and sync tabs once
+// the component is actually in the DOM.
+onMounted(() => {
+	document.addEventListener('click', closeMoreMenu)
+	syncTabFromQuery()
+})
 onBeforeUnmount(() => document.removeEventListener('click', closeMoreMenu))
 
 // ── Archive / Delete / Duplicate confirm ──────────────
@@ -317,9 +336,9 @@ const handleDuplicate = () => {
 
 				<!-- Description — read-only with hover pencil (no click-to-edit) -->
 				<div class="group/desc relative rounded-sm mb-4">
-					<div v-if="project.description && project.description !== '<p></p>'"
+					<div v-if="hasDescription"
 						class="project-rich-content px-2 py-1 -ml-2" v-html="project.description" />
-					<p v-else class="text-sm text-text/40 italic px-2 py-1 -ml-2">
+					<p v-else class="text-sm text-text italic opacity-60 px-2 py-1 -ml-2">
 						No description yet.
 					</p>
 					<button type="button"
