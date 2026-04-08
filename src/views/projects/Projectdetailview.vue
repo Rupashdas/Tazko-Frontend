@@ -209,7 +209,7 @@ onMounted(() => {
 })
 onBeforeUnmount(() => document.removeEventListener('click', closeMoreMenu))
 
-// ── Archive / Delete / Duplicate confirm ──────────────
+// ── Archive / Delete  confirm ──────────────
 const showArchiveConfirm = ref(false)
 const showDeleteConfirm = ref(false)
 
@@ -233,10 +233,6 @@ const handleDelete = () => {
 	router.push({ name: 'projects' })
 }
 
-const handleDuplicate = () => {
-	moreMenuOpen.value = false
-	// TODO: API call to duplicate. For now, just a stub.
-}
 </script>
 
 <template>
@@ -272,17 +268,9 @@ const handleDuplicate = () => {
 						</div>
 
 						<div class="min-w-0 flex-1">
-							<!-- Title — with hover pencil (no click-to-edit on content) -->
+							<!-- Title — edit via three-dot menu -->
 							<div class="flex items-start gap-2.5 flex-wrap mb-2">
-								<div class="group/title relative flex items-center gap-2">
-									<h1 class="page-title">{{ project.name }}</h1>
-									<button type="button"
-										@click="openEditProject('name')"
-										class="opacity-0 group-hover/title:opacity-100 transition-opacity p-1 rounded-sm hover:bg-heading/5 text-text hover:text-accent"
-										title="Edit project">
-										<v-icon name="bi-pencil" scale="0.8" />
-									</button>
-								</div>
+								<h1 class="page-title">{{ project.name }}</h1>
 								<span
 									:class="[statusConfig[project.status]?.cls, 'inline-flex items-center gap-1.5 text-sm px-2.5 py-1 rounded-full font-bold border border-current/10']">
 									<span :class="[statusConfig[project.status]?.dot, 'w-1.5 h-1.5 rounded-full']" />
@@ -315,10 +303,6 @@ const handleDuplicate = () => {
 										class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-heading/5 transition-colors">
 										<v-icon name="bi-pencil" scale="0.85" /> Edit Project
 									</button>
-									<button @click="handleDuplicate"
-										class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-heading/5 transition-colors">
-										<v-icon name="bi-files" scale="0.85" /> Duplicate
-									</button>
 									<button @click="requestArchive"
 										class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:text-amber-600 transition-colors">
 										<v-icon name="bi-archive" scale="0.85" /> Archive
@@ -334,19 +318,13 @@ const handleDuplicate = () => {
 					</div>
 				</div>
 
-				<!-- Description — read-only with hover pencil (no click-to-edit) -->
-				<div class="group/desc relative rounded-sm mb-4">
+				<!-- Description — edit via three-dot menu -->
+				<div class="rounded-sm mb-4">
 					<div v-if="hasDescription"
 						class="project-rich-content px-2 py-1 -ml-2" v-html="project.description" />
 					<p v-else class="text-sm text-text italic opacity-60 px-2 py-1 -ml-2">
 						No description yet.
 					</p>
-					<button type="button"
-						@click="openEditProject('description')"
-						class="absolute top-1 right-1 opacity-0 group-hover/desc:opacity-100 transition-opacity p-1.5 rounded-sm bg-panel border border-heading/10 text-text hover:text-accent shadow-sm"
-						title="Edit description">
-						<v-icon name="bi-pencil" scale="0.75" />
-					</button>
 				</div>
 
 				<!-- Progress + meta strip -->
