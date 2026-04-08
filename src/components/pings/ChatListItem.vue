@@ -28,7 +28,7 @@ const isOnline = computed(() => {
 <template>
     <button
         @click="store.setActiveConv(conv.id)"
-        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-150 group"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-left transition-all duration-150 group"
         :class="isActive
             ? 'bg-accent/12 text-accent'
             : 'text-text hover:bg-heading/6 hover:text-heading'"
@@ -49,7 +49,7 @@ const isOnline = computed(() => {
             </div>
             <!-- Channel: hash icon -->
             <div v-else
-                 class="w-9 h-9 rounded-lg flex items-center justify-center text-base font-bold shrink-0"
+                 class="w-9 h-9 rounded-sm flex items-center justify-center text-base font-bold shrink-0"
                  :class="isActive ? 'bg-accent/15 text-accent' : 'bg-heading/8 text-text'">
                 #
             </div>

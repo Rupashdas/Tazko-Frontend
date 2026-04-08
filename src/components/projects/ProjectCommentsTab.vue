@@ -143,7 +143,7 @@ const toggleLike = (comment) => {
 				</div>
 
 				<div v-if="comments.length === 0" class="text-center py-12">
-					<div class="w-14 h-14 mx-auto rounded-2xl bg-heading/5 flex items-center justify-center mb-3">
+					<div class="w-14 h-14 mx-auto rounded-sm bg-heading/5 flex items-center justify-center mb-3">
 						<v-icon name="bi-chat" class="text-text" scale="1.5" />
 					</div>
 					<p class="text-base font-semibold text-text">No comments yet</p>

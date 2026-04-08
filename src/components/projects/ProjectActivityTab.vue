@@ -13,7 +13,7 @@ defineProps({
 <template>
 	<div class="p-5">
 		<div v-if="!canView" class="flex flex-col items-center justify-center py-16 text-center">
-			<div class="w-16 h-16 rounded-2xl bg-heading/5 flex items-center justify-center mb-4">
+			<div class="w-16 h-16 rounded-sm bg-heading/5 flex items-center justify-center mb-4">
 				<v-icon name="bi-activity" class="text-text" scale="1.8" />
 			</div>
 			<p class="text-base font-semibold text-text">Access Denied</p>

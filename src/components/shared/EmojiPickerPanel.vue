@@ -655,7 +655,7 @@ onMounted(() => {
 				role="tab"
 				:aria-selected="activeCategory === i && !search.trim()"
 				:aria-label="cat.name"
-				class="text-base w-[30px] h-[30px] border-0 bg-transparent rounded-md cursor-pointer transition-colors duration-[120ms] flex items-center justify-center hover:bg-accent/12 focus:outline-offset-0 focus:ring-2 focus:ring-accent"
+				class="text-base w-[30px] h-[30px] border-0 bg-transparent rounded-sm cursor-pointer transition-colors duration-[120ms] flex items-center justify-center hover:bg-accent/12 focus:outline-offset-0 focus:ring-2 focus:ring-accent"
 				:class="{ 'bg-accent/12': activeCategory === i && !search.trim() }"
 				:title="cat.name"
 				@click="activeCategory = i; search = ''"
@@ -670,7 +670,7 @@ onMounted(() => {
 				ref="searchInput"
 				v-model="search"
 				type="text"
-				class="w-full py-[5px] px-2 border border-heading/12 rounded-md text-[0.8rem] bg-heading/3 text-text outline-none focus:border-accent"
+				class="w-full py-[5px] px-2 border border-heading/12 rounded-sm text-[0.8rem] bg-heading/3 text-text outline-none focus:border-accent"
 				placeholder="Search emoji…"
 			/>
 		</div>

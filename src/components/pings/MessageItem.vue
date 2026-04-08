@@ -75,14 +75,14 @@ function fileColor(type) {
             <!-- Image -->
             <div v-if="message.type === 'image'" class="mt-1 mb-1 max-w-xs">
                 <img :src="message.url" :alt="message.content"
-                     class="rounded-xl w-full object-cover max-h-64 cursor-pointer hover:opacity-90 transition-opacity"
+                     class="rounded-sm w-full object-cover max-h-64 cursor-pointer hover:opacity-90 transition-opacity"
                      style="display: block;" />
             </div>
 
             <!-- File card -->
             <div v-else-if="message.type === 'file'"
-                 class="mt-1 mb-1 inline-flex items-center gap-3 px-4 py-3 rounded-xl border border-heading/10 bg-body max-w-xs hover:bg-heading/4 transition-colors cursor-pointer group/file">
-                <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                 class="mt-1 mb-1 inline-flex items-center gap-3 px-4 py-3 rounded-sm border border-heading/10 bg-body max-w-xs hover:bg-heading/4 transition-colors cursor-pointer group/file">
+                <div class="w-10 h-10 rounded-sm flex items-center justify-center shrink-0"
                      :style="`background: ${fileColor(message.fileType)}22`">
                     <v-icon :name="fileIcon(message.fileType)" scale="1.1" :style="`color: ${fileColor(message.fileType)}`" />
                 </div>
@@ -132,13 +132,13 @@ function fileColor(type) {
         <!-- Hover action bar -->
         <Transition name="actions-fade">
             <div v-if="showActions"
-                 class="absolute right-4 -top-4 flex items-center gap-0.5 bg-panel border border-heading/10 rounded-lg shadow-lg px-1 py-1 z-20">
+                 class="absolute right-4 -top-4 flex items-center gap-0.5 bg-panel border border-heading/10 rounded-sm shadow-lg px-1 py-1 z-20">
                 <!-- Quick reactions -->
                 <div class="flex items-center">
                     <button
                         v-for="emoji in QUICK_EMOJIS" :key="emoji"
                         @click="store.toggleReaction(message.id, emoji)"
-                        class="w-7 h-7 text-sm rounded-md hover:bg-heading/8 flex items-center justify-center transition-colors"
+                        class="w-7 h-7 text-sm rounded-sm hover:bg-heading/8 flex items-center justify-center transition-colors"
                         :title="emoji">
                         {{ emoji }}
                     </button>
@@ -146,13 +146,13 @@ function fileColor(type) {
                 <div class="w-px h-5 bg-heading/10 mx-1" />
                 <!-- Reply -->
                 <button @click="store.openThread(message.id)"
-                        class="w-7 h-7 rounded-md flex items-center justify-center text-text hover:bg-accent/10 hover:text-accent transition-colors" title="Reply in thread">
+                        class="w-7 h-7 rounded-sm flex items-center justify-center text-text hover:bg-accent/10 hover:text-accent transition-colors" title="Reply in thread">
                     <v-icon name="bi-reply" scale="0.85" />
                 </button>
                 <!-- Delete (own only) -->
                 <button v-if="isMine"
                         @click="store.deleteMessage(message.id)"
-                        class="w-7 h-7 rounded-md flex items-center justify-center text-text hover:bg-red-50 hover:text-red-500 transition-colors" title="Delete">
+                        class="w-7 h-7 rounded-sm flex items-center justify-center text-text hover:bg-red-50 hover:text-red-500 transition-colors" title="Delete">
                     <v-icon name="bi-trash" scale="0.85" />
                 </button>
             </div>

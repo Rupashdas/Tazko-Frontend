@@ -30,7 +30,7 @@ const callable = computed(() => conv.value?.type === 'dm')
 <template>
     <header v-if="conv" class="flex items-center gap-3 px-4 py-3 bg-panel border-b border-heading/8 shrink-0 z-10">
         <!-- Back button (mobile) -->
-        <button class="md:hidden p-1.5 rounded-lg text-text hover:bg-heading/8 transition-colors"
+        <button class="md:hidden p-1.5 rounded-sm text-text hover:bg-heading/8 transition-colors"
                 @click="store.mobileSidebarOpen = true">
             <v-icon name="bi-arrow-left" scale="1" />
         </button>
@@ -50,7 +50,7 @@ const callable = computed(() => conv.value?.type === 'dm')
                 </div>
             </div>
             <div v-else
-                 class="w-10 h-10 rounded-xl bg-accent/12 flex items-center justify-center text-accent font-bold text-base">
+                 class="w-10 h-10 rounded-sm bg-accent/12 flex items-center justify-center text-accent font-bold text-base">
                 #
             </div>
 
@@ -71,19 +71,19 @@ const callable = computed(() => conv.value?.type === 'dm')
         <div class="flex items-center gap-1 shrink-0">
             <template v-if="callable">
                 <button @click="store.startCall('voice')"
-                        class="w-9 h-9 rounded-lg flex items-center justify-center text-text hover:bg-heading/8 hover:text-accent transition-colors" title="Voice call">
+                        class="w-9 h-9 rounded-sm flex items-center justify-center text-text hover:bg-heading/8 hover:text-accent transition-colors" title="Voice call">
                     <v-icon name="bi-telephone" scale="0.95" />
                 </button>
                 <button @click="store.startCall('video')"
-                        class="w-9 h-9 rounded-lg flex items-center justify-center text-text hover:bg-heading/8 hover:text-accent transition-colors" title="Video call">
+                        class="w-9 h-9 rounded-sm flex items-center justify-center text-text hover:bg-heading/8 hover:text-accent transition-colors" title="Video call">
                     <v-icon name="bi-camera-video" scale="0.95" />
                 </button>
             </template>
             <button v-else
-                    class="w-9 h-9 rounded-lg flex items-center justify-center text-text hover:bg-heading/8 hover:text-accent transition-colors" title="Members">
+                    class="w-9 h-9 rounded-sm flex items-center justify-center text-text hover:bg-heading/8 hover:text-accent transition-colors" title="Members">
                 <v-icon name="bi-people" scale="0.95" />
             </button>
-            <button class="w-9 h-9 rounded-lg flex items-center justify-center text-text hover:bg-heading/8 transition-colors" title="More">
+            <button class="w-9 h-9 rounded-sm flex items-center justify-center text-text hover:bg-heading/8 transition-colors" title="More">
                 <v-icon name="bi-three-dots-vertical" scale="0.9" />
             </button>
         </div>

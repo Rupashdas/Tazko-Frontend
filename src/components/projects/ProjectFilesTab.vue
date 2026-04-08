@@ -20,7 +20,7 @@ defineProps({
 			</button>
 		</div>
 		<div class="flex flex-col items-center justify-center py-20 text-center">
-			<div class="w-16 h-16 rounded-2xl bg-heading/5 flex items-center justify-center mb-4">
+			<div class="w-16 h-16 rounded-sm bg-heading/5 flex items-center justify-center mb-4">
 				<v-icon name="bi-file-earmark" class="text-text" scale="1.8" />
 			</div>
 			<p class="text-base font-semibold text-text">No files uploaded yet</p>

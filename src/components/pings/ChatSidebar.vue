@@ -15,7 +15,7 @@ const store = useChatStore()
         <div class="px-4 pt-5 pb-3 border-b border-heading/6 shrink-0">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-base font-bold text-heading">Messages</h2>
-                <button class="w-8 h-8 rounded-lg flex items-center justify-center text-text hover:bg-accent/10 hover:text-accent transition-colors" title="New message">
+                <button class="w-8 h-8 rounded-sm flex items-center justify-center text-text hover:bg-accent/10 hover:text-accent transition-colors" title="New message">
                     <v-icon name="bi-plus" scale="1.1" />
                 </button>
             </div>
@@ -26,7 +26,7 @@ const store = useChatStore()
                     v-model="store.searchQuery"
                     type="text"
                     placeholder="Search conversations…"
-                    class="w-full pl-8 pr-3 py-2 rounded-lg text-sm bg-heading/5 border border-heading/8 text-heading placeholder:text-text/40 focus:outline-none focus:border-accent/40 focus:bg-white transition-colors"
+                    class="w-full pl-8 pr-3 py-2 rounded-sm text-sm bg-heading/5 border border-heading/8 text-heading placeholder:text-text/40 focus:outline-none focus:border-accent/40 focus:bg-white transition-colors"
                 />
             </div>
         </div>

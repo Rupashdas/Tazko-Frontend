@@ -31,7 +31,7 @@ const statusLabel = computed(() => {
 <template>
     <Transition name="call-fade">
         <div v-if="call" class="fixed inset-0 z-[200] flex items-center justify-center" style="backdrop-filter: blur(12px); background: rgba(10,8,30,0.72);">
-            <div class="relative flex flex-col items-center gap-6 px-10 py-10 rounded-2xl"
+            <div class="relative flex flex-col items-center gap-6 px-10 py-10 rounded-sm"
                  style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); min-width: 300px;">
 
                 <!-- Pulse rings -->
