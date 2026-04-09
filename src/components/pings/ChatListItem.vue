@@ -45,7 +45,7 @@ const groupMembers = computed(() => {
             <!-- DM avatar -->
             <div v-if="conv.type === 'dm'"
                  class="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0 shadow-sm"
-                 :style="`background: ${avatarUser?.color ?? '#6c63ff'}; font-family:'Manrope Variable',sans-serif`">
+                 :style="`background: ${avatarUser?.color ?? '#6c63ff'}`">
                 {{ avatarUser?.initials ?? '?' }}
             </div>
 
@@ -78,8 +78,7 @@ const groupMembers = computed(() => {
                     {{ name }}
                 </span>
                 <span class="text-[10px] shrink-0 tabular-nums"
-                      :class="isActive ? 'text-accent/70' : 'text-text/40'"
-                      style="font-family: 'Manrope Variable', sans-serif;">
+                      :class="isActive ? 'text-accent/70' : 'text-text/40'">
                     {{ conv.lastMessage?.time ?? '' }}
                 </span>
             </div>

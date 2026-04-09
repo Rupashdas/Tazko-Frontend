@@ -63,20 +63,15 @@ const tasks = [
 
         <!-- ─── Left Brand Panel ────────────────────────────── -->
         <aside
-            class="hidden lg:flex lg:w-[52%] xl:w-[55%] relative overflow-hidden flex-col justify-between p-12 xl:p-16"
-            style="background: linear-gradient(145deg, #0e1340 0%, #1a1f4e 60%, #2a1f6e 100%);">
+            class="auth-brand hidden lg:flex lg:w-[52%] xl:w-[55%] relative overflow-hidden flex-col justify-between p-12 xl:p-16">
 
             <!-- Radial glow blobs -->
             <div class="pointer-events-none absolute inset-0 overflow-hidden">
-                <div class="absolute -top-40 -left-40 w-[480px] h-[480px] rounded-full"
-                    style="background: radial-gradient(circle, rgba(108,99,255,0.35) 0%, transparent 65%);" />
-                <div class="absolute top-1/2 -right-24 w-[340px] h-[340px] rounded-full"
-                    style="background: radial-gradient(circle, rgba(167,139,250,0.2) 0%, transparent 65%);" />
-                <div class="absolute -bottom-32 left-1/3 w-[300px] h-[300px] rounded-full"
-                    style="background: radial-gradient(circle, rgba(108,99,255,0.2) 0%, transparent 65%);" />
+                <div class="blob blob-1 absolute -top-40 -left-40 w-[480px] h-[480px] rounded-full" />
+                <div class="blob blob-2 absolute top-1/2 -right-24 w-[340px] h-[340px] rounded-full" />
+                <div class="blob blob-3 absolute -bottom-32 left-1/3 w-[300px] h-[300px] rounded-full" />
                 <!-- Dot grid -->
-                <div class="absolute inset-0 opacity-[0.04]"
-                    style="background-image: radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px); background-size: 28px 28px;" />
+                <div class="dot-grid absolute inset-0 opacity-[0.04]" />
             </div>
 
             <!-- Logo -->
@@ -97,8 +92,7 @@ const tasks = [
                 </div>
 
                 <!-- Title -->
-                <h1 class="text-white font-display leading-[1.08] whitespace-pre-line"
-                    style="font-size: clamp(2.6rem, 4vw, 3.8rem); letter-spacing: 0.01em;">
+                <h1 class="brand-title text-white font-display leading-[1.08] whitespace-pre-line">
                     {{ panelContent.title }}
                 </h1>
 
@@ -139,10 +133,8 @@ const tasks = [
         <!-- ─── Right Form Panel ───────────────────────────── -->
         <main class="flex-1 flex flex-col items-center justify-center relative overflow-hidden px-6 py-12 min-h-screen">
             <!-- Subtle bg circles -->
-            <div class="pointer-events-none absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-40"
-                style="background: radial-gradient(circle, #e0e7ff 0%, transparent 70%);" />
-            <div class="pointer-events-none absolute -bottom-16 -left-16 w-52 h-52 rounded-full opacity-30"
-                style="background: radial-gradient(circle, #c7d2fe 0%, transparent 70%);" />
+            <div class="form-circle-1 pointer-events-none absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-40" />
+            <div class="form-circle-2 pointer-events-none absolute -bottom-16 -left-16 w-52 h-52 rounded-full opacity-30" />
 
             <!-- Mobile-only logo -->
             <div class="lg:hidden mb-10 relative z-10">
@@ -158,3 +150,22 @@ const tasks = [
 
     </div>
 </template>
+
+<style scoped>
+.auth-brand {
+    background: linear-gradient(145deg, #0e1340 0%, #1a1f4e 60%, #2a1f6e 100%);
+}
+.blob-1 { background: radial-gradient(circle, rgba(108,99,255,0.35) 0%, transparent 65%); }
+.blob-2 { background: radial-gradient(circle, rgba(167,139,250,0.2) 0%, transparent 65%); }
+.blob-3 { background: radial-gradient(circle, rgba(108,99,255,0.2) 0%, transparent 65%); }
+.dot-grid {
+    background-image: radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px);
+    background-size: 28px 28px;
+}
+.brand-title {
+    font-size: clamp(2.6rem, 4vw, 3.8rem);
+    letter-spacing: 0.01em;
+}
+.form-circle-1 { background: radial-gradient(circle, #e0e7ff 0%, transparent 70%); }
+.form-circle-2 { background: radial-gradient(circle, #c7d2fe 0%, transparent 70%); }
+</style>

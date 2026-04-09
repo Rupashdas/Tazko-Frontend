@@ -28,7 +28,7 @@ function getUser(id) { return store.getUser(id) }
     <Transition name="thread-slide">
         <aside v-if="store.activeThread"
                class="flex flex-col border-l border-heading/8 bg-panel overflow-hidden shrink-0"
-               style="width: 320px; min-width: 320px;">
+               class="w-[320px] min-w-[320px]">
 
             <!-- ── Header ──────────────────────────────────────── -->
             <div class="flex items-center justify-between px-4 py-3.5 border-b border-heading/8 shrink-0">
@@ -50,7 +50,7 @@ function getUser(id) { return store.getUser(id) }
                  class="mx-3 my-3 px-3 py-3 rounded-xl bg-heading/4 border border-heading/8 shrink-0">
                 <div class="flex items-start gap-2.5">
                     <div class="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0"
-                         :style="`background: ${getUser(store.threadParent.senderId)?.color ?? '#6c63ff'}; font-family:'Manrope Variable',sans-serif`">
+                         :style="`background: ${getUser(store.threadParent.senderId)?.color ?? '#6c63ff'}`">
                         {{ getUser(store.threadParent.senderId)?.initials }}
                     </div>
                     <div class="min-w-0 flex-1">
@@ -58,8 +58,7 @@ function getUser(id) { return store.getUser(id) }
                             <p class="text-[12px] font-bold text-heading">
                                 {{ getUser(store.threadParent.senderId)?.name }}
                             </p>
-                            <span class="text-[10px] text-text/35 tabular-nums"
-                                  style="font-family:'Manrope Variable',sans-serif">
+                            <span class="text-[10px] text-text/35 tabular-nums">
                                 {{ store.threadParent.time }}
                             </span>
                         </div>
@@ -94,7 +93,7 @@ function getUser(id) { return store.getUser(id) }
                     <div v-for="msg in store.threadReplies" :key="msg.id"
                          class="flex items-start gap-2.5 group">
                         <div class="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5"
-                             :style="`background: ${getUser(msg.senderId)?.color ?? '#6c63ff'}; font-family:'Manrope Variable',sans-serif`">
+                             :style="`background: ${getUser(msg.senderId)?.color ?? '#6c63ff'}`">
                             {{ getUser(msg.senderId)?.initials }}
                         </div>
                         <div class="min-w-0 flex-1">
@@ -102,8 +101,7 @@ function getUser(id) { return store.getUser(id) }
                                 <span class="text-[12px] font-bold text-heading">
                                     {{ msg.senderId === store.CURRENT_USER_ID ? 'You' : getUser(msg.senderId)?.name }}
                                 </span>
-                                <span class="text-[10px] text-text/30 tabular-nums"
-                                      style="font-family:'Manrope Variable',sans-serif">
+                                <span class="text-[10px] text-text/30 tabular-nums">
                                     {{ msg.time }}
                                 </span>
                             </div>

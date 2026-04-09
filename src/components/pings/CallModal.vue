@@ -160,8 +160,7 @@ function endCall() { store.endCall() }
                         </template>
                         <template v-else>
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            <span class="text-emerald-400 text-[13px] font-semibold tabular-nums"
-                                  style="font-family:'Manrope Variable',sans-serif">
+                            <span class="text-emerald-400 text-[13px] font-semibold tabular-nums">
                                 {{ durationStr }}
                             </span>
                         </template>

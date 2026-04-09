@@ -561,7 +561,8 @@ defineExpose({ getHTML, getText, clear, focus, isEmpty })
 				</svg>
 				{{ attachedFiles.length }} attachment{{ attachedFiles.length !== 1 ? 's' : '' }}
 				<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-					:style="{ transform: showAttachments ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
+					:class="showAttachments ? 'rotate-180' : 'rotate-0'"
+					class="transition-transform duration-200">
 					<polyline points="6 9 12 15 18 9"/>
 				</svg>
 			</button>

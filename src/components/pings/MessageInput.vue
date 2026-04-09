@@ -169,8 +169,7 @@ function insertFormat(open, close = open) {
                     rows="1"
                     class="flex-1 resize-none bg-transparent text-[14px] text-heading
                            placeholder:text-text/30 focus:outline-none leading-relaxed py-1.5
-                           [scrollbar-width:thin]"
-                    style="max-height:140px;"
+                           [scrollbar-width:thin] max-h-[140px]"
                 />
 
                 <button @click="send"

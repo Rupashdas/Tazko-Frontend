@@ -57,7 +57,7 @@ function fileColor(type) {
         <div class="shrink-0 mt-0.5" :class="isMine ? 'ml-2' : 'mr-2.5 w-8'">
             <div v-if="!isGrouped && !isMine"
                  class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
-                 :style="`background:${sender?.color ?? '#6c63ff'};font-family:'Manrope Variable',sans-serif`">
+                 :style="`background:${sender?.color ?? '#6c63ff'}`">
                 {{ sender?.initials ?? '?' }}
             </div>
         </div>
@@ -72,14 +72,12 @@ function fileColor(type) {
                 <span class="text-[13px] font-bold" :class="isMine ? 'text-accent' : 'text-heading'">
                     {{ isMine ? 'You' : sender?.name }}
                 </span>
-                <span class="text-[10px] text-text/35 tabular-nums"
-                      style="font-family:'Manrope Variable',sans-serif">
+                <span class="text-[10px] text-text/35 tabular-nums">
                     {{ message.time }}
                 </span>
             </div>
             <span v-else
-                  class="text-[10px] text-text/25 opacity-0 group-hover:opacity-100 transition-opacity mb-0.5 tabular-nums"
-                  style="font-family:'Manrope Variable',sans-serif">
+                  class="text-[10px] text-text/25 opacity-0 group-hover:opacity-100 transition-opacity mb-0.5 tabular-nums">
                 {{ message.time }}
             </span>
 
@@ -150,7 +148,6 @@ function fileColor(type) {
             <!-- Read receipt (own) -->
             <div v-if="isMine" class="mt-0.5">
                 <span class="text-[10px] tabular-nums"
-                      style="font-family:'Manrope Variable',sans-serif"
                       :class="message.readBy.length > 1 ? 'text-accent/60' : 'text-text/30'">
                     {{ message.readBy.length > 1 ? '✓✓ Seen' : '✓ Sent' }}
                 </span>

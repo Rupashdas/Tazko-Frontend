@@ -11,7 +11,7 @@ const showOnMobile = computed(() => store.mobileSidebarOpen || !store.activeConv
 </script>
 
 <template>
-    <div class="flex overflow-hidden bg-body" style="height: calc(100dvh - 89px); min-height: 480px;">
+    <div class="chat-layout flex overflow-hidden bg-body">
 
         <!--
             Sidebar:
@@ -33,3 +33,10 @@ const showOnMobile = computed(() => store.mobileSidebarOpen || !store.activeConv
 
     </div>
 </template>
+
+<style scoped>
+.chat-layout {
+    height: calc(100dvh - 89px);
+    min-height: 480px;
+}
+</style>

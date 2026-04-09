@@ -193,8 +193,7 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 
 		<!-- ─── BOARD VIEW ─── -->
 		<div v-if="viewMode === 'board'"
-			:class="['board-container grid gap-4', isDragging ? 'is-dragging-global' : '']"
-			style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+			:class="['board-container grid grid-cols-4 gap-4', isDragging ? 'is-dragging-global' : '']">
 
 			<div v-for="status in columnStatuses" :key="status" :class="[
 				'board-column flex flex-col rounded-sm border transition-all duration-200',
@@ -237,8 +236,8 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 									: 'bg-panel border-heading/8 hover:border-heading/15 hover:shadow-sm',
 							]" @click="emit('open-task', task.id)">
 
-								<div class="drag-handle absolute left-0 top-0 bottom-0 w-5 flex items-center justify-center rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
-									@click.stop style="touch-action: none;">
+								<div class="drag-handle absolute left-0 top-0 bottom-0 w-5 flex items-center justify-center rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none"
+									@click.stop>
 									<v-icon name="bi-grip-vertical" scale="0.75" class="text-text" />
 								</div>
 
@@ -270,14 +269,12 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 											<div class="flex items-center">
 												<div
 													v-for="(ini, ai) in task.assignees.slice(0, 3)" :key="ini"
-													:class="[memberColorMap[ini] || 'bg-accent', 'w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ring-2 ring-panel']"
-													:style="ai > 0 ? 'margin-left:-6px' : ''"
+													:class="[memberColorMap[ini] || 'bg-accent', 'w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ring-2 ring-panel', ai > 0 ? '-ml-1.5' : '']"
 													:title="ini">
 													{{ ini }}
 												</div>
 												<div v-if="task.assignees.length > 3"
-													class="w-7 h-7 rounded-full bg-heading/10 flex items-center justify-center text-[10px] font-bold text-text shrink-0 ring-2 ring-panel"
-													style="margin-left:-6px">
+													class="w-7 h-7 rounded-full bg-heading/10 flex items-center justify-center text-[10px] font-bold text-text shrink-0 ring-2 ring-panel -ml-1.5">
 													+{{ task.assignees.length - 3 }}
 												</div>
 											</div>
@@ -381,14 +378,12 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 								<div class="flex items-center">
 									<div
 										v-for="(ini, ai) in task.assignees.slice(0, 2)" :key="ini"
-										:class="[memberColorMap[ini] || 'bg-accent', 'w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0 ring-2 ring-panel']"
-										:style="ai > 0 ? 'margin-left:-4px' : ''"
+										:class="[memberColorMap[ini] || 'bg-accent', 'w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0 ring-2 ring-panel', ai > 0 ? '-ml-1' : '']"
 										:title="ini">
 										{{ ini }}
 									</div>
 									<div v-if="task.assignees.length > 2"
-										class="w-6 h-6 rounded-full bg-heading/10 flex items-center justify-center text-[9px] font-bold text-text shrink-0 ring-2 ring-panel"
-										style="margin-left:-4px">
+										class="w-6 h-6 rounded-full bg-heading/10 flex items-center justify-center text-[9px] font-bold text-text shrink-0 ring-2 ring-panel -ml-1">
 										+{{ task.assignees.length - 2 }}
 									</div>
 								</div>

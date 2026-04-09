@@ -130,8 +130,7 @@ function is(key) { return collapsed.value.has(key) }
         <div class="px-4 py-3 border-t border-heading/8 shrink-0 flex items-center gap-3 bg-body/50">
             <div class="relative shrink-0">
                 <div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
-                     :style="`background: ${store.currentUser?.color ?? '#6c63ff'}`"
-                     style="font-family: 'Manrope Variable', sans-serif;">
+                     :style="`background: ${store.currentUser?.color ?? '#6c63ff'}`">
                     {{ store.currentUser?.initials }}
                 </div>
                 <span class="absolute -bottom-0.5 -right-0.5 w-[10px] h-[10px] rounded-full border-2 border-panel bg-emerald-400

@@ -84,7 +84,7 @@ function toggleMute() {
             <div class="relative shrink-0">
                 <div v-if="conv.type === 'dm'"
                      class="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-sm"
-                     :style="`background:${avatarUser?.color ?? '#6c63ff'};font-family:'Manrope Variable',sans-serif`">
+                     :style="`background:${avatarUser?.color ?? '#6c63ff'}`">
                     {{ avatarUser?.initials }}
                 </div>
                 <div v-else-if="conv.type === 'group'" class="relative w-9 h-9">

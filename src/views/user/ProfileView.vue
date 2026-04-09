@@ -291,8 +291,7 @@ const submitAvatar = async () => {
 								<img v-else-if="user?.avatar" :src="user.avatar" alt="Avatar"
 									class="w-full h-full object-cover" />
 								<div v-else
-									class="w-full h-full flex items-center justify-center text-4xl font-bold text-white"
-									:style="{ background: 'var(--color-accent)' }">
+									class="w-full h-full flex items-center justify-center text-4xl font-bold text-white bg-accent">
 									{{ userInitials }}
 								</div>
 							</div>
