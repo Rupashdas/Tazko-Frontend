@@ -3,36 +3,36 @@ import { ref, computed } from 'vue'
 import { useChatStore } from '@/stores/useChatStore'
 import { addIcons } from 'oh-vue-icons'
 import {
-    BiReply, BiTrash, BiChatLeftText, BiFileEarmark,
-    BiFileEarmarkPdf, BiFileEarmarkExcel, BiFileEarmarkText, BiDownload,
+    BiReply, BiTrash,
+    BiFileEarmark, BiFileEarmarkPdf, BiFileEarmarkExcel, BiFileEarmarkText,
+    BiDownload, BiChevronDown,
 } from 'oh-vue-icons/icons'
-addIcons(BiReply, BiTrash, BiChatLeftText, BiFileEarmark, BiFileEarmarkPdf, BiFileEarmarkExcel, BiFileEarmarkText, BiDownload)
+addIcons(BiReply, BiTrash, BiFileEarmark, BiFileEarmarkPdf,
+         BiFileEarmarkExcel, BiFileEarmarkText, BiDownload, BiChevronDown)
 
 const props = defineProps({
     message:   { type: Object,  required: true },
     isGrouped: { type: Boolean, default: false },
-    showAvatar:{ type: Boolean, default: true },
 })
 
-const store    = useChatStore()
-const showActions      = ref(false)
-const showQuickReact   = ref(false)
+const store          = useChatStore()
+const showActions    = ref(false)
+const expandReplies  = ref(false)
 
 const isMine   = computed(() => props.message.senderId === store.CURRENT_USER_ID)
 const sender   = computed(() => store.getUser(props.message.senderId))
-const isThread = computed(() => (props.message.threads?.length ?? 0) > 0)
+const replyUser = computed(() => props.message.replyTo ? store.getUser(props.message.replyTo.senderId) : null)
 
-const QUICK_EMOJIS = ['👍','❤️','😂','🔥','😍','🎉','👏','💯']
+const QUICK_EMOJIS = ['👍', '❤️', '😂', '🔥', '😍', '🎉', '👏', '💯']
 
 function fileIcon(type) {
     if (!type) return 'bi-file-earmark'
-    if (type === 'pdf')  return 'bi-file-earmark-pdf'
+    if (type === 'pdf')                    return 'bi-file-earmark-pdf'
     if (type === 'xlsx' || type === 'csv') return 'bi-file-earmark-excel'
     return 'bi-file-earmark-text'
 }
-
 function fileColor(type) {
-    if (!type) return '#6c63ff'
+    if (!type)           return '#6c63ff'
     if (type === 'pdf')  return '#ef4444'
     if (type === 'xlsx') return '#10b981'
     return '#3b82f6'
@@ -40,143 +40,169 @@ function fileColor(type) {
 </script>
 
 <template>
-    <div
-        v-if="!message.deleted"
-        class="group relative flex gap-3 px-4 py-0.5 transition-colors duration-100 hover:bg-heading/3"
-        :class="{ 'pt-3': !isGrouped }"
-        @mouseenter="showActions = true"
-        @mouseleave="showActions = false; showQuickReact = false"
-    >
-        <!-- Avatar column -->
-        <div class="w-9 shrink-0 pt-0.5">
-            <div v-if="!isGrouped && showAvatar"
-                 class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                 :style="`background: ${sender?.color ?? '#6c63ff'}`">
+    <!-- Deleted -->
+    <div v-if="message.deleted" class="flex gap-3 px-5 py-1">
+        <div class="w-8 shrink-0" />
+        <p class="text-[13px] italic text-text/30 select-none">This message was deleted.</p>
+    </div>
+
+    <!-- Message -->
+    <div v-else
+         class="group relative flex px-5 transition-colors duration-100 hover:bg-heading/[0.025]"
+         :class="[isMine ? 'flex-row-reverse' : 'flex-row', isGrouped ? 'py-0.5' : 'pt-3 pb-0.5']"
+         @mouseenter="showActions = true"
+         @mouseleave="showActions = false">
+
+        <!-- Avatar (others only) -->
+        <div class="shrink-0 mt-0.5" :class="isMine ? 'ml-2' : 'mr-2.5 w-8'">
+            <div v-if="!isGrouped && !isMine"
+                 class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+                 :style="`background:${sender?.color ?? '#6c63ff'};font-family:'Manrope Variable',sans-serif`">
                 {{ sender?.initials ?? '?' }}
             </div>
         </div>
 
-        <!-- Content -->
-        <div class="flex-1 min-w-0">
-            <!-- Sender name + time (non-grouped only) -->
-            <div v-if="!isGrouped" class="flex items-baseline gap-2 mb-1">
-                <span class="text-sm font-bold" :class="isMine ? 'text-accent' : 'text-heading'">
+        <!-- Body -->
+        <div class="flex flex-col max-w-[72%]" :class="isMine ? 'items-end' : 'items-start'">
+
+            <!-- Sender + time -->
+            <div v-if="!isGrouped"
+                 class="flex items-baseline gap-2 mb-1"
+                 :class="isMine ? 'flex-row-reverse' : ''">
+                <span class="text-[13px] font-bold" :class="isMine ? 'text-accent' : 'text-heading'">
                     {{ isMine ? 'You' : sender?.name }}
                 </span>
-                <span class="text-[11px] text-text/40 font-medium">{{ message.time }}</span>
+                <span class="text-[10px] text-text/35 tabular-nums"
+                      style="font-family:'Manrope Variable',sans-serif">
+                    {{ message.time }}
+                </span>
             </div>
-            <!-- Grouped: show time on hover -->
             <span v-else
-                  class="absolute left-4 top-1.5 text-[10px] text-text/30 opacity-0 group-hover:opacity-100 transition-opacity select-none"
-                  style="width: 36px; text-align: center;">
+                  class="text-[10px] text-text/25 opacity-0 group-hover:opacity-100 transition-opacity mb-0.5 tabular-nums"
+                  style="font-family:'Manrope Variable',sans-serif">
                 {{ message.time }}
             </span>
 
+            <!-- ── Reply quote (Facebook style) ──────────────────── -->
+            <div v-if="message.replyTo"
+                 class="mb-1.5 flex items-start gap-2 px-3 py-2 rounded-xl border-l-2 border-accent/50
+                        bg-accent/5 max-w-full cursor-default"
+                 :class="isMine ? 'rounded-tr-sm' : 'rounded-tl-sm'">
+                <div class="min-w-0">
+                    <p class="text-[11px] font-bold text-accent truncate mb-0.5">
+                        {{ message.replyTo.senderId === store.CURRENT_USER_ID ? 'You' : message.replyTo.senderName }}
+                    </p>
+                    <p class="text-[12px] text-text/65 truncate max-w-[220px]">
+                        {{ message.replyTo.content }}
+                    </p>
+                </div>
+            </div>
+
             <!-- Image -->
-            <div v-if="message.type === 'image'" class="mt-1 mb-1 max-w-xs">
+            <div v-if="message.type === 'image'"
+                 class="relative rounded-2xl overflow-hidden max-w-[320px] cursor-zoom-in"
+                 :class="isMine ? 'rounded-tr-sm' : 'rounded-tl-sm'">
                 <img :src="message.url" :alt="message.content"
-                     class="rounded-sm w-full object-cover max-h-64 cursor-pointer hover:opacity-90 transition-opacity"
-                     style="display: block;" />
+                     class="w-full object-cover max-h-64 hover:brightness-95 transition-all duration-200" />
             </div>
 
             <!-- File card -->
             <div v-else-if="message.type === 'file'"
-                 class="mt-1 mb-1 inline-flex items-center gap-3 px-4 py-3 rounded-sm border border-heading/10 bg-body max-w-xs hover:bg-heading/4 transition-colors cursor-pointer group/file">
-                <div class="w-10 h-10 rounded-sm flex items-center justify-center shrink-0"
-                     :style="`background: ${fileColor(message.fileType)}22`">
-                    <v-icon :name="fileIcon(message.fileType)" scale="1.1" :style="`color: ${fileColor(message.fileType)}`" />
+                 class="inline-flex items-center gap-3 px-4 py-3 rounded-2xl border border-heading/12
+                        bg-panel hover:border-accent/25 hover:bg-accent/3 cursor-pointer transition-all duration-150 group/file max-w-[280px]"
+                 :class="isMine ? 'rounded-tr-sm' : 'rounded-tl-sm'">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                     :style="`background:${fileColor(message.fileType)}18`">
+                    <v-icon :name="fileIcon(message.fileType)" scale="1.05"
+                            :style="`color:${fileColor(message.fileType)}`" />
                 </div>
-                <div class="min-w-0">
-                    <p class="text-sm font-semibold text-heading truncate max-w-[160px]">{{ message.content }}</p>
-                    <p class="text-xs text-text/50">{{ message.fileSize }}</p>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[13px] font-semibold text-heading truncate">{{ message.content }}</p>
+                    <p class="text-[11px] text-text/50 mt-0.5">{{ message.fileSize }}</p>
                 </div>
-                <v-icon name="bi-download" class="text-text/30 group-hover/file:text-accent transition-colors ml-1" scale="0.9" />
+                <v-icon name="bi-download" scale="0.88"
+                        class="text-text/30 group-hover/file:text-accent transition-colors shrink-0" />
             </div>
 
-            <!-- Text -->
-            <p v-else class="text-sm text-heading leading-relaxed break-words">
-                <span v-html="message.content.replace(/@(\w[\w\s]*)/g, '<span class=\'mention\'>@$1</span>')" />
-            </p>
-
-            <!-- Thread count -->
-            <button v-if="isThread"
-                    @click="store.openThread(message.id)"
-                    class="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent/80 hover:underline transition-colors">
-                <v-icon name="bi-chat-left-text" scale="0.75" />
-                {{ message.threads.length }} {{ message.threads.length === 1 ? 'reply' : 'replies' }}
-            </button>
+            <!-- Text bubble -->
+            <div v-else
+                 class="px-4 py-2.5 text-[14px] leading-relaxed break-words rounded-2xl"
+                 :class="isMine
+                     ? 'bg-accent text-white rounded-tr-sm shadow-sm shadow-accent/20'
+                     : 'bg-panel border border-heading/10 text-heading rounded-tl-sm shadow-sm shadow-heading/5'">
+                <span v-html="message.content.replace(/@(\w[\w\s]*)/g, '<span class=\'@mention\'>@$1</span>')" />
+            </div>
 
             <!-- Reactions -->
-            <div v-if="message.reactions?.length" class="flex flex-wrap gap-1 mt-2">
+            <div v-if="message.reactions?.length" class="flex flex-wrap gap-1 mt-1.5">
                 <button
-                    v-for="reaction in message.reactions" :key="reaction.emoji"
-                    @click="store.toggleReaction(message.id, reaction.emoji)"
-                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-all duration-100"
-                    :class="reaction.userIds.includes(store.CURRENT_USER_ID)
+                    v-for="r in message.reactions" :key="r.emoji"
+                    @click="store.toggleReaction(message.id, r.emoji)"
+                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] border
+                           transition-all duration-100 active:scale-95"
+                    :class="r.userIds.includes(store.CURRENT_USER_ID)
                         ? 'bg-accent/12 border-accent/30 text-accent font-semibold'
-                        : 'bg-heading/5 border-heading/10 text-text hover:bg-heading/10'"
-                >
-                    <span>{{ reaction.emoji }}</span>
-                    <span>{{ reaction.userIds.length }}</span>
+                        : 'bg-heading/5 border-heading/10 text-text hover:bg-heading/10'">
+                    {{ r.emoji }} <span class="font-medium">{{ r.userIds.length }}</span>
                 </button>
+            </div>
+
+            <!-- Read receipt (own) -->
+            <div v-if="isMine" class="mt-0.5">
+                <span class="text-[10px] tabular-nums"
+                      style="font-family:'Manrope Variable',sans-serif"
+                      :class="message.readBy.length > 1 ? 'text-accent/60' : 'text-text/30'">
+                    {{ message.readBy.length > 1 ? '✓✓ Seen' : '✓ Sent' }}
+                </span>
             </div>
         </div>
 
-        <!-- Read receipts (own messages) -->
-        <div v-if="isMine" class="shrink-0 self-end pb-1">
-            <span class="text-[10px]" :class="message.readBy.length > 1 ? 'text-accent' : 'text-text/30'">
-                {{ message.readBy.length > 1 ? '✓✓' : '✓' }}
-            </span>
-        </div>
-
-        <!-- Hover action bar -->
-        <Transition name="actions-fade">
+        <!-- ── Floating action toolbar ──────────────────────── -->
+        <Transition name="toolbar">
             <div v-if="showActions"
-                 class="absolute right-4 -top-4 flex items-center gap-0.5 bg-panel border border-heading/10 rounded-sm shadow-lg px-1 py-1 z-20">
+                 class="absolute z-20 flex items-center gap-0.5 bg-panel rounded-xl border border-heading/12
+                        shadow-lg shadow-heading/10 px-1.5 py-1.5"
+                 :class="isMine ? 'left-5 -top-5' : 'right-5 -top-5'">
                 <!-- Quick reactions -->
-                <div class="flex items-center">
-                    <button
-                        v-for="emoji in QUICK_EMOJIS" :key="emoji"
-                        @click="store.toggleReaction(message.id, emoji)"
-                        class="w-7 h-7 text-sm rounded-sm hover:bg-heading/8 flex items-center justify-center transition-colors"
-                        :title="emoji">
+                <div class="flex items-center gap-0.5 pr-1.5 border-r border-heading/10">
+                    <button v-for="emoji in QUICK_EMOJIS" :key="emoji"
+                            @click="store.toggleReaction(message.id, emoji)"
+                            class="w-7 h-7 rounded-lg text-[14px] hover:bg-heading/8 flex items-center justify-center
+                                   transition-all duration-100 hover:scale-125 active:scale-95">
                         {{ emoji }}
                     </button>
                 </div>
-                <div class="w-px h-5 bg-heading/10 mx-1" />
                 <!-- Reply -->
-                <button @click="store.openThread(message.id)"
-                        class="w-7 h-7 rounded-sm flex items-center justify-center text-text hover:bg-accent/10 hover:text-accent transition-colors" title="Reply in thread">
-                    <v-icon name="bi-reply" scale="0.85" />
+                <button @click="store.setReplyTo(message)"
+                        class="w-7 h-7 rounded-lg flex items-center justify-center text-text/50
+                               hover:bg-accent/10 hover:text-accent transition-all duration-100"
+                        title="Reply">
+                    <v-icon name="bi-reply" scale="0.82" />
                 </button>
-                <!-- Delete (own only) -->
+                <!-- Delete (own) -->
                 <button v-if="isMine"
                         @click="store.deleteMessage(message.id)"
-                        class="w-7 h-7 rounded-sm flex items-center justify-center text-text hover:bg-red-50 hover:text-red-500 transition-colors" title="Delete">
-                    <v-icon name="bi-trash" scale="0.85" />
+                        class="w-7 h-7 rounded-lg flex items-center justify-center text-text/50
+                               hover:bg-red-50 hover:text-red-500 transition-all duration-100"
+                        title="Delete">
+                    <v-icon name="bi-trash" scale="0.82" />
                 </button>
             </div>
         </Transition>
     </div>
-
-    <!-- Deleted message placeholder -->
-    <div v-else class="flex gap-3 px-4 py-1">
-        <div class="w-9 shrink-0" />
-        <p class="text-sm italic text-text/35">This message was deleted.</p>
-    </div>
 </template>
 
 <style scoped>
-.actions-fade-enter-active, .actions-fade-leave-active { transition: all 0.12s ease; }
-.actions-fade-enter-from, .actions-fade-leave-to { opacity: 0; transform: translateY(3px) scale(0.97); }
+.toolbar-enter-active, .toolbar-leave-active { transition: all 0.12s ease; }
+.toolbar-enter-from, .toolbar-leave-to { opacity: 0; transform: translateY(4px) scale(0.96); }
 
-:deep(.mention) {
+:deep(.\@mention) {
     display: inline-block;
-    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    background: color-mix(in srgb, var(--color-accent) 15%, transparent);
     color: var(--color-accent);
-    font-weight: 600;
-    font-size: 0.85em;
-    padding: 0.05em 0.35em;
+    font-weight: 700;
+    font-size: 0.875em;
+    padding: 0.05em 0.3em;
     border-radius: 4px;
 }
 </style>

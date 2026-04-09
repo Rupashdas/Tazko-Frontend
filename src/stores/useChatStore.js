@@ -111,6 +111,8 @@ export const useChatStore = defineStore('chat', () => {
     const typingMap          = ref({})     // { [convId]: userId[] }
     const searchQuery        = ref('')
     const mobileSidebarOpen  = ref(true)
+    const replyingTo         = ref(null)   // { id, content, senderName, senderId } | null
+    const convSearchQuery    = ref('')     // in-conversation search
 
     // ── Derived ──────────────────────────────────────────────────────────
 
@@ -180,12 +182,28 @@ export const useChatStore = defineStore('chat', () => {
     // ── Actions ───────────────────────────────────────────────────────────
 
     function setActiveConv(id) {
-        activeConvId.value = id
-        activeThread.value = null
-        mobileSidebarOpen.value = false
+        activeConvId.value       = id
+        activeThread.value       = null
+        mobileSidebarOpen.value  = false
+        replyingTo.value         = null
+        convSearchQuery.value    = ''
         const conv = conversations.value.find(c => c.id === id)
         if (conv) conv.unread = 0
     }
+
+    function setReplyTo(msg) {
+        let preview = msg.content
+        if (msg.type === 'image') preview = '📷 Image'
+        else if (msg.type === 'file') preview = `📎 ${msg.content}`
+        replyingTo.value = {
+            id:         msg.id,
+            content:    preview,
+            senderName: getUser(msg.senderId)?.name ?? 'Unknown',
+            senderId:   msg.senderId,
+        }
+    }
+
+    function clearReplyTo() { replyingTo.value = null }
 
     function sendMessage(content, type = 'text', extra = {}) {
         const convId = activeConvId.value
@@ -200,8 +218,10 @@ export const useChatStore = defineStore('chat', () => {
             reactions: [],
             readBy:    [CURRENT_USER_ID],
             threads:   [],
+            replyTo:   replyingTo.value ? { ...replyingTo.value } : null,
             ...extra,
         }
+        replyingTo.value = null
         if (!messages.value[convId]) messages.value[convId] = []
         messages.value[convId].push(msg)
 
@@ -340,6 +360,8 @@ export const useChatStore = defineStore('chat', () => {
         openThread, closeThread,
         startCall, endCall,
         loadOlderMessages,
+        setReplyTo, clearReplyTo, replyingTo,
+        convSearchQuery,
         CURRENT_USER_ID,
     }
 })

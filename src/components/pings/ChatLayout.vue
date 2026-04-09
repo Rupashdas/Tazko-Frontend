@@ -4,27 +4,32 @@ import { useChatStore } from '@/stores/useChatStore'
 import ChatSidebar from './ChatSidebar.vue'
 import ChatWindow from './ChatWindow.vue'
 
-const store      = useChatStore()
-const showSidebar = computed(() => store.mobileSidebarOpen || !store.activeConv)
-const showChat    = computed(() => !store.mobileSidebarOpen || !!store.activeConv)
+const store       = useChatStore()
+// On mobile: show sidebar when mobileSidebarOpen or no conversation selected
+// On desktop: sidebar is ALWAYS visible via md:block
+const showOnMobile = computed(() => store.mobileSidebarOpen || !store.activeConv)
 </script>
 
 <template>
-    <div class="flex overflow-hidden bg-body" style="height: calc(100dvh - 65px); min-height: 480px;">
+    <div class="flex overflow-hidden bg-body" style="height: calc(100dvh - 89px); min-height: 480px;">
 
-        <!-- Sidebar: full-width on mobile when open, 280px on desktop -->
-        <div class="shrink-0 transition-all duration-200 overflow-hidden"
-             :class="[
-                 'md:block md:w-[280px]',
-                 showSidebar ? 'w-full' : 'w-0'
-             ]">
+        <!--
+            Sidebar:
+            - Mobile: hidden unless showOnMobile is true
+            - Desktop (md+): ALWAYS shown (md:block overrides hidden)
+            We never use v-show here — it would set inline display:none
+            which overrides Tailwind's md:block responsive rule.
+        -->
+        <div class="shrink-0 overflow-hidden md:w-[272px] transition-all duration-200"
+             :class="showOnMobile ? 'w-full block' : 'hidden md:block'">
             <ChatSidebar />
         </div>
 
-        <!-- Chat window: hidden on mobile when sidebar is open -->
+        <!-- Chat window -->
         <div class="flex-1 min-w-0 overflow-hidden"
-             :class="showSidebar ? 'hidden md:flex' : 'flex'">
+             :class="showOnMobile ? 'hidden md:flex' : 'flex'">
             <ChatWindow />
         </div>
+
     </div>
 </template>
