@@ -62,7 +62,7 @@ const handleClose = () => emit('close')
 			<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4"
 				@click.self="handleClose">
 				<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="handleClose"></div>
-				<div class="relative bg-panel rounded-sm shadow-2xl w-full max-w-lg z-10 overflow-hidden transition-all">
+				<div class="relative bg-panel rounded-sm shadow-2xl w-full max-w-4xl z-10 overflow-hidden transition-all">
 
 					<div class="border-b border-heading/8 px-6 pt-6 pb-5">
 						<div class="flex items-center justify-between">

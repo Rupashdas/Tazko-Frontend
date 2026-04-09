@@ -21,8 +21,6 @@ const emit = defineEmits(['update:comments'])
 
 const activeSection = ref('comments')
 
-// ── Comment composer ─────────────────────────────────
-const newComment = ref('')
 const commentEditorRef = ref(null)
 const commentEditorFocused = ref(false)
 
@@ -46,7 +44,6 @@ const sendComment = () => {
 	commentEditorFocused.value = false
 }
 
-// ── Comment editing ─────────────────────────────────────
 const editingCommentId = ref(null)
 const editingCommentText = ref('')
 const editingCommentEditorRef = ref(null)
@@ -57,10 +54,7 @@ const startEditComment = (comment) => {
 }
 
 const saveCommentEdit = (comment) => {
-	const newText = editingCommentEditorRef.value
-		? editingCommentEditorRef.value.getHTML()
-		: editingCommentText.value
-
+	const newText = editingCommentEditorRef.value?.getHTML() ?? editingCommentText.value
 	emit('update:comments', props.comments.map(c =>
 		c.id === comment.id ? { ...c, text: newText } : c
 	))
@@ -71,6 +65,10 @@ const saveCommentEdit = (comment) => {
 const cancelEditComment = () => {
 	editingCommentId.value = null
 	editingCommentText.value = ''
+}
+
+const setEditingCommentEditorRef = (el) => {
+	editingCommentEditorRef.value = el
 }
 
 const toggleLike = (comment) => {
@@ -128,12 +126,10 @@ const toggleLike = (comment) => {
 					</div>
 					<div
 						class="bg-heading/[0.03] rounded-sm rounded-tl-none px-4 py-3 border border-heading/[0.06]">
-						<!-- View mode -->
 						<div v-if="editingCommentId !== comment.id" class="text-base text-text leading-relaxed rich-content"
 							v-html="comment.text" />
-						<!-- Edit mode -->
 						<div v-else class="space-y-2">
-							<rich-text-editor ref="editingCommentEditorRef" v-model="editingCommentText"
+							<rich-text-editor :ref="setEditingCommentEditorRef" v-model="editingCommentText"
 								min-height="80px" :autofocus="true" :enable-mention="true" :users="members" />
 							<div class="flex items-center gap-2 justify-end">
 								<button @click="saveCommentEdit(comment)" class="tazko-btn">
@@ -150,14 +146,13 @@ const toggleLike = (comment) => {
 				</div>
 			</div>
 
-			<!-- Comment composer -->
 			<div class="flex items-start gap-3 pt-2 border-t border-heading/5">
 				<div
 					:class="[currentUser.color, 'w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0']">
 					{{ currentUser.initials }}
 				</div>
 				<div class="flex-1">
-					<rich-text-editor ref="commentEditorRef" v-model="newComment"
+					<rich-text-editor ref="commentEditorRef"
 						placeholder="Write a comment… (use @ to mention someone)"
 						:show-toolbar="commentEditorFocused" :enable-mention="true" :users="members"
 						min-height="120px" @focus="commentEditorFocused = true" />

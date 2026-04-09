@@ -113,8 +113,8 @@ const triggerPadding = computed(() =>
 )
 
 const triggerBg = computed(() => {
-	if (isActive.value) return 'border-accent/30 bg-accent/8'
-	return props.size === 'sm' ? 'border-heading/8 bg-heading/3' : 'border-heading/15 bg-panel'
+	if (isActive.value) return 'border-accent bg-accent/8'
+	return props.size === 'sm' ? 'border-heading/15 bg-heading/3' : 'border-heading/15 bg-panel'
 })
 
 const textCls = computed(() =>
@@ -128,15 +128,15 @@ const textCls = computed(() =>
 		<button
 			type="button"
 			@click="openDropdown"
-			class="w-full flex items-center gap-2 rounded-sm border transition-colors focus:outline-none focus:border-accent/50 cursor-pointer text-left leading-tight min-w-0"
-			:class="[triggerPadding, triggerBg, open ? 'border-accent/50' : '']">
+			class="w-full flex items-center gap-2 rounded-sm border transition-colors focus:outline-none focus:border-accent cursor-pointer text-left leading-tight min-w-0"
+			:class="[triggerPadding, triggerBg, open ? 'border-accent' : '']">
 
 			<!-- Multi: chips -->
 			<template v-if="multiple && selectedAvatars.length">
 				<div class="flex flex-wrap gap-1 flex-1 min-w-0 py-0.5">
 					<span
 						v-for="opt in selectedAvatars" :key="opt.value"
-						class="inline-flex items-center gap-1 pl-1 pr-2 py-0.5 rounded-full bg-accent/10 text-accent text-sm font-semibold leading-none">
+						class="inline-flex items-center gap-1 pl-1 pr-2 py-1 rounded-sm bg-accent/10 text-accent text-sm font-semibold leading-none">
 						<span
 							v-if="opt.color && opt.initials"
 							:class="[opt.color, 'w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0']">

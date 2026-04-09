@@ -167,8 +167,8 @@ const triggerBg = computed(() =>
 			ref="triggerRef"
 			type="button"
 			@click="openPicker"
-			class="w-full flex items-center rounded-sm border transition-colors focus:outline-none focus:border-accent/50 cursor-pointer text-left leading-tight"
-			:class="[triggerPadding, triggerBg, open ? 'border-accent/50' : '']">
+			class="w-full flex items-center rounded-sm border transition-colors focus:outline-none focus:border-accent cursor-pointer text-left leading-tight"
+			:class="[triggerPadding, triggerBg, open ? 'border-accent' : '']">
 
 			<v-icon
 				name="bi-calendar3"

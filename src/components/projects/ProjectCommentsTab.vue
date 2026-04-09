@@ -56,10 +56,13 @@ const startEditComment = (comment) => {
 }
 
 const saveCommentEdit = (comment) => {
-	if (!editingCommentEditorRef.value) {
-		comment.text = editingCommentText.value
+	const editor = Array.isArray(editingCommentEditorRef.value)
+		? editingCommentEditorRef.value[0]
+		: editingCommentEditorRef.value
+	if (editor?.getHTML) {
+		comment.text = editor.getHTML()
 	} else {
-		comment.text = editingCommentEditorRef.value.getHTML()
+		comment.text = editingCommentText.value
 	}
 	editingCommentId.value = null
 	editingCommentText.value = ''

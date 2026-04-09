@@ -36,7 +36,6 @@ const defaultProject = () => ({
 const form = ref(defaultProject())
 const errors = ref({})
 const nameInputRef = ref(null)
-const descriptionEditorRef = ref(null)
 
 const isEdit = computed(() => props.mode === 'edit')
 
@@ -99,7 +98,7 @@ const handleClose = () => {
 			<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4"
 				@click.self="handleClose">
 				<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="handleClose" />
-				<div class="relative bg-panel rounded-sm shadow-2xl w-full max-w-xl z-10 overflow-hidden transition-all flex flex-col max-h-[92vh]">
+				<div class="relative bg-panel rounded-sm shadow-2xl w-full max-w-4xl z-10 overflow-hidden transition-all flex flex-col max-h-[92vh]">
 
 					<div class="border-b border-heading/8 px-6 pt-6 pb-5 shrink-0">
 						<div class="flex items-center justify-between">
@@ -126,7 +125,7 @@ const handleClose = () => {
 								v-model="form.name"
 								type="text"
 								placeholder="e.g. Marketing Website"
-								class="input-field border-heading/15 focus:border-accent"
+								class="input-field focus:border-accent"
 								:class="{ 'border-red-400': errors.name }"
 								@input="clearError('name')" />
 							<p v-if="errors.name" class="text-red-500 text-base mt-1 flex items-center gap-1">
@@ -151,7 +150,7 @@ const handleClose = () => {
 								v-model="form.goal"
 								type="text"
 								placeholder="What does success look like?"
-								class="input-field border-heading/15 focus:border-accent" />
+								class="input-field" />
 						</div>
 
 						<div class="grid grid-cols-2 gap-3">

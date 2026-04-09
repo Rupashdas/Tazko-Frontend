@@ -129,7 +129,7 @@
     }
 
     .input-field {
-        @apply w-full px-4 py-3  rounded-sm border bg-panel focus:border-accent border-heading focus:outline-none text-base leading-tight;
+        @apply w-full px-4 py-3  rounded-sm border bg-panel focus:border-accent border-heading/15 focus:outline-none text-base leading-tight;
     }
     .input-field.has-icon {
         @apply pl-10;

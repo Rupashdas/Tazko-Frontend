@@ -40,6 +40,15 @@ const task = ref({
 	],
 })
 
+const availableLabels = [
+	{ id: 1, name: 'Frontend', color: 'bg-accent/15 text-accent border-accent/20' },
+	{ id: 2, name: 'UI', color: 'bg-violet-500/15 text-violet-600 border-violet-200' },
+	{ id: 3, name: 'Backend', color: 'bg-emerald-500/15 text-emerald-600 border-emerald-200' },
+	{ id: 4, name: 'Bug', color: 'bg-red-500/15 text-red-600 border-red-200' },
+	{ id: 5, name: 'Feature', color: 'bg-blue-500/15 text-blue-600 border-blue-200' },
+	{ id: 6, name: 'Documentation', color: 'bg-amber-500/15 text-amber-600 border-amber-200' },
+]
+
 const members = [
 	{ initials: 'AH', name: 'Arif Hossain', color: 'bg-accent', role: 'Project Manager' },
 	{ initials: 'SK', name: 'Sara Khan', color: 'bg-violet-500', role: 'Frontend Dev' },
@@ -157,7 +166,8 @@ const activity = [
 				:status-options="statusOptions"
 				:priority-options="priorityOptions"
 				:status-config="statusConfig"
-				:priority-config="priorityConfig" />
+				:priority-config="priorityConfig"
+				:available-labels="availableLabels" />
 		</div>
 	</div>
 </template>

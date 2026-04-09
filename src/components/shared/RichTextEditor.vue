@@ -14,6 +14,7 @@ import { detectFileType } from './FileAttachmentPlugin'
 import FileAttachmentView from './FileAttachmentView.vue'
 import { MediaEmbed, urlToEmbedInfo } from './MediaEmbedPlugin'
 import EditorToolbar from './EditorToolbar.vue'
+import MentionView from './MentionView.vue'
 
 // ── Placeholder ─────────────────────────────────────────────
 function buildPlaceholderExtension(placeholderText) {
@@ -197,6 +198,63 @@ const FileAttachment = TipTapNode.create({
 	},
 })
 
+// ── Mention node ────────────────────────────────────────────
+const Mention = TipTapNode.create({
+	name: 'mention',
+	group: 'inline',
+	inline: true,
+	atom: true,
+	addAttributes() {
+		return {
+			userId: { default: '' },
+			name: { default: '' },
+			avatar: { default: '' },
+			initials: { default: '' },
+			color: { default: 'bg-accent' },
+		}
+	},
+	parseHTML() {
+		return [
+			{
+				tag: 'span[data-mention]',
+				getAttrs(el) {
+					return {
+						userId: el.getAttribute('data-user-id') || '',
+						name: el.getAttribute('data-name') || '',
+						avatar: el.getAttribute('data-avatar') || '',
+						initials: el.getAttribute('data-initials') || '',
+						color: el.getAttribute('data-color') || 'bg-accent',
+					}
+				},
+			},
+		]
+	},
+	renderHTML({ node }) {
+		const { userId, name, avatar, initials, color } = node.attrs
+		const initial = initials || (name ? name.slice(0, 2).toUpperCase() : '?')
+		const avatarChild = avatar
+			? ['img', { src: avatar, alt: name, style: 'width:100%;height:100%;border-radius:50%;object-fit:cover;' }]
+			: ['span', { style: 'font-size:0.6rem;font-weight:700;color:white;' }, initial]
+		return [
+			'span',
+			{
+				'data-mention': '',
+				'data-user-id': userId,
+				'data-name': name,
+				'data-avatar': avatar || '',
+				'data-initials': initial,
+				'data-color': color || '',
+				style: 'display:inline-flex;align-items:center;gap:6px;background:color-mix(in srgb,var(--color-accent,#6366f1) 13%,transparent);color:var(--color-accent,#6366f1);font-weight:600;font-size:0.82em;padding:2px 8px 2px 4px;border-radius:4px;vertical-align:middle;white-space:nowrap;line-height:1.6;cursor:default;',
+			},
+			['span', { style: 'width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--color-accent,#6366f1);overflow:hidden;' }, avatarChild],
+			`@${name}`,
+		]
+	},
+	addNodeView() {
+		return VueNodeViewRenderer(MentionView)
+	},
+})
+
 // ── Props ───────────────────────────────────────────────────
 const props = defineProps({
 	modelValue: { type: String, default: '' },
@@ -289,9 +347,25 @@ function handleMentionTrigger(ed) {
 
 function selectMention(user) {
 	if (!editor.value) return
+	if (blurTimer !== null) { clearTimeout(blurTimer); blurTimer = null }
 	const { atFrom, atTo } = mentionState.value
-	editor.value.chain().focus().deleteRange({ from: atFrom, to: atTo }).insertContent(`@${user.name} `).run()
 	mentionState.value.active = false
+	editor.value
+		.chain()
+		.focus()
+		.deleteRange({ from: atFrom, to: atTo })
+		.insertContent({
+			type: 'mention',
+			attrs: {
+				userId: user.id || '',
+				name: user.name,
+				avatar: user.avatar || '',
+				initials: user.initials || '',
+				color: user.color || 'bg-accent',
+			},
+		})
+		.insertContent(' ')
+		.run()
 }
 
 function insertMention() {
@@ -348,6 +422,7 @@ const editor = useEditor({
 		CharacterCount,
 		FileAttachment,
 		MediaEmbed,
+		Mention,
 	],
 	editorProps: {
 		attributes: { class: 'tiptap-prose', spellcheck: 'true' },
@@ -450,9 +525,9 @@ defineExpose({ getHTML, getText, clear, focus, isEmpty })
 
 <template>
 	<div
-		class="border border-heading/10 rounded-[0.25rem] bg-heading/[0.03] overflow-hidden flex flex-col transition-[border-color,box-shadow] duration-200"
+		class="border border-heading/15 rounded-sm overflow-hidden flex flex-col"
 		:class="{
-			'border-accent/50 shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-accent)_8%,transparent)]': isFocused,
+			'border-accent': isFocused,
 		}"
 	>
 		<!-- Toolbar -->
@@ -531,13 +606,14 @@ defineExpose({ getHTML, getText, clear, focus, isEmpty })
 			<Transition name="mention-fade">
 				<div v-if="mentionState.active"
 					class="fixed z-[9999] min-w-[220px] bg-panel border border-heading/9 rounded-[0.25rem] shadow-[0_8px_30px_rgba(0,0,0,0.14)] p-[5px]"
-					:style="{ top: mentionState.y + 'px', left: mentionState.x + 'px' }">
+					:style="{ top: mentionState.y + 'px', left: mentionState.x + 'px' }"
+					@mousedown.prevent>
 					<div v-if="filteredUsers.length === 0" class="px-3.5 py-2.5 text-[0.8rem] text-text/35 text-center">No users found</div>
 					<button v-for="(user, i) in filteredUsers" :key="user.id ?? `${user.name}-${i}`"
 						type="button"
-						class="flex items-center gap-2.5 w-full px-2.5 py-[7px] border-0 bg-transparent rounded-[9px] cursor-pointer text-left transition-colors duration-[120ms] hover:bg-accent/9"
+						class="flex items-center gap-2.5 w-full px-2.5 py-[7px] border-0 bg-transparent rounded-[9px] cursor-pointer text-left transition-colors duration-200 hover:bg-accent/9"
 						:class="{ 'bg-accent/9': i === mentionState.selectedIndex }"
-						@mousedown.prevent="selectMention(user)">
+						@click="selectMention(user)">
 						<div :class="[user.color, 'w-[30px] h-[30px] rounded-full flex items-center justify-center text-white text-[0.68rem] font-bold shrink-0']">{{ user.initials }}</div>
 						<div class="flex flex-col gap-px">
 							<span class="text-[0.82rem] font-semibold text-heading leading-[1.2]">{{ user.name }}</span>
@@ -620,15 +696,9 @@ defineExpose({ getHTML, getText, clear, focus, isEmpty })
 
 /* ── Mention chip ── */
 :deep(.mention-chip) {
-	display: inline-block;
-	background: color-mix(in srgb, var(--color-accent, #6366f1) 13%, transparent);
-	color: var(--color-accent, #6366f1);
-	font-weight: 600;
-	font-size: 0.82em;
-	padding: 0.1em 0.45em;
-	border-radius: 6px;
-	cursor: default;
-	user-select: all;
+	display: inline-flex;
+	align-items: center;
+	vertical-align: middle;
 }
 
 .mention-fade-enter-active, .mention-fade-leave-active { transition: opacity 0.12s ease, transform 0.12s ease; }

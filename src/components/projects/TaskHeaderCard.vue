@@ -3,12 +3,12 @@ import { ref } from 'vue'
 import RichTextEditor from '@/components/shared/RichTextEditor.vue'
 import { addIcons } from 'oh-vue-icons'
 import {
-	BiPencil, BiArchive, BiTrash, BiCheck2,
+	BiTrash, BiCheck2,
 	BiCircle, BiArrowRepeat, BiExclamationCircle, BiCheck2Circle,
 } from 'oh-vue-icons/icons'
 
 addIcons(
-	BiPencil, BiArchive, BiTrash, BiCheck2,
+	BiTrash, BiCheck2,
 	BiCircle, BiArrowRepeat, BiExclamationCircle, BiCheck2Circle,
 )
 
@@ -19,7 +19,7 @@ const props = defineProps({
 	priorityConfig: { type: Object, required: true },
 })
 
-const emit = defineEmits(['update:task', 'edit', 'archive', 'delete'])
+const emit = defineEmits(['update:task', 'delete'])
 
 // ── Inline title edit ──────────────────────────────────
 const editingTitle = ref(false)
@@ -66,16 +66,6 @@ const saveDesc = () => {
 			</span>
 			<div class="flex-1" />
 			<button
-				@click="emit('edit')"
-				class="p-1.5 rounded-sm text-text hover:text-heading hover:bg-heading/5 transition-colors">
-				<v-icon name="bi-pencil" scale="0.85" />
-			</button>
-			<button
-				@click="emit('archive')"
-				class="p-1.5 rounded-sm text-text hover:text-amber-500 hover:bg-amber-500/8 transition-colors">
-				<v-icon name="bi-archive" scale="0.85" />
-			</button>
-			<button
 				@click="emit('delete')"
 				class="p-1.5 rounded-sm text-text hover:text-red-500 hover:bg-red-500/8 transition-colors">
 				<v-icon name="bi-trash" scale="0.85" />
@@ -84,11 +74,9 @@ const saveDesc = () => {
 
 		<!-- Editable title -->
 		<div class="mb-5">
-			<div v-if="!editingTitle" class="group flex items-start gap-2 cursor-pointer"
+			<div v-if="!editingTitle" class="cursor-pointer"
 				@click="startEditTitle">
-				<h1 class="text-xl font-bold text-heading leading-snug flex-1">{{ task.title }}</h1>
-				<v-icon name="bi-pencil" scale="0.8"
-					class="text-text group-hover:text-accent mt-1 shrink-0 transition-colors" />
+				<h1 class="text-xl font-bold text-heading leading-snug">{{ task.title }}</h1>
 			</div>
 			<div v-else class="flex items-start gap-2">
 				<input v-model="titleDraft"
