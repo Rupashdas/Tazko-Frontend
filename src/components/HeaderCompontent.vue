@@ -8,8 +8,8 @@ import { useRoute } from 'vue-router'
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useToast } from "@/utils/toast.js"
 
-import { CoHome, BiChatDots, LaUserCircleSolid, CoSettings, MdLogoutOutlined, LaUserEditSolid, BiPalette, MdMenuRound, MdCloseRound, BiFolder2Open, BiChevronDown } from "oh-vue-icons/icons";
-addIcons(CoHome, BiChatDots, LaUserCircleSolid, CoSettings, MdLogoutOutlined, LaUserEditSolid, BiPalette, MdMenuRound, MdCloseRound, BiFolder2Open, BiChevronDown);
+import { CoHome, BiChatDots, LaUserCircleSolid, CoSettings, MdLogoutOutlined, LaUserEditSolid, BiPalette, MdMenuRound, MdCloseRound, BiFolder2Open, BiChevronDown, BiClipboardCheck } from "oh-vue-icons/icons";
+addIcons(CoHome, BiChatDots, LaUserCircleSolid, CoSettings, MdLogoutOutlined, LaUserEditSolid, BiPalette, MdMenuRound, MdCloseRound, BiFolder2Open, BiChevronDown, BiClipboardCheck);
 
 const { errorToast } = useToast()
 
@@ -82,6 +82,13 @@ watch(() => route.fullPath, () => {
                                 class="flex items-center gap-2 px-4 py-2 rounded-sm text-base font-medium transition-all duration-150"
                                 :class="route.name === 'home' ? 'bg-accent/10 text-accent' : 'text-text hover:bg-heading/6 hover:text-heading'">
                                 <v-icon name="co-home" scale="1" /> Home
+                            </router-link>
+                        </li>
+                        <li>
+                            <router-link :to="{ name: 'my-stuff' }"
+                                class="flex items-center gap-2 px-4 py-2 rounded-sm text-base font-medium transition-all duration-150"
+                                :class="route.name === 'my-stuff' ? 'bg-accent/10 text-accent' : 'text-text hover:bg-heading/6 hover:text-heading'">
+                                <v-icon name="bi-clipboard-check" scale="1" /> My Stuff
                             </router-link>
                         </li>
                         <li>
@@ -222,6 +229,13 @@ watch(() => route.fullPath, () => {
                                 class="flex items-center gap-3 px-3 py-3  rounded-sm text-base font-medium transition-all"
                                 :class="route.name === 'home' ? 'bg-accent/10 text-accent' : 'text-text hover:bg-heading/6 hover:text-heading'">
                                 <v-icon name="si-homeadvisor" scale="1" /> Home
+                            </router-link>
+                        </li>
+                        <li>
+                            <router-link :to="{ name: 'my-stuff' }"
+                                class="flex items-center gap-3 px-3 py-3  rounded-sm text-base font-medium transition-all"
+                                :class="route.name === 'my-stuff' ? 'bg-accent/10 text-accent' : 'text-text hover:bg-heading/6 hover:text-heading'">
+                                <v-icon name="bi-clipboard-check" scale="1" /> My Stuff
                             </router-link>
                         </li>
                         <li>

@@ -17,6 +17,7 @@ import UsersView from '@/views/admin/UsersView.vue';
 import UnauthorizedView from '@/views/errors/Unauthorizedview.vue';
 
 import HomeView from '@/views/HomeView.vue';
+import MyStuffView from '@/views/MyStuffView.vue'
 import PingsView from '@/views/PingsView.vue';
 import ProjectsView from '@/views/projects/ProjectsView.vue';
 import ArchivedProjectsView from '@/views/projects/ArchivedProjectsView.vue';
@@ -32,6 +33,7 @@ const routes = [
         meta: { requiresAuth: true },
         children: [
             { path: '', name: 'home', component: HomeView },
+            { path: 'my-stuff', name: 'my-stuff', component: MyStuffView },
             { path: 'pings', name: 'pings', component: PingsView },
             { path: 'profile', name: 'profile', component: ProfileView },
             { path: 'preferences', name: 'preferences', component: PreferencesView },
