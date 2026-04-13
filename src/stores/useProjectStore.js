@@ -22,6 +22,11 @@ export const useProjectStore = defineStore('projects', {
 			priority: '',
 		},
 
+		// ── Single project (detail view) ─────────────────────────
+		currentProject: null,
+		loadingProject: false,
+		projectError: null,
+
 		// ── Archived ──────────────────────────────────────────────
 		archived: [],
 		archivedLoading: false,
@@ -38,6 +43,28 @@ export const useProjectStore = defineStore('projects', {
 	}),
 
 	actions: {
+		async fetchProject(id) {
+			this.loadingProject = true
+			this.projectError = null
+			this.currentProject = null
+			try {
+				const { data } = await axios.get(`/api/projects/${id}`)
+				console.log(data.data)
+				this.currentProject = data.data
+			} catch (err) {
+				const status = err.response?.status
+				if (status === 404) {
+					this.projectError = 'Project not found.'
+				} else if (status === 403) {
+					this.projectError = err.response?.data?.message ?? 'You do not have access to this project.'
+				} else {
+					this.projectError = 'Something went wrong. Please try again.'
+				}
+			} finally {
+				this.loadingProject = false
+			}
+		},
+
 		/**
 		 * Reset pagination and project list, then fetch page 1.
 		 * Call this whenever a filter or search value changes.
@@ -123,7 +150,7 @@ export const useProjectStore = defineStore('projects', {
 		_decrementStatFor(project) {
 			if (!project) return
 			if (project.status === 'In Progress') {
-				this.meta.active_count    = Math.max(0, this.meta.active_count - 1)
+				this.meta.active_count = Math.max(0, this.meta.active_count - 1)
 			} else if (project.status === 'Completed') {
 				this.meta.completed_count = Math.max(0, this.meta.completed_count - 1)
 			}
@@ -172,7 +199,7 @@ export const useProjectStore = defineStore('projects', {
 				this.archived = this.archived.filter(p => p.id !== projectId)
 				this.archivedMeta.total = Math.max(0, this.archivedMeta.total - 1)
 				if (project?.status === 'Completed') {
-					this.archivedMeta.completed  = Math.max(0, this.archivedMeta.completed - 1)
+					this.archivedMeta.completed = Math.max(0, this.archivedMeta.completed - 1)
 				} else {
 					this.archivedMeta.incomplete = Math.max(0, this.archivedMeta.incomplete - 1)
 				}
@@ -192,7 +219,7 @@ export const useProjectStore = defineStore('projects', {
 				this.archived = this.archived.filter(p => p.id !== projectId)
 				this.archivedMeta.total = Math.max(0, this.archivedMeta.total - 1)
 				if (project?.status === 'Completed') {
-					this.archivedMeta.completed  = Math.max(0, this.archivedMeta.completed - 1)
+					this.archivedMeta.completed = Math.max(0, this.archivedMeta.completed - 1)
 				} else {
 					this.archivedMeta.incomplete = Math.max(0, this.archivedMeta.incomplete - 1)
 				}

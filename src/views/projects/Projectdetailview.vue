@@ -2,6 +2,8 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useProjectStore } from '@/stores/useProjectStore'
+import { useToast } from '@/utils/toast'
 import { addIcons } from 'oh-vue-icons'
 import {
 	BiPencil, BiThreeDotsVertical, BiPlus, BiCheck2, BiX,
@@ -31,55 +33,48 @@ addIcons(
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
+const store = useProjectStore()
+const { successToast, errorToast } = useToast()
 
-const canViewFiles = computed(() => auth.hasCapability('files.view'))
+const canViewFiles    = computed(() => auth.hasCapability('files.view'))
 const canViewActivity = computed(() => auth.hasCapability('activity.view'))
-const canUploadFiles = computed(() => auth.hasCapability('files.upload'))
+const canUploadFiles  = computed(() => auth.hasCapability('files.upload'))
+const canCreateTask   = computed(() => auth.hasCapability('tasks.create'))
+const canUpdate       = computed(() => auth.hasCapability('projects.update'))
+const canArchive      = computed(() => auth.hasCapability('projects.archive'))
+const canDelete       = computed(() => auth.hasCapability('projects.delete'))
+const hasAnyAction    = computed(() => canUpdate.value || canArchive.value || canDelete.value)
 
-// ── Project data ──────────────────────────────────────
-const project = ref({
-	id: route.params.id,
-	name: 'Tazko App',
-	description: 'Main project management SaaS — full-stack development including Vue.js frontend, Laravel API backend, authentication, role & permission system, and task management.',
-	status: 'In Progress',
-	priority: 'High',
-	progress: 62,
-	startDate: '2026-01-15',
-	endDate: '2026-06-30',
-	goal: 'Build a complete, production-ready project management platform for teams of all sizes.',
-	color: 'bg-accent',
-	members: [
-		{ initials: 'AH', name: 'Arif Hossain', role: 'Project Manager', color: 'bg-accent' },
-		{ initials: 'SK', name: 'Sara Khan', role: 'Frontend Dev', color: 'bg-violet-500' },
-		{ initials: 'NR', name: 'Noman Rahman', role: 'Backend Dev', color: 'bg-emerald-500' },
-		{ initials: 'DM', name: 'Dina Malik', role: 'Designer', color: 'bg-amber-500' },
-		{ initials: 'KU', name: 'Karim Uddin', role: 'QA Engineer', color: 'bg-rose-500' },
-	],
+// ── Project data (from store) ──────────────────────────
+const memberColors = ['bg-accent', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500']
+
+const getInitials = (name) => {
+	if (!name) return '?'
+	const parts = name.trim().split(/\s+/)
+	if (parts.length === 1) return parts[0][0].toUpperCase()
+	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
+const project = computed(() => {
+	const p = store.currentProject
+	if (!p) return null
+	return {
+		...p,
+		startDate: p.start_date,
+		endDate: p.end_date,
+		members: (p.members ?? []).map((m, i) => ({
+			...m,
+			initials: getInitials(m.name),
+			color: memberColors[i % memberColors.length],
+		})),
+	}
 })
 
-// ── Tasks ─────────────────────────────────────────────
-const tasks = ref([
-	{ id: 1, title: 'Design system & component library', status: 'Done', priority: 'High', assignees: ['SK'], due: '2025-03-01' },
-	{ id: 2, title: 'JWT Authentication flow', status: 'Done', priority: 'Urgent', assignees: ['NR'], due: '2025-03-10' },
-	{ id: 3, title: 'Dashboard UI implementation', status: 'In Progress', priority: 'High', assignees: ['SK'], due: '2025-04-15' },
-	{ id: 4, title: 'Kanban board with drag & drop', status: 'In Progress', priority: 'High', assignees: ['AH'], due: '2025-04-20' },
-	{ id: 5, title: 'Role & permission system', status: 'Review', priority: 'Urgent', assignees: ['NR'], due: '2025-04-10' },
-	{ id: 6, title: 'File upload & management', status: 'Todo', priority: 'Medium', assignees: ['DM'], due: '2025-05-01' },
-	{ id: 7, title: 'Real-time notifications', status: 'Todo', priority: 'Medium', assignees: ['NR'], due: '2025-05-15' },
-	{ id: 8, title: 'Time tracking module', status: 'Todo', priority: 'Low', assignees: ['KU'], due: '2025-06-01' },
-	{ id: 9, title: 'Reports & analytics dashboard', status: 'Todo', priority: 'Low', assignees: ['AH', 'SK'], due: '2025-06-15' },
-	{ id: 10, title: 'Mobile responsiveness audit', status: 'Review', priority: 'Medium', assignees: ['DM', 'KU'], due: '2025-04-25' },
-])
+// ── Tasks (populated when task API is implemented) ────
+const tasks = ref([])
 
-// ── Activity ──────────────────────────────────────────
-const recentActivity = ref([
-	{ initials: 'SK', color: 'bg-violet-500', text: 'Updated Dashboard UI task to In Progress', time: '2h ago' },
-	{ initials: 'NR', color: 'bg-emerald-500', text: 'Completed JWT auth implementation', time: '5h ago' },
-	{ initials: 'AH', color: 'bg-accent', text: 'Added 3 new tasks to the board', time: '1d ago' },
-	{ initials: 'DM', color: 'bg-amber-500', text: 'Uploaded new design mockups', time: '2d ago' },
-	{ initials: 'KU', color: 'bg-rose-500', text: 'Started mobile responsiveness audit', time: '2d ago' },
-	{ initials: 'NR', color: 'bg-emerald-500', text: 'Assigned role & permission task to NR', time: '3d ago' },
-])
+// ── Activity (populated when activity API is implemented) ──
+const recentActivity = ref([])
 
 // ── Status config ─────────────────────────────────────
 const statusConfig = {
@@ -184,13 +179,27 @@ const openEditProject = (focus = null) => {
 	moreMenuOpen.value = false
 }
 
-const handleEditProjectSave = (data) => {
-	// Preserve members/id/progress etc. the edit form doesn't own, so a partial
-	// payload from ProjectFormModal can't silently wipe the team list.
-	const preserved = { members: project.value.members }
-	project.value = { ...project.value, ...data }
-	if (!Array.isArray(data?.members)) project.value.members = preserved.members
-	showEditProject.value = false
+const handleEditProjectSave = async (data) => {
+	const payload = {
+		name:        data.name,
+		description: data.description,
+		goal:        data.goal,
+		color:       data.color,
+		priority:    data.priority,
+		status:      data.status,
+		start_date:  data.startDate,
+		end_date:    data.endDate,
+	}
+
+	const result = await store.updateProject(project.value.id, payload)
+
+	if (result.success) {
+		successToast(result.message)
+		await store.fetchProject(route.params.id)
+		showEditProject.value = false
+	} else {
+		errorToast(result.message)
+	}
 }
 
 // ── More menu (three dots) ────────────────────────────
@@ -203,8 +212,9 @@ const closeMoreMenu = () => { moreMenuOpen.value = false }
 
 // Single mount hook: wire the outside-click listener and sync tabs once
 // the component is actually in the DOM.
-onMounted(() => {
+onMounted(async () => {
 	document.addEventListener('click', closeMoreMenu)
+	await store.fetchProject(route.params.id)
 	syncTabFromQuery()
 })
 onBeforeUnmount(() => document.removeEventListener('click', closeMoreMenu))
@@ -239,8 +249,62 @@ const handleDelete = () => {
 	<div class="pb-20 pt-6 px-1">
 
 		<!-- ════════════════════════════════════════════ -->
+		<!-- SKELETON LOADER                             -->
+		<!-- ════════════════════════════════════════════ -->
+		<div v-if="store.loadingProject" class="animate-pulse">
+			<div class="relative rounded-t-sm border border-b-0 border-heading/8 bg-panel px-6 pt-5 pb-0">
+				<!-- Breadcrumb skeleton -->
+				<div class="flex items-center gap-1.5 mb-4">
+					<div class="h-3 w-14 bg-heading/10 rounded" />
+					<div class="h-3 w-2 bg-heading/10 rounded" />
+					<div class="h-3 w-28 bg-heading/10 rounded" />
+				</div>
+				<!-- Title row skeleton -->
+				<div class="flex items-start gap-4 mb-4">
+					<div class="w-12 h-12 rounded-sm bg-heading/10 shrink-0" />
+					<div class="flex-1 space-y-2 pt-1">
+						<div class="h-5 w-48 bg-heading/10 rounded" />
+						<div class="h-3 w-20 bg-heading/10 rounded" />
+					</div>
+				</div>
+				<!-- Description skeleton -->
+				<div class="space-y-2 mb-4 px-2">
+					<div class="h-3 w-full bg-heading/10 rounded" />
+					<div class="h-3 w-4/5 bg-heading/10 rounded" />
+				</div>
+				<!-- Progress + meta strip skeleton -->
+				<div class="flex items-center gap-5 mb-5">
+					<div class="h-2 w-52 bg-heading/10 rounded-full" />
+					<div class="h-3 w-36 bg-heading/10 rounded" />
+					<div class="h-3 w-28 bg-heading/10 rounded" />
+				</div>
+				<!-- Tab bar skeleton -->
+				<div class="flex items-center gap-1">
+					<div v-for="n in 4" :key="n" class="h-10 w-24 bg-heading/10 rounded-sm" />
+				</div>
+			</div>
+			<div class="bg-panel border border-heading/8 rounded-b-sm h-64" />
+		</div>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- ERROR STATE                                 -->
+		<!-- ════════════════════════════════════════════ -->
+		<div v-else-if="store.projectError"
+			class="flex flex-col items-center justify-center py-24 gap-4 text-center">
+			<div class="w-14 h-14 rounded-sm bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
+				<v-icon name="bi-x" class="text-red-500" scale="1.6" />
+			</div>
+			<p class="text-base font-semibold text-heading">{{ store.projectError }}</p>
+			<button @click="router.push({ name: 'projects' })"
+				class="px-5 py-2 rounded-sm bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-all">
+				Back to Projects
+			</button>
+		</div>
+
+		<!-- ════════════════════════════════════════════ -->
 		<!-- HERO + TAB BAR                              -->
 		<!-- ════════════════════════════════════════════ -->
+		<template v-else-if="store.currentProject">
 		<div class="relative rounded-t-sm">
 			<div class="absolute inset-0 bg-accent/8" />
 			<div class="absolute inset-0 bg-panel/80 backdrop-blur-sm border border-b-0 border-heading/8 rounded-t-sm" />
@@ -261,7 +325,7 @@ const handleDelete = () => {
 				<div class="flex flex-wrap gap-5 items-start justify-between mb-4">
 					<div class="flex items-start gap-4 flex-1 min-w-0">
 						<div
-							class="w-12 h-12 rounded-sm bg-accent flex items-center justify-center shrink-0 shadow-lg shadow-accent/30">
+							:class="[project.color || 'bg-accent', 'w-12 h-12 rounded-sm flex items-center justify-center shrink-0 shadow-lg']">
 							<v-icon name="md-folderspecial-outlined" class="text-white" scale="1.3" />
 						</div>
 
@@ -280,14 +344,14 @@ const handleDelete = () => {
 
 					<!-- Action buttons -->
 					<div class="flex items-center gap-2 shrink-0 mt-1">
-						<button @click="handleAddTaskClick('Todo')"
+						<button v-if="canCreateTask" @click="handleAddTaskClick('Todo')"
 							class="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm bg-accent text-white text-base font-semibold hover:bg-accent/90 active:scale-95 transition-all shadow-md shadow-accent/20">
 							<v-icon name="bi-plus" scale="0.9" />
 							Add Task
 						</button>
 
-						<!-- More menu (three dots) -->
-						<div class="relative" @click.stop>
+						<!-- More menu (three dots) — only shown if user has at least one action -->
+						<div v-if="hasAnyAction" class="relative" @click.stop>
 							<button
 								@click="toggleMoreMenu"
 								class="p-2 rounded-sm border border-heading/10 text-text hover:text-heading hover:bg-heading/5 transition-all"
@@ -297,16 +361,16 @@ const handleDelete = () => {
 							<Transition name="fade-drop">
 								<div v-if="moreMenuOpen"
 									class="absolute right-0 top-full mt-1 w-52 bg-panel rounded-sm border border-heading/10 shadow-xl z-30 overflow-hidden">
-									<button @click="openEditProject()"
+									<button v-if="canUpdate" @click="openEditProject()"
 										class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-heading/5 transition-colors">
 										<v-icon name="bi-pencil" scale="0.85" /> Edit Project
 									</button>
-									<button @click="requestArchive"
+									<button v-if="canArchive" @click="requestArchive"
 										class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:text-amber-600 transition-colors">
 										<v-icon name="bi-archive" scale="0.85" /> Archive
 									</button>
-									<div class="h-px bg-heading/5 mx-2" />
-									<button @click="requestDelete"
+									<div v-if="canDelete && (canUpdate || canArchive)" class="h-px bg-heading/5 mx-2" />
+									<button v-if="canDelete" @click="requestDelete"
 										class="w-full flex items-center gap-2 px-4 py-3 text-base text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
 										<v-icon name="bi-trash" scale="0.85" /> Delete
 									</button>
@@ -346,7 +410,7 @@ const handleDelete = () => {
 
 					<!-- Member avatars -->
 					<div class="flex items-center ml-auto">
-						<div v-for="(m, i) in project.members" :key="m.initials"
+						<div v-for="(m, i) in project.members" :key="m.id"
 							:class="[m.color, 'w-7 h-7 rounded-full flex items-center justify-center text-white text-[9px] font-bold border-2 border-panel shadow-sm -ml-1.5 first:ml-0 hover:scale-110 transition-transform cursor-pointer']"
 							:title="`${m.name} — ${m.role}`" :style="`z-index: ${project.members.length - i}`">
 							{{ m.initials }}
@@ -410,25 +474,28 @@ const handleDelete = () => {
 
 		</div>
 
+		</template>
+
 		<!-- Modals -->
 		<AddTaskModal
 			:show="showAddTask"
-			:members="project.members"
+			:members="project?.members ?? []"
 			:default-status="addTaskDefaultStatus"
 			@close="showAddTask = false"
 			@save="handleAddTaskSave" />
 
 		<AddMemberModal
 			:show="showAddMember"
-			:existing-members="project.members"
+			:existing-members="project?.members ?? []"
 			@close="showAddMember = false"
 			@add="handleAddMembers" />
 
 		<ProjectFormModal
 			:show="showEditProject"
 			mode="edit"
-			:project="project"
+			:project="project ?? {}"
 			:focus-field="editFocusField"
+			:saving="store.saving"
 			@close="showEditProject = false"
 			@save="handleEditProjectSave" />
 
