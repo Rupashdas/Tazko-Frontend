@@ -133,11 +133,16 @@ router.beforeEach(async (to, from, next) => {
         try { await preferencesStore.loadPreferences() } catch (e) { console.error('Failed to load preferences', e) }
     }
 
-    const requiresAuth = to.matched.some(r => r.meta.requiresAuth)
-    const guestOnly = to.matched.some(r => r.meta.guestOnly)
+    const requiresAuth       = to.matched.some(r => r.meta.requiresAuth)
+    const guestOnly          = to.matched.some(r => r.meta.guestOnly)
+    const requiredCapability = to.matched.map(r => r.meta.requiresCapability).filter(Boolean).at(-1)
 
     if (requiresAuth && !auth.isLoggedIn) return next({ name: 'login' })
-    if (guestOnly && auth.isLoggedIn) return next({ name: 'home' })
+    if (guestOnly && auth.isLoggedIn)     return next({ name: 'home' })
+
+    if (requiredCapability && auth.isLoggedIn && !auth.hasCapability(requiredCapability)) {
+        return next({ name: 'unauthorized' })
+    }
 
     next()
 })

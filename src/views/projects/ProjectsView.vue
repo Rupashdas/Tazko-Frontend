@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { addIcons } from 'oh-vue-icons'
 import {
@@ -12,6 +12,8 @@ import {
 } from 'oh-vue-icons/icons'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import ProjectFormModal from '@/components/projects/ProjectFormModal.vue'
+import { useProjectStore } from '@/stores/useProjectStore'
+import { useAuthStore } from '@/stores/useAuthStore'
 
 addIcons(
 	BiPlusCircle, BiSearch, BiGrid3X3Gap, BiListUl,
@@ -23,223 +25,74 @@ addIcons(
 )
 
 const router = useRouter()
-const viewMode = ref('grid')
-const searchQuery = ref('')
-const statusFilter = ref('All')
+const store  = useProjectStore()
+const auth   = useAuthStore()
+
+const canCreate  = computed(() => auth.hasCapability('projects.create'))
+const canUpdate  = computed(() => auth.hasCapability('projects.update'))
+const canArchive = computed(() => auth.hasCapability('projects.archive'))
+const canDelete  = computed(() => auth.hasCapability('projects.delete'))
+
+const viewMode      = ref('grid')
+const searchQuery   = ref('')
+const statusFilter  = ref('All')
 const priorityFilter = ref('All')
-const showFormModal = ref(false)
-const formMode = ref('create')
+const showFormModal  = ref(false)
+const formMode       = ref('create')
 const editingProject = ref(null)
-const openMenuId = ref(null)
+const openMenuId     = ref(null)
 
 // ── Archive confirm ────────────────────────────────────────────
 const showArchiveConfirm = ref(false)
-const pendingArchiveId = ref(null)
+const pendingArchiveId   = ref(null)
 
 // ── Available project colors ───────────────────────────────────
 const projectColors = [
-	'bg-violet-500',
-	'bg-rose-500',
-	'bg-emerald-500',
-	'bg-amber-500',
-	'bg-sky-500',
-	'bg-fuchsia-500',
-	'bg-indigo-500',
-	'bg-teal-500',
-	'bg-orange-500',
-	'bg-pink-500',
+	'bg-violet-500', 'bg-rose-500', 'bg-emerald-500', 'bg-amber-500',
+	'bg-sky-500', 'bg-fuchsia-500', 'bg-indigo-500', 'bg-teal-500',
+	'bg-orange-500', 'bg-pink-500',
 ]
 
+// ── Derive initials & color from API member objects ────────────
+const memberColors = [
+	'bg-accent', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500',
+	'bg-sky-500', 'bg-rose-500', 'bg-fuchsia-500', 'bg-teal-500',
+]
+const toInitials = (name) =>
+	(name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+const memberColor = (id) => memberColors[id % memberColors.length]
+
+// ── Modal helpers ──────────────────────────────────────────────
 const openCreateModal = () => {
 	formMode.value = 'create'
 	editingProject.value = null
 	showFormModal.value = true
 }
-
 const openEditModal = (project) => {
 	openMenuId.value = null
 	formMode.value = 'edit'
 	editingProject.value = project
 	showFormModal.value = true
 }
-
 const closeFormModal = () => {
 	showFormModal.value = false
 	editingProject.value = null
 }
 
-// Monotonic local id generator — avoids Date.now() collisions on rapid creates
-// and reuses the max of any seeded numeric IDs as the starting seed.
-const nextLocalId = (() => {
-	let seed = 0
-	return (all) => {
-		if (seed === 0) {
-			seed = Math.max(0, ...all.map(p => Number(p.id) || 0))
-		}
-		return ++seed
-	}
-})()
-
-const handleFormSave = (data) => {
-	if (formMode.value === 'edit' && editingProject.value) {
-		const idx = projects.value.findIndex(p => p.id === editingProject.value.id)
-		if (idx !== -1) {
-			projects.value[idx] = { ...projects.value[idx], ...data }
-		}
-	} else {
-		projects.value.push({
-			id: nextLocalId(projects.value),
-			name: data.name,
-			description: data.description,
-			goal: data.goal,
-			color: data.color || projectColors[0],
-			priority: data.priority,
-			status: data.status,
-			startDate: data.startDate,
-			endDate: data.endDate,
-			is_archived: false,
-			progress: 0,
-			members: [],
-			taskCounts: { total: 0, done: 0 },
-		})
-	}
+const handleFormSave = () => {
 	closeFormModal()
+	store.reset()
 }
 
-const statuses = ['All', 'Planning', 'In Progress', 'On Hold', 'Completed']
+const statuses   = ['All', 'Planning', 'In Progress', 'On Hold', 'Completed']
 const priorities = ['All', 'Urgent', 'High', 'Medium', 'Low']
 
-// ── Project data (is_archived: false for active projects) ──────
-const projects = ref([
-	{
-		id: 1,
-		name: 'Tazko App',
-		description: 'Main project management SaaS — frontend and backend development.',
-		status: 'In Progress',
-		priority: 'High',
-		color: 'bg-violet-500',
-		progress: 62,
-		startDate: '2026-01-15',
-		endDate: '2026-06-30',
-		is_archived: false,
-		members: [
-			{ name: 'Arif H', initials: 'AH', color: 'bg-accent' },
-			{ name: 'Sara K', initials: 'SK', color: 'bg-violet-500' },
-			{ name: 'Noman R', initials: 'NR', color: 'bg-emerald-500' },
-		],
-		taskCounts: { total: 48, done: 30 },
-	},
-	{
-		id: 2,
-		name: 'Backend Core',
-		description: 'Laravel API, authentication, role & permission system.',
-		status: 'In Progress',
-		priority: 'Urgent',
-		color: 'bg-rose-500',
-		progress: 45,
-		startDate: '2026-02-01',
-		endDate: '2026-05-15',
-		is_archived: false,
-		members: [
-			{ name: 'Arif H', initials: 'AH', color: 'bg-accent' },
-			{ name: 'Noman R', initials: 'NR', color: 'bg-emerald-500' },
-		],
-		taskCounts: { total: 32, done: 14 },
-	},
-	{
-		id: 3,
-		name: 'Documentation',
-		description: 'Technical docs, API reference, and onboarding guides.',
-		status: 'Planning',
-		priority: 'Low',
-		color: 'bg-emerald-500',
-		progress: 12,
-		startDate: '2026-03-01',
-		endDate: '2026-07-31',
-		is_archived: false,
-		members: [
-			{ name: 'Sara K', initials: 'SK', color: 'bg-violet-500' },
-		],
-		taskCounts: { total: 15, done: 2 },
-	},
-	{
-		id: 4,
-		name: 'Mobile App',
-		description: 'React Native mobile client for iOS and Android.',
-		status: 'Planning',
-		priority: 'Medium',
-		color: 'bg-sky-500',
-		progress: 5,
-		startDate: '2026-04-01',
-		endDate: '2026-09-30',
-		is_archived: false,
-		members: [
-			{ name: 'Sara K', initials: 'SK', color: 'bg-violet-500' },
-			{ name: 'Dina M', initials: 'DM', color: 'bg-amber-500' },
-		],
-		taskCounts: { total: 10, done: 0 },
-	},
-	{
-		id: 5,
-		name: 'Design System',
-		description: 'Component library, tokens, and design guidelines.',
-		status: 'On Hold',
-		priority: 'Medium',
-		color: 'bg-amber-500',
-		progress: 38,
-		startDate: '2026-01-20',
-		endDate: '2026-05-01',
-		is_archived: false,
-		members: [
-			{ name: 'Sara K', initials: 'SK', color: 'bg-violet-500' },
-		],
-		taskCounts: { total: 22, done: 8 },
-	},
-	{
-		id: 6,
-		name: 'QA & Testing',
-		description: 'End-to-end testing suite with Playwright and PHPUnit.',
-		status: 'Completed',
-		priority: 'High',
-		color: 'bg-fuchsia-500',
-		progress: 100,
-		startDate: '2026-01-10',
-		endDate: '2026-02-28',
-		is_archived: false,
-		members: [
-			{ name: 'Arif H', initials: 'AH', color: 'bg-accent' },
-			{ name: 'Noman R', initials: 'NR', color: 'bg-emerald-500' },
-		],
-		taskCounts: { total: 20, done: 20 },
-	},
-])
-
-// Only show non-archived projects in the main list
-const activeProjects = computed(() => projects.value.filter(p => !p.is_archived))
-
-const filteredProjects = computed(() => {
-	const q = searchQuery.value.trim().toLowerCase()
-	const s = statusFilter.value
-	const pr = priorityFilter.value
-	return activeProjects.value.filter(p => {
-		if (s !== 'All' && p.status !== s) return false
-		if (pr !== 'All' && p.priority !== pr) return false
-		if (!q) return true
-		return p.name.toLowerCase().includes(q) ||
-			(p.description || '').toLowerCase().includes(q)
-	})
-})
-
-// Count of locally-archived projects (for the badge on Archived button)
-const archivedCount = computed(() => projects.value.filter(p => p.is_archived).length)
-
-const totalProjects = computed(() => activeProjects.value.length)
-const activeCount = computed(() => activeProjects.value.filter(p => p.status === 'In Progress').length)
-const completedCount = computed(() => activeProjects.value.filter(p => p.status === 'Completed').length)
-const avgProgress = computed(() => {
-	if (!activeProjects.value.length) return 0
-	return Math.round(activeProjects.value.reduce((a, p) => a + p.progress, 0) / activeProjects.value.length)
-})
+// ── Stats derived from loaded page data ────────────────────────
+const totalProjects  = computed(() => store.meta.total)
+const activeCount    = computed(() => store.meta.active_count)
+const completedCount = computed(() => store.meta.completed_count)
+const avgProgress    = computed(() => store.meta.avg_progress)
+const archivedCount = ref(0)
 
 const statusConfig = {
 	'Planning':    { cls: 'bg-slate-400/15 text-slate-500', dot: 'bg-slate-400' },
@@ -287,8 +140,7 @@ const requestArchive = (id) => {
 
 const handleArchive = () => {
 	// TODO: axios.patch(`/api/projects/${pendingArchiveId.value}/archive`)
-	const project = projects.value.find(p => p.id === pendingArchiveId.value)
-	if (project) project.is_archived = true
+	store.projects = store.projects.filter(p => p.id !== pendingArchiveId.value)
 	showArchiveConfirm.value = false
 	pendingArchiveId.value = null
 }
@@ -299,12 +151,20 @@ const getProjectColor = (project, idx) =>
 // Pre-compute per-card derived values once per render so the template
 // doesn't invoke daysLeft()/statusOf()/priorityOf() multiple times per row.
 const decoratedProjects = computed(() =>
-	filteredProjects.value.map((p, idx) => ({
-		project: p,
+	store.projects.map((p, idx) => ({
+		project: {
+			...p,
+			taskCounts: p.task_counts ?? { done: 0, total: 0 },
+			members: (p.members ?? []).map(m => ({
+				...m,
+				initials: toInitials(m.name),
+				color:    memberColor(m.id),
+			})),
+		},
 		idx,
-		color: getProjectColor(p, idx),
-		due: daysLeft(p.endDate),
-		status: statusOf(p.status),
+		color:    getProjectColor(p, idx),
+		due:      daysLeft(p.end_date),
+		status:   statusOf(p.status),
 		priority: priorityOf(p.priority),
 	}))
 )
@@ -319,9 +179,48 @@ const requestDelete = (id) => {
 }
 const handleDelete = () => {
 	// TODO: axios.delete(`/api/projects/${pendingDeleteId.value}`)
-	projects.value = projects.value.filter(p => p.id !== pendingDeleteId.value)
+	store.projects = store.projects.filter(p => p.id !== pendingDeleteId.value)
 	showDeleteConfirm.value = false
 	pendingDeleteId.value = null
+}
+
+// ── Sync local filter state → store, then reset ───────────────
+// isMounted guard prevents watches from triggering store.reset()
+// before onMounted (which owns the first load call).
+let isMounted = false
+let searchDebounce = null
+
+watch(searchQuery, (val) => {
+	if (!isMounted) return
+	clearTimeout(searchDebounce)
+	searchDebounce = setTimeout(() => {
+		store.filters.search = val.trim()
+		store.reset()
+	}, 350)
+})
+
+watch(statusFilter, (val) => {
+	if (!isMounted) return
+	store.filters.status = val === 'All' ? '' : val
+	store.reset()
+})
+
+watch(priorityFilter, (val) => {
+	if (!isMounted) return
+	store.filters.priority = val === 'All' ? '' : val
+	store.reset()
+})
+
+// ── Intersection Observer (infinite scroll) ───────────────────
+const sentinel = ref(null)
+let observer = null
+
+const setupObserver = () => {
+	observer = new IntersectionObserver(
+		([entry]) => { if (entry.isIntersecting) store.fetchNextPage() },
+		{ rootMargin: '120px' },
+	)
+	if (sentinel.value) observer.observe(sentinel.value)
 }
 
 // ── Keyboard: Escape closes the topmost overlay ───────────────
@@ -332,8 +231,16 @@ const onKeydown = (e) => {
 	if (showFormModal.value)      { closeFormModal(); return }
 	if (openMenuId.value !== null) openMenuId.value = null
 }
-onMounted(() => window.addEventListener('keydown', onKeydown))
-onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
+onMounted(() => {
+	window.addEventListener('keydown', onKeydown)
+	isMounted = true
+	store.reset()
+	setupObserver()
+})
+onBeforeUnmount(() => {
+	window.removeEventListener('keydown', onKeydown)
+	observer?.disconnect()
+})
 </script>
 
 <template>
@@ -359,7 +266,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 					</span>
 				</button>
 				<!-- New Project button -->
-				<button @click.stop="openCreateModal"
+				<button v-if="canCreate" @click.stop="openCreateModal"
 					class="inline-flex items-center gap-2 px-6 py-3 rounded-sm bg-accent text-white text-base font-semibold hover:bg-accent/90 active:scale-95 transition-all shadow-lg shadow-accent/25">
 					<v-icon name="bi-plus-circle" scale="0.9" />
 					New Project
@@ -459,21 +366,52 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 			</div>
 		</div>
 
+		<!-- ── Skeleton Loader (initial page load) ──────── -->
+		<div v-if="store.loading && store.projects.length === 0"
+			class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+			<div v-for="n in 6" :key="n"
+				class="bg-panel rounded-sm border border-heading/8 overflow-hidden flex flex-col animate-pulse">
+				<div class="h-1 w-full bg-heading/10" />
+				<div class="p-5 flex-1">
+					<div class="flex items-start justify-between mb-3">
+						<div class="w-10 h-10 rounded-sm bg-heading/10" />
+						<div class="w-20 h-6 rounded-full bg-heading/10" />
+					</div>
+					<div class="h-4 bg-heading/10 rounded w-3/4 mb-2" />
+					<div class="h-3 bg-heading/8 rounded w-full mb-1" />
+					<div class="h-3 bg-heading/8 rounded w-5/6 mb-4" />
+					<div class="mb-4">
+						<div class="h-1.5 bg-heading/8 rounded-full w-full" />
+					</div>
+					<div class="flex gap-2">
+						<div class="h-6 w-24 rounded-full bg-heading/8" />
+						<div class="h-6 w-16 rounded-full bg-heading/8" />
+					</div>
+				</div>
+				<div class="px-5 py-3 border-t border-heading/8 flex items-center justify-between">
+					<div class="flex -space-x-2">
+						<div v-for="a in 3" :key="a" class="w-10 h-10 rounded-full bg-heading/10 border-2 border-panel" />
+					</div>
+					<div class="h-4 w-16 rounded bg-heading/8" />
+				</div>
+			</div>
+		</div>
+
 		<!-- ── Empty State ────────────────────────────── -->
-		<div v-if="filteredProjects.length === 0" class="text-center py-24">
+		<div v-if="!store.loading && store.projects.length === 0" class="text-center py-24">
 			<div class="w-20 h-20 bg-accent/10 rounded-3xl flex items-center justify-center mx-auto mb-5">
 				<v-icon name="md-folderspecial-outlined" class="text-accent" scale="2" />
 			</div>
 			<h3 class="section-title mb-2">No projects found</h3>
 			<p class="page-subtitle mb-6">Try adjusting your filters or create a new project.</p>
-			<button @click="statusFilter = 'All'; priorityFilter = 'All'; searchQuery = ''"
+			<button @click="statusFilter = 'All'; priorityFilter = 'All'; searchQuery = ''; store.filters.search = ''; store.filters.status = ''; store.filters.priority = ''; store.reset()"
 				class="inline-flex items-center gap-2 px-4 py-2 rounded-sm border border-heading/10 text-base font-semibold text-text hover:bg-heading/5 transition-colors">
 				Clear filters
 			</button>
 		</div>
 
 		<!-- ── GRID VIEW ──────────────────────────────── -->
-		<div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+		<div v-else-if="viewMode === 'grid' && store.projects.length" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
 			<div v-for="{ project, color, due, status, priority } in decoratedProjects" :key="project.id"
 				class="bg-panel rounded-sm border border-heading/8 hover:shadow-xl hover:shadow-heading/5 hover:-translate-y-0.5 hover:border-accent/20 transition-all duration-200 group overflow-hidden flex flex-col cursor-pointer"
 				@click="router.push({ name: 'project-detail', params: { id: project.id } })">
@@ -490,7 +428,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 								<span :class="[status.dot, 'w-1.5 h-1.5 rounded-full']" />
 								{{ project.status }}
 							</span>
-							<div class="relative">
+							<div v-if="canUpdate || canArchive || canDelete" class="relative">
 								<button type="button"
 									:aria-expanded="openMenuId === project.id"
 									aria-haspopup="menu"
@@ -506,22 +444,24 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 											class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-heading/5 transition-colors">
 											<v-icon name="bi-arrow-right" scale="0.85" /> Open
 										</button>
-										<button
+										<button v-if="canUpdate"
 											@click.stop="openEditModal(project)"
 											class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-heading/5 transition-colors">
 											<v-icon name="bi-pencil" scale="0.85" /> Edit
 										</button>
-										<button
+										<button v-if="canArchive"
 											@click.stop="requestArchive(project.id)"
 											class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:text-amber-600 transition-colors">
 											<v-icon name="bi-archive" scale="0.85" /> Archive
 										</button>
-										<div class="h-px bg-heading/5 mx-2" />
-										<button
-											@click.stop="requestDelete(project.id)"
-											class="w-full flex items-center gap-2 px-4 py-3 text-base text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
-											<v-icon name="bi-trash" scale="0.85" /> Delete
-										</button>
+										<template v-if="canDelete">
+											<div class="h-px bg-heading/5 mx-2" />
+											<button
+												@click.stop="requestDelete(project.id)"
+												class="w-full flex items-center gap-2 px-4 py-3 text-base text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+												<v-icon name="bi-trash" scale="0.85" /> Delete
+											</button>
+										</template>
 									</div>
 								</Transition>
 							</div>
@@ -563,9 +503,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 				<div class="px-5 py-3 border-t border-heading/8 flex items-center justify-between bg-heading/[0.015]">
 					<div class="flex -space-x-2">
 						<div v-for="(m, i) in project.members.slice(0, 3)" :key="i"
-							:class="[m.color, 'w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-panel']"
+							:class="[m.color, 'w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-panel overflow-hidden']"
 							:title="m.name">
-							{{ m.initials }}
+							<img v-if="m.avatar" :src="m.avatar" :alt="m.name" class="w-full h-full object-cover" />
+							<span v-else>{{ m.initials }}</span>
 						</div>
 						<div v-if="project.members.length > 3"
 							class="w-10 h-10 rounded-full bg-heading/10 flex items-center justify-center text-sm font-bold border-2 border-panel text-text">
@@ -581,7 +522,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 		</div>
 
 		<!-- ── LIST VIEW ──────────────────────────────── -->
-		<div v-else class="bg-panel rounded-sm border border-heading/8 overflow-x-auto">
+		<div v-else-if="store.projects.length" class="bg-panel rounded-sm border border-heading/8 overflow-x-auto">
 			<table class="w-full min-w-[960px]">
 				<thead>
 					<tr class="border-b border-heading/8 bg-heading/[0.02]">
@@ -636,9 +577,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 						<td class="px-4 py-4">
 							<div class="flex -space-x-1.5">
 								<div v-for="(m, i) in project.members.slice(0, 3)" :key="i"
-									:class="[m.color, 'w-6 h-6 rounded-full border-2 border-panel flex items-center justify-center text-white text-sm font-bold']"
+									:class="[m.color, 'w-6 h-6 rounded-full border-2 border-panel flex items-center justify-center text-white text-sm font-bold overflow-hidden']"
 									:title="m.name">
-									{{ m.initials }}
+									<img v-if="m.avatar" :src="m.avatar" :alt="m.name" class="w-full h-full object-cover" />
+									<span v-else>{{ m.initials }}</span>
 								</div>
 								<div v-if="project.members.length > 3"
 									class="w-6 h-6 rounded-full bg-heading/10 border-2 border-panel flex items-center justify-center text-sm font-bold text-text">
@@ -651,7 +593,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 								{{ due.label }}
 							</span>
 						</td>
-						<td class="px-4 py-4" @click.stop>
+						<td v-if="canUpdate || canArchive || canDelete" class="px-4 py-4" @click.stop>
 							<div class="relative">
 								<button type="button"
 									:aria-expanded="openMenuId === project.id"
@@ -668,22 +610,24 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 											class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-heading/5 transition-colors">
 											<v-icon name="bi-arrow-right" scale="0.85" /> Open
 										</button>
-										<button
+										<button v-if="canUpdate"
 											@click.stop="openEditModal(project)"
 											class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-heading/5 transition-colors">
 											<v-icon name="bi-pencil" scale="0.85" /> Edit
 										</button>
-										<button
+										<button v-if="canArchive"
 											@click.stop="requestArchive(project.id)"
 											class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:text-amber-600 transition-colors">
 											<v-icon name="bi-archive" scale="0.85" /> Archive
 										</button>
-										<div class="h-px bg-heading/5 mx-2" />
-										<button
-											@click.stop="requestDelete(project.id)"
-											class="w-full flex items-center gap-2 px-4 py-3 text-base text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
-											<v-icon name="bi-trash" scale="0.85" /> Delete
-										</button>
+										<template v-if="canDelete">
+											<div class="h-px bg-heading/5 mx-2" />
+											<button
+												@click.stop="requestDelete(project.id)"
+												class="w-full flex items-center gap-2 px-4 py-3 text-base text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+												<v-icon name="bi-trash" scale="0.85" /> Delete
+											</button>
+										</template>
 									</div>
 								</Transition>
 							</div>
@@ -691,6 +635,40 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 					</tr>
 				</tbody>
 			</table>
+		</div>
+
+		<!-- ── Infinite scroll sentinel ─────────────────── -->
+		<div ref="sentinel" class="h-1" />
+
+		<!-- ── Skeleton (subsequent page loads / infinite scroll) ── -->
+		<div v-if="store.loading && store.projects.length > 0"
+			class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 mt-5">
+			<div v-for="n in 3" :key="n"
+				class="bg-panel rounded-sm border border-heading/8 overflow-hidden flex flex-col animate-pulse">
+				<div class="h-1 w-full bg-heading/10" />
+				<div class="p-5 flex-1">
+					<div class="flex items-start justify-between mb-3">
+						<div class="w-10 h-10 rounded-sm bg-heading/10" />
+						<div class="w-20 h-6 rounded-full bg-heading/10" />
+					</div>
+					<div class="h-4 bg-heading/10 rounded w-3/4 mb-2" />
+					<div class="h-3 bg-heading/8 rounded w-full mb-1" />
+					<div class="h-3 bg-heading/8 rounded w-5/6 mb-4" />
+					<div class="mb-4">
+						<div class="h-1.5 bg-heading/8 rounded-full w-full" />
+					</div>
+					<div class="flex gap-2">
+						<div class="h-6 w-24 rounded-full bg-heading/8" />
+						<div class="h-6 w-16 rounded-full bg-heading/8" />
+					</div>
+				</div>
+				<div class="px-5 py-3 border-t border-heading/8 flex items-center justify-between">
+					<div class="flex -space-x-2">
+						<div v-for="a in 3" :key="a" class="w-10 h-10 rounded-full bg-heading/10 border-2 border-panel" />
+					</div>
+					<div class="h-4 w-16 rounded bg-heading/8" />
+				</div>
+			</div>
 		</div>
 
 		<!-- ── ARCHIVE CONFIRM MODAL ──────────────────── -->

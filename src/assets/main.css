@@ -116,7 +116,9 @@
     a {
         @apply text-accent;
     }
-
+    a, button {
+        @apply cursor-pointer;
+    }
     h1 { font-size: 56px; }
     h2 { font-size: 40px; }
     h3 { font-size: 36px; }
