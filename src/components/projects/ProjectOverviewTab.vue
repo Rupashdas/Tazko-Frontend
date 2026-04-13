@@ -15,6 +15,7 @@ const props = defineProps({
 	project: { type: Object, required: true },
 	tasks: { type: Array, required: true },
 	activity: { type: Array, default: () => [] },
+	canManageMembers: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['add-member-click'])
@@ -144,18 +145,18 @@ const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'shor
 							<v-icon name="bi-people" scale="0.75" class="text-emerald-500" />
 							Team ({{ project.members.length }})
 						</p>
-						<button @click="emit('add-member-click')"
+						<button v-if="canManageMembers" @click="emit('add-member-click')"
 							class="text-text hover:text-accent transition-colors"
 							title="Add member">
 							<v-icon name="bi-person-plus" scale="0.85" />
 						</button>
 					</div>
 					<div class="space-y-2">
-						<div v-for="m in project.members" :key="m.initials"
+						<div v-for="m in project.members" :key="m.id"
 							class="flex items-center gap-2.5 cursor-pointer group">
-							<div
-								:class="[m.color, 'w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm']">
-								{{ m.initials }}
+							<div :class="[!m.avatar && m.color, 'w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm overflow-hidden']">
+								<img v-if="m.avatar" :src="m.avatar" class="w-full h-full object-cover" :alt="m.name" />
+								<span v-else>{{ m.initials }}</span>
 							</div>
 							<div class="min-w-0 flex-1">
 								<p class="text-sm font-semibold text-heading truncate">{{ m.name }}</p>

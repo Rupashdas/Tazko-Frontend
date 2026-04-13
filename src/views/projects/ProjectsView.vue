@@ -12,6 +12,7 @@ import {
 } from 'oh-vue-icons/icons'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import ProjectFormModal from '@/components/projects/ProjectFormModal.vue'
+import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 import { useProjectStore } from '@/stores/useProjectStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useToast } from '@/utils/toast'
@@ -785,65 +786,30 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 
-		<!-- ── ARCHIVE CONFIRM MODAL ──────────────────── -->
-		<Teleport to="body">
-			<Transition name="modal">
-				<div v-if="showArchiveConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-					<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="showArchiveConfirm = false" />
-					<div class="relative w-full max-w-sm bg-panel rounded-sm shadow-2xl border border-heading/10 p-6 transition-all">
-						<div class="w-12 h-12 rounded-sm bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center mb-4">
-							<v-icon name="bi-archive" class="text-amber-500" scale="1.2" />
-						</div>
-						<h3 class="section-title mb-2">Archive Project?</h3>
-						<p class="text-base text-text mb-6">
-							This project will be moved to the archive. You can restore it at any time from the Archived Projects page.
-						</p>
-						<div class="flex gap-3">
-							<button @click="showArchiveConfirm = false" :disabled="archiving" class="flex-1 tazko-btn-cancel">
-								<v-icon name="bi-x" scale="1" />
-								Cancel
-							</button>
-							<button @click="handleArchive" :disabled="archiving"
-								class="flex-1 inline-flex gap-2 items-center justify-center px-6 py-3 text-base tracking-wide rounded-sm shadow-sm text-white bg-amber-500 hover:bg-amber-600 active:scale-95 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
-								<v-icon v-if="archiving" name="bi-arrow-repeat" scale="1" class="animate-spin" />
-								<v-icon v-else name="bi-archive" scale="1" />
-								{{ archiving ? 'Archiving…' : 'Archive' }}
-							</button>
-						</div>
-					</div>
-				</div>
-			</Transition>
-		</Teleport>
+		<ConfirmModal
+			:show="showArchiveConfirm"
+			title="Archive Project?"
+			message="This project will be moved to the archive. You can restore it at any time from the Archived Projects page."
+			icon="bi-archive"
+			icon-bg="bg-amber-50 dark:bg-amber-500/10"
+			icon-color="text-amber-500"
+			confirm-label="Archive"
+			confirming-label="Archiving…"
+			confirm-bg="bg-amber-500 hover:bg-amber-600"
+			:loading="archiving"
+			@close="showArchiveConfirm = false"
+			@confirm="handleArchive" />
 
-		<!-- ── DELETE CONFIRM MODAL ───────────────────── -->
-		<Teleport to="body">
-			<Transition name="modal">
-				<div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-					<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="showDeleteConfirm = false" />
-					<div class="relative w-full max-w-sm bg-panel rounded-sm shadow-2xl border border-heading/10 p-6 transition-all">
-						<div class="w-12 h-12 rounded-sm bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
-							<v-icon name="bi-trash" class="text-red-500" scale="1.2" />
-						</div>
-						<h3 class="section-title mb-2">Delete Project?</h3>
-						<p class="text-base text-text mb-6">
-							This action cannot be undone. All tasks, comments, and files associated with this project will be permanently removed.
-						</p>
-						<div class="flex gap-3">
-							<button @click="showDeleteConfirm = false" :disabled="deleting" class="flex-1 tazko-btn-cancel">
-								<v-icon name="bi-x" scale="1" />
-								Cancel
-							</button>
-							<button @click="handleDelete" :disabled="deleting"
-								class="flex-1 inline-flex gap-2 items-center justify-center px-6 py-3 text-base tracking-wide rounded-sm shadow-sm text-white bg-red-500 hover:bg-red-600 active:scale-95 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
-								<v-icon v-if="deleting" name="bi-arrow-repeat" scale="1" class="animate-spin" />
-								<v-icon v-else name="bi-trash" scale="1" />
-								{{ deleting ? 'Deleting…' : 'Delete' }}
-							</button>
-						</div>
-					</div>
-				</div>
-			</Transition>
-		</Teleport>
+		<ConfirmModal
+			:show="showDeleteConfirm"
+			title="Delete Project?"
+			message="This action cannot be undone. All tasks, comments, and files associated with this project will be permanently removed."
+			icon="bi-trash"
+			confirm-label="Delete"
+			confirming-label="Deleting…"
+			:loading="deleting"
+			@close="showDeleteConfirm = false"
+			@confirm="handleDelete" />
 
 		<!-- ── PROJECT FORM MODAL (shared create/edit) ─── -->
 		<ProjectFormModal

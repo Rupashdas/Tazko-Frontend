@@ -49,7 +49,6 @@ export const useProjectStore = defineStore('projects', {
 			this.currentProject = null
 			try {
 				const { data } = await axios.get(`/api/projects/${id}`)
-				console.log(data.data)
 				this.currentProject = data.data
 			} catch (err) {
 				const status = err.response?.status
@@ -208,6 +207,38 @@ export const useProjectStore = defineStore('projects', {
 				return {
 					success: false,
 					message: err.response?.data?.message ?? 'Failed to restore project.',
+				}
+			}
+		},
+
+		async removeMember(projectId, userId) {
+			try {
+				await axios.delete(`/api/projects/${projectId}/members/${userId}`)
+				if (this.currentProject?.id === projectId) {
+					this.currentProject.members = this.currentProject.members.filter(m => m.id !== userId)
+				}
+				return { success: true }
+			} catch (err) {
+				return {
+					success: false,
+					message: err.response?.data?.message ?? 'Failed to remove member.',
+				}
+			}
+		},
+
+		async addMembers(projectId, members) {
+			try {
+				const { data } = await axios.post(`/api/projects/${projectId}/members`, {
+					members: members.map(m => ({ user_id: m.id, role: m.role || null })),
+				})
+				if (this.currentProject?.id === projectId) {
+					this.currentProject.members = data.members
+				}
+				return { success: true }
+			} catch (err) {
+				return {
+					success: false,
+					message: err.response?.data?.message ?? 'Failed to add members.',
 				}
 			}
 		},

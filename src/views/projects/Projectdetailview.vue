@@ -21,6 +21,7 @@ import ProjectActivityTab from '@/components/projects/ProjectActivityTab.vue'
 import AddTaskModal from '@/components/projects/AddTaskModal.vue'
 import AddMemberModal from '@/components/projects/AddMemberModal.vue'
 import ProjectFormModal from '@/components/projects/ProjectFormModal.vue'
+import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 
 addIcons(
 	BiPencil, BiThreeDotsVertical, BiPlus, BiCheck2, BiX,
@@ -40,10 +41,11 @@ const canViewFiles    = computed(() => auth.hasCapability('files.view'))
 const canViewActivity = computed(() => auth.hasCapability('activity.view'))
 const canUploadFiles  = computed(() => auth.hasCapability('files.upload'))
 const canCreateTask   = computed(() => auth.hasCapability('tasks.create'))
-const canUpdate       = computed(() => auth.hasCapability('projects.update'))
-const canArchive      = computed(() => auth.hasCapability('projects.archive'))
-const canDelete       = computed(() => auth.hasCapability('projects.delete'))
-const hasAnyAction    = computed(() => canUpdate.value || canArchive.value || canDelete.value)
+const canUpdate         = computed(() => auth.hasCapability('projects.update'))
+const canArchive        = computed(() => auth.hasCapability('projects.archive'))
+const canDelete         = computed(() => auth.hasCapability('projects.delete'))
+const canManageMembers  = computed(() => auth.hasCapability('projects.members.manage'))
+const hasAnyAction      = computed(() => canUpdate.value || canArchive.value || canDelete.value)
 
 // ── Project data (from store) ──────────────────────────
 const memberColors = ['bg-accent', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500']
@@ -159,14 +161,24 @@ const openTask = (taskId) => router.push({ name: 'task-detail', params: { id: ro
 
 // ── Add Member modal ──────────────────────────────────
 const showAddMember = ref(false)
+const addingMembers = ref(false)
 const openAddMember = () => { showAddMember.value = true }
-const handleAddMembers = (people) => {
-	for (const p of people) {
-		if (!project.value.members.some(m => m.initials === p.initials)) {
-			project.value.members.push(p)
-		}
+const handleAddMembers = async (people) => {
+	addingMembers.value = true
+	const result = await store.addMembers(project.value.id, people)
+	addingMembers.value = false
+	if (result.success) {
+		showAddMember.value = false
+	} else {
+		errorToast(result.message)
 	}
-	showAddMember.value = false
+}
+
+const handleRemoveMember = async (userId) => {
+	const result = await store.removeMember(project.value.id, userId)
+	if (!result.success) {
+		errorToast(result.message)
+	}
 }
 
 // ── Edit Project modal ────────────────────────────────
@@ -222,13 +234,17 @@ onBeforeUnmount(() => document.removeEventListener('click', closeMoreMenu))
 // ── Archive / Delete  confirm ──────────────
 const showArchiveConfirm = ref(false)
 const showDeleteConfirm = ref(false)
+const archiving = ref(false)
+const deleting = ref(false)
 
 const requestArchive = () => {
 	moreMenuOpen.value = false
 	showArchiveConfirm.value = true
 }
 const handleArchive = async () => {
+	archiving.value = true
 	const result = await store.archiveProject(project.value.id)
+	archiving.value = false
 	showArchiveConfirm.value = false
 	if (result.success) {
 		successToast(result.message)
@@ -243,7 +259,9 @@ const requestDelete = () => {
 	showDeleteConfirm.value = true
 }
 const handleDelete = async () => {
+	deleting.value = true
 	const result = await store.deleteProject(project.value.id)
+	deleting.value = false
 	showDeleteConfirm.value = false
 	if (result.success) {
 		successToast(result.message)
@@ -421,14 +439,23 @@ const handleDelete = async () => {
 					<!-- Member avatars -->
 					<div class="flex items-center ml-auto">
 						<div v-for="(m, i) in project.members" :key="m.id"
-							:class="[m.color, 'w-7 h-7 rounded-full flex items-center justify-center text-white text-[9px] font-bold border-2 border-panel shadow-sm -ml-1.5 first:ml-0 hover:scale-110 transition-transform cursor-pointer']"
-							:title="`${m.name} — ${m.role}`" :style="`z-index: ${project.members.length - i}`">
-							{{ m.initials }}
+							class="relative group -ml-4 first:ml-0"
+							:style="`z-index: ${project.members.length - i}`">
+							<div :class="[!m.avatar && m.color, 'w-12 h-12 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-panel shadow-sm hover:scale-110 transition-transform cursor-pointer overflow-hidden']"
+								:title="`${m.name}${m.role ? ' — ' + m.role : ''}`">
+								<img v-if="m.avatar" :src="m.avatar" class="w-full h-full object-cover" :alt="m.name" />
+								<span v-else>{{ m.initials }}</span>
+							</div>
+							<button v-if="canManageMembers" @click="handleRemoveMember(m.id)"
+								class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-500 text-white opacity-0 invisible group-hover:opacity-100 group-hover:visible flex items-center justify-center shadow-sm z-10 transition-all"
+								:title="`Remove ${m.name}`">
+								<v-icon name="bi-x" scale="0.8" />
+							</button>
 						</div>
-						<button @click="openAddMember"
-							class="w-7 h-7 rounded-full border-2 border-dashed border-heading/20 flex items-center justify-center bg-panel -ml-1.5 text-text hover:text-accent hover:border-accent/40 transition-all"
+						<button v-if="canManageMembers" @click="openAddMember"
+							class="w-12 h-12 rounded-full border-2 border-dashed border-heading/20 flex items-center justify-center bg-panel -ml-1.5 text-text hover:text-accent hover:border-accent/40 transition-all"
 							title="Add member">
-							<v-icon name="bi-person-plus" scale="0.7" />
+							<v-icon name="bi-person-plus" scale="1" />
 						</button>
 					</div>
 				</div>
@@ -466,6 +493,7 @@ const handleDelete = async () => {
 				:project="project"
 				:tasks="tasks"
 				:activity="recentActivity"
+				:can-manage-members="canManageMembers"
 				@add-member-click="openAddMember" />
 
 			<ProjectFilesTab
@@ -497,6 +525,7 @@ const handleDelete = async () => {
 		<AddMemberModal
 			:show="showAddMember"
 			:existing-members="project?.members ?? []"
+			:saving="addingMembers"
 			@close="showAddMember = false"
 			@add="handleAddMembers" />
 
@@ -509,63 +538,30 @@ const handleDelete = async () => {
 			@close="showEditProject = false"
 			@save="handleEditProjectSave" />
 
-		<!-- ── Archive confirm modal ──────────────────── -->
-		<Teleport to="body">
-			<Transition name="modal">
-				<div v-if="showArchiveConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-					<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="showArchiveConfirm = false" />
-					<div class="relative w-full max-w-sm bg-panel rounded-sm shadow-2xl border border-heading/10 p-6 transition-all">
-						<div class="w-12 h-12 rounded-sm bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center mb-4">
-							<v-icon name="bi-archive" class="text-amber-500" scale="1.2" />
-						</div>
-						<h3 class="section-title mb-2">Archive Project?</h3>
-						<p class="text-base text-text mb-6">
-							This project will be moved to the archive. You can restore it at any time from the Archived Projects page.
-						</p>
-						<div class="flex gap-3">
-							<button @click="showArchiveConfirm = false" class="flex-1 tazko-btn-cancel">
-								<v-icon name="bi-x" scale="1" />
-								Cancel
-							</button>
-							<button @click="handleArchive"
-								class="flex-1 inline-flex gap-2 items-center justify-center px-6 py-3 text-base tracking-wide rounded-sm shadow-sm text-white bg-amber-500 hover:bg-amber-600 active:scale-95 transition-all cursor-pointer">
-								<v-icon name="bi-archive" scale="1" />
-								Archive
-							</button>
-						</div>
-					</div>
-				</div>
-			</Transition>
-		</Teleport>
+		<ConfirmModal
+			:show="showArchiveConfirm"
+			title="Archive Project?"
+			message="This project will be moved to the archive. You can restore it at any time from the Archived Projects page."
+			icon="bi-archive"
+			icon-bg="bg-amber-50 dark:bg-amber-500/10"
+			icon-color="text-amber-500"
+			confirm-label="Archive"
+			confirming-label="Archiving…"
+			confirm-bg="bg-amber-500 hover:bg-amber-600"
+			:loading="archiving"
+			@close="showArchiveConfirm = false"
+			@confirm="handleArchive" />
 
-		<!-- ── Delete confirm modal ───────────────────── -->
-		<Teleport to="body">
-			<Transition name="modal">
-				<div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-					<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="showDeleteConfirm = false" />
-					<div class="relative w-full max-w-sm bg-panel rounded-sm shadow-2xl border border-heading/10 p-6 transition-all">
-						<div class="w-12 h-12 rounded-sm bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
-							<v-icon name="bi-trash" class="text-red-500" scale="1.2" />
-						</div>
-						<h3 class="section-title mb-2">Delete Project?</h3>
-						<p class="text-base text-text mb-6">
-							This action cannot be undone. All tasks, comments, and files associated with this project will be permanently deleted.
-						</p>
-						<div class="flex gap-3">
-							<button @click="showDeleteConfirm = false" class="flex-1 tazko-btn-cancel">
-								<v-icon name="bi-x" scale="1" />
-								Cancel
-							</button>
-							<button @click="handleDelete"
-								class="flex-1 inline-flex gap-2 items-center justify-center px-6 py-3 text-base tracking-wide rounded-sm shadow-sm text-white bg-red-500 hover:bg-red-600 active:scale-95 transition-all cursor-pointer">
-								<v-icon name="bi-trash" scale="1" />
-								Delete
-							</button>
-						</div>
-					</div>
-				</div>
-			</Transition>
-		</Teleport>
+		<ConfirmModal
+			:show="showDeleteConfirm"
+			title="Delete Project?"
+			message="This action cannot be undone. All tasks, comments, and files associated with this project will be permanently deleted."
+			icon="bi-trash"
+			confirm-label="Delete"
+			confirming-label="Deleting…"
+			:loading="deleting"
+			@close="showDeleteConfirm = false"
+			@confirm="handleDelete" />
 
 	</div>
 </template>
