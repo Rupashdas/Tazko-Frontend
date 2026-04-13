@@ -227,20 +227,30 @@ const requestArchive = () => {
 	moreMenuOpen.value = false
 	showArchiveConfirm.value = true
 }
-const handleArchive = () => {
-	// TODO: API call to archive project
+const handleArchive = async () => {
+	const result = await store.archiveProject(project.value.id)
 	showArchiveConfirm.value = false
-	router.push({ name: 'projects' })
+	if (result.success) {
+		successToast(result.message)
+		router.push({ name: 'projects' })
+	} else {
+		errorToast(result.message)
+	}
 }
 
 const requestDelete = () => {
 	moreMenuOpen.value = false
 	showDeleteConfirm.value = true
 }
-const handleDelete = () => {
-	// TODO: API call to delete project
+const handleDelete = async () => {
+	const result = await store.deleteProject(project.value.id)
 	showDeleteConfirm.value = false
-	router.push({ name: 'projects' })
+	if (result.success) {
+		successToast(result.message)
+		router.push({ name: 'projects' })
+	} else {
+		errorToast(result.message)
+	}
 }
 
 </script>
