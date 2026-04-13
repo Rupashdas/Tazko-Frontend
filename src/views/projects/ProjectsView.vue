@@ -366,8 +366,8 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 
-		<!-- ── Skeleton Loader (initial page load) ──────── -->
-		<div v-if="store.loading && store.projects.length === 0"
+		<!-- ── Skeleton: Grid (initial load) ────────────── -->
+		<div v-if="store.loading && store.projects.length === 0 && viewMode === 'grid'"
 			class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
 			<div v-for="n in 6" :key="n"
 				class="bg-panel rounded-sm border border-heading/8 overflow-hidden flex flex-col animate-pulse">
@@ -394,6 +394,50 @@ onBeforeUnmount(() => {
 					</div>
 					<div class="h-4 w-16 rounded bg-heading/8" />
 				</div>
+			</div>
+		</div>
+
+		<!-- ── Skeleton: List (initial load) ─────────────── -->
+		<div v-if="store.loading && store.projects.length === 0 && viewMode === 'list'"
+			class="bg-panel rounded-sm border border-heading/8 overflow-hidden animate-pulse">
+			<!-- header row -->
+			<div class="border-b border-heading/8 bg-heading/[0.02] px-5 py-3 flex gap-6">
+				<div class="h-3 w-32 rounded bg-heading/10" />
+				<div class="h-3 w-16 rounded bg-heading/10" />
+				<div class="h-3 w-16 rounded bg-heading/10" />
+				<div class="h-3 w-24 rounded bg-heading/10" />
+				<div class="h-3 w-12 rounded bg-heading/10" />
+				<div class="h-3 w-12 rounded bg-heading/10" />
+				<div class="h-3 w-16 rounded bg-heading/10" />
+			</div>
+			<!-- skeleton rows -->
+			<div v-for="n in 6" :key="n"
+				class="flex items-center gap-4 px-5 py-4 border-b border-heading/5 last:border-0">
+				<!-- project name + icon -->
+				<div class="flex items-center gap-3 flex-1 min-w-0">
+					<div class="w-8 h-8 rounded-sm bg-heading/10 shrink-0" />
+					<div class="space-y-1.5 flex-1">
+						<div class="h-3.5 bg-heading/10 rounded w-2/5" />
+						<div class="h-3 bg-heading/8 rounded w-3/5" />
+					</div>
+				</div>
+				<!-- status badge -->
+				<div class="h-6 w-24 rounded-full bg-heading/10 shrink-0" />
+				<!-- priority badge -->
+				<div class="h-6 w-16 rounded-full bg-heading/8 shrink-0" />
+				<!-- progress bar -->
+				<div class="flex items-center gap-2 w-36 shrink-0">
+					<div class="flex-1 h-1.5 bg-heading/8 rounded-full" />
+					<div class="h-3 w-8 rounded bg-heading/8" />
+				</div>
+				<!-- tasks -->
+				<div class="h-3 w-10 rounded bg-heading/8 shrink-0" />
+				<!-- team avatars -->
+				<div class="flex -space-x-1.5 shrink-0">
+					<div v-for="a in 3" :key="a" class="w-6 h-6 rounded-full bg-heading/10 border-2 border-panel" />
+				</div>
+				<!-- due date -->
+				<div class="h-3 w-14 rounded bg-heading/8 shrink-0" />
 			</div>
 		</div>
 
@@ -638,10 +682,10 @@ onBeforeUnmount(() => {
 		</div>
 
 		<!-- ── Infinite scroll sentinel ─────────────────── -->
-		<div ref="sentinel" class="h-1" />
+		<div ref="sentinel"></div>
 
-		<!-- ── Skeleton (subsequent page loads / infinite scroll) ── -->
-		<div v-if="store.loading && store.projects.length > 0"
+		<!-- ── Skeleton: Grid (infinite scroll) ─────────────── -->
+		<div v-if="store.loading && store.projects.length > 0 && viewMode === 'grid'"
 			class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 mt-5">
 			<div v-for="n in 3" :key="n"
 				class="bg-panel rounded-sm border border-heading/8 overflow-hidden flex flex-col animate-pulse">
@@ -668,6 +712,32 @@ onBeforeUnmount(() => {
 					</div>
 					<div class="h-4 w-16 rounded bg-heading/8" />
 				</div>
+			</div>
+		</div>
+
+		<!-- ── Skeleton: List (infinite scroll) ──────────────── -->
+		<div v-if="store.loading && store.projects.length > 0 && viewMode === 'list'"
+			class="bg-panel rounded-sm border border-heading/8 overflow-hidden animate-pulse">
+			<div v-for="n in 3" :key="n"
+				class="flex items-center gap-4 px-5 py-4 border-b border-heading/5 last:border-0">
+				<div class="flex items-center gap-3 flex-1 min-w-0">
+					<div class="w-8 h-8 rounded-sm bg-heading/10 shrink-0" />
+					<div class="space-y-1.5 flex-1">
+						<div class="h-3.5 bg-heading/10 rounded w-2/5" />
+						<div class="h-3 bg-heading/8 rounded w-3/5" />
+					</div>
+				</div>
+				<div class="h-6 w-24 rounded-full bg-heading/10 shrink-0" />
+				<div class="h-6 w-16 rounded-full bg-heading/8 shrink-0" />
+				<div class="flex items-center gap-2 w-36 shrink-0">
+					<div class="flex-1 h-1.5 bg-heading/8 rounded-full" />
+					<div class="h-3 w-8 rounded bg-heading/8" />
+				</div>
+				<div class="h-3 w-10 rounded bg-heading/8 shrink-0" />
+				<div class="flex -space-x-1.5 shrink-0">
+					<div v-for="a in 3" :key="a" class="w-6 h-6 rounded-full bg-heading/10 border-2 border-panel" />
+				</div>
+				<div class="h-3 w-14 rounded bg-heading/8 shrink-0" />
 			</div>
 		</div>
 
