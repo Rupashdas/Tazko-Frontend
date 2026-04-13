@@ -61,7 +61,7 @@ async function handleLoadOlder() {
 
 <template>
     <div ref="listRef"
-         class="flex-1 overflow-y-auto [scrollbar-width:thin]"
+         v-scrollbar class="flex-1 overflow-y-auto"
          @scroll="onScroll">
 
         <!-- Search active: no load-older button shown -->

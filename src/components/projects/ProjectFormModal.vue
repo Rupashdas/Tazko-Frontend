@@ -1,18 +1,19 @@
 <script setup>
 import { ref, watch, computed, nextTick } from 'vue'
 import { addIcons } from 'oh-vue-icons'
-import { BiX, BiPlus, BiCheck2, MdErroroutlineRound } from 'oh-vue-icons/icons'
+import { BiX, BiPlus, BiCheck2, BiArrowRepeat, MdErroroutlineRound } from 'oh-vue-icons/icons'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import AppDatePicker from '@/components/ui/AppDatePicker.vue'
 import RichTextEditor from '@/components/shared/RichTextEditor.vue'
 
-addIcons(BiX, BiPlus, BiCheck2, MdErroroutlineRound)
+addIcons(BiX, BiPlus, BiCheck2, BiArrowRepeat, MdErroroutlineRound)
 
 const props = defineProps({
-	show: { type: Boolean, default: false },
-	mode: { type: String, default: 'create' }, // 'create' | 'edit'
+	show:   { type: Boolean, default: false },
+	mode:   { type: String,  default: 'create' }, // 'create' | 'edit'
 	project: { type: Object, default: null },
 	focusField: { type: String, default: null }, // 'name' | 'description' | null
+	saving: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['close', 'save'])
@@ -39,18 +40,19 @@ const nameInputRef = ref(null)
 
 const isEdit = computed(() => props.mode === 'edit')
 
+
 watch(() => props.show, (val) => {
 	if (val) {
 		if (isEdit.value && props.project) {
 			form.value = {
-				name: props.project.name || '',
+				name:        props.project.name        || '',
 				description: props.project.description || '',
-				goal: props.project.goal || '',
-				color: props.project.color || projectColors[0],
-				priority: props.project.priority || 'High',
-				status: props.project.status || 'Planning',
-				startDate: props.project.startDate || '',
-				endDate: props.project.endDate || '',
+				goal:        props.project.goal        || '',
+				color:       props.project.color       || projectColors[0],
+				priority:    props.project.priority    || 'High',
+				status:      props.project.status      || 'Planning',
+				startDate:   props.project.start_date  || props.project.startDate || '',
+				endDate:     props.project.end_date    || props.project.endDate   || '',
 			}
 		} else {
 			form.value = defaultProject()
@@ -115,9 +117,9 @@ const handleClose = () => {
 						</div>
 					</div>
 
-					<div class="p-6 space-y-5 overflow-y-auto flex-1">
+					<div v-scrollbar class="overflow-y-auto flex-1"><div class="px-6 py-5 space-y-6">
 						<div>
-							<label class="block text-base font-semibold text-text mb-1.5">
+							<label class="block text-base font-semibold text-text mb-2">
 								Project Name <span class="text-red-400">*</span>
 							</label>
 							<input
@@ -128,14 +130,14 @@ const handleClose = () => {
 								class="input-field focus:border-accent"
 								:class="{ 'border-red-400': errors.name }"
 								@input="clearError('name')" />
-							<p v-if="errors.name" class="text-red-500 text-base mt-1 flex items-center gap-1">
+							<p v-if="errors.name" class="text-red-500 text-base mt-1.5 flex items-center gap-1">
 								<v-icon name="md-erroroutline-round" scale="0.85" />
 								{{ errors.name }}
 							</p>
 						</div>
 
 						<div>
-							<label class="block text-base font-semibold text-text mb-1.5">Description</label>
+							<label class="block text-base font-semibold text-text mb-2">Description</label>
 							<RichTextEditor
 								ref="descriptionEditorRef"
 								v-model="form.description"
@@ -145,7 +147,7 @@ const handleClose = () => {
 						</div>
 
 						<div>
-							<label class="block text-base font-semibold text-text mb-1.5">Goal</label>
+							<label class="block text-base font-semibold text-text mb-2">Goal</label>
 							<input
 								v-model="form.goal"
 								type="text"
@@ -153,16 +155,16 @@ const handleClose = () => {
 								class="input-field" />
 						</div>
 
-						<div class="grid grid-cols-2 gap-3">
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 							<div>
-								<label class="block text-base font-semibold text-text mb-1.5">Priority</label>
+								<label class="block text-base font-semibold text-text mb-2">Priority</label>
 								<AppSelect
 									v-model="form.priority"
 									:options="['Urgent', 'High', 'Medium', 'Low']"
 									placeholder="Select priority" />
 							</div>
 							<div>
-								<label class="block text-base font-semibold text-text mb-1.5">Status</label>
+								<label class="block text-base font-semibold text-text mb-2">Status</label>
 								<AppSelect
 									v-model="form.status"
 									:options="['Planning', 'In Progress', 'On Hold', 'Completed']"
@@ -170,22 +172,22 @@ const handleClose = () => {
 							</div>
 						</div>
 
-						<div class="grid grid-cols-2 gap-3">
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 							<div>
-								<label class="block text-base font-semibold text-text mb-1.5">
+								<label class="block text-base font-semibold text-text mb-2">
 									Start Date <span class="text-red-400">*</span>
 								</label>
 								<AppDatePicker
 									v-model="form.startDate"
 									placeholder="Pick start date"
 									@update:model-value="clearError('startDate')" />
-								<p v-if="errors.startDate" class="text-red-500 text-base mt-1 flex items-center gap-1">
+								<p v-if="errors.startDate" class="text-red-500 text-base mt-1.5 flex items-center gap-1">
 									<v-icon name="md-erroroutline-round" scale="0.85" />
 									{{ errors.startDate }}
 								</p>
 							</div>
 							<div>
-								<label class="block text-base font-semibold text-text mb-1.5">
+								<label class="block text-base font-semibold text-text mb-2">
 									End Date <span class="text-red-400">*</span>
 								</label>
 								<AppDatePicker
@@ -193,7 +195,7 @@ const handleClose = () => {
 									placeholder="Pick end date"
 									:min="form.startDate || ''"
 									@update:model-value="clearError('endDate')" />
-								<p v-if="errors.endDate" class="text-red-500 text-base mt-1 flex items-center gap-1">
+								<p v-if="errors.endDate" class="text-red-500 text-base mt-1.5 flex items-center gap-1">
 									<v-icon name="md-erroroutline-round" scale="0.85" />
 									{{ errors.endDate }}
 								</p>
@@ -201,8 +203,8 @@ const handleClose = () => {
 						</div>
 
 						<div>
-							<label class="block text-base font-semibold text-text mb-2">Project Color</label>
-							<div class="flex flex-wrap gap-2.5">
+							<label class="block text-base font-semibold text-text mb-3">Project Color</label>
+							<div class="flex flex-wrap gap-3">
 								<button
 									v-for="color in projectColors" :key="color"
 									type="button"
@@ -217,22 +219,23 @@ const handleClose = () => {
 								</button>
 							</div>
 							<div class="mt-3 flex items-center gap-2">
-								<div :class="[form.color, 'w-6 h-6 rounded-sm shrink-0 shadow-sm']" />
+								<div :class="[form.color, 'w-5 h-5 rounded-sm shrink-0 shadow-sm']" />
 								<span class="text-sm text-text capitalize">
 									{{ form.color.replace('bg-', '').replace('-500', '') }} selected
 								</span>
 							</div>
 						</div>
-					</div>
+					</div></div>
 
 					<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0">
-						<button @click="handleClose" class="flex-1 tazko-btn-cancel">
+						<button @click="handleClose" :disabled="saving" class="flex-1 tazko-btn-cancel">
 							<v-icon name="bi-x" scale="1" />
 							Cancel
 						</button>
-						<button @click="handleSave" class="flex-1 tazko-btn">
-							<v-icon :name="isEdit ? 'bi-check2' : 'bi-plus'" scale="1" />
-							{{ isEdit ? 'Save Changes' : 'Create Project' }}
+						<button @click="handleSave" :disabled="saving" class="flex-1 tazko-btn">
+							<v-icon v-if="saving" name="bi-arrow-repeat" scale="1" class="animate-spin" />
+							<v-icon v-else :name="isEdit ? 'bi-check2' : 'bi-plus'" scale="1" />
+							{{ saving ? (isEdit ? 'Saving…' : 'Creating…') : (isEdit ? 'Save Changes' : 'Create Project') }}
 						</button>
 					</div>
 				</div>
@@ -252,6 +255,6 @@ const handleClose = () => {
 }
 .modal-enter-from .relative,
 .modal-leave-to .relative {
-	transform: scale(0.96);
+	transform: scale(0.97);
 }
 </style>

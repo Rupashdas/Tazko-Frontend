@@ -636,7 +636,7 @@ const daysLeft = computed(() => {
 }
 .modal-enter-from .relative,
 .modal-leave-to .relative {
-	transform: scale(0.96);
+	transform: scale(0.97);
 }
 
 .line-clamp-2 {

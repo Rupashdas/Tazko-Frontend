@@ -191,7 +191,7 @@ function fileColor(type) {
 
 <style scoped>
 .toolbar-enter-active, .toolbar-leave-active { transition: all 0.12s ease; }
-.toolbar-enter-from, .toolbar-leave-to { opacity: 0; transform: translateY(4px) scale(0.96); }
+.toolbar-enter-from, .toolbar-leave-to { opacity: 0; transform: translateY(4px) scale(0.97); }
 
 :deep(.\@mention) {
     display: inline-block;

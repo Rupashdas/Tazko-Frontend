@@ -91,7 +91,7 @@ const handleClose = () => emit('close')
 						</div>
 					</div>
 
-					<div class="flex-1 overflow-y-auto">
+					<div v-scrollbar class="flex-1 overflow-y-auto">
 						<div v-if="availablePeople.length === 0" class="p-10 text-center">
 							<v-icon name="bi-person-plus" scale="2" class="text-text mx-auto mb-3" />
 							<p class="text-base text-text">
@@ -148,6 +148,6 @@ const handleClose = () => emit('close')
 }
 .modal-enter-from .relative,
 .modal-leave-to .relative {
-	transform: scale(0.96);
+	transform: scale(0.97);
 }
 </style>

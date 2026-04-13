@@ -77,7 +77,7 @@ const handleClose = () => emit('close')
 						</div>
 					</div>
 
-					<div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+					<div v-scrollbar class="max-h-[60vh] overflow-y-auto"><div class="p-6 space-y-4">
 						<div>
 							<label class="block text-base font-semibold text-text mb-1.5">Task Title <span class="text-red-400">*</span></label>
 							<input v-model="title" type="text" placeholder="e.g. Implement login page"
@@ -116,7 +116,7 @@ const handleClose = () => emit('close')
 							<label class="block text-base font-semibold text-text mb-1.5">Description</label>
 							<RichTextEditor v-model="description" placeholder="Describe the task…" min-height="120px" :enable-mention="true" :users="members" />
 						</div>
-					</div>
+					</div></div>
 
 					<div class="px-6 py-3 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01]">
 						<button @click="handleClose" class="flex-1 tazko-btn-cancel">
@@ -145,6 +145,6 @@ const handleClose = () => emit('close')
 }
 .modal-enter-from .relative,
 .modal-leave-to .relative {
-	transform: scale(0.96);
+	transform: scale(0.97);
 }
 </style>

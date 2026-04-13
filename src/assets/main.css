@@ -177,8 +177,88 @@
 
 }
 
-.toast-close {
+/* ── Toastify overrides ─────────────────────────────────── */
+@keyframes tazko-toast-in {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.tazko-toast {
+    padding: 0 !important;
+    background: var(--color-panel) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 24px color-mix(in srgb, var(--color-heading) 15%, transparent) !important;
+    min-width: 280px !important;
+    max-width: 360px !important;
+    font-family: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif !important;
+    border: 1px solid color-mix(in srgb, var(--color-heading) 10%, transparent) !important;
+    animation: tazko-toast-in 0.22s cubic-bezier(.4,0,.2,1) both !important;
+}
+
+.tazko-toast__inner {
+    display: flex;
+    align-items: stretch;
+}
+
+.tazko-toast__bar {
+    width: 4px;
+    flex-shrink: 0;
+    border-radius: 6px 0 0 6px;
+}
+
+.tazko-toast__body {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+}
+
+.tazko-toast__icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.tazko-toast__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tazko-toast__title {
+    font-size: 0.875rem; /* text-sm — matches labels, badge text throughout the app */
+    font-weight: 700;
     color: var(--color-heading);
+    line-height: 1.3;
+}
+
+.tazko-toast__msg {
+    font-size: 0.875rem; /* text-sm — same size, lighter weight differentiates it */
+    font-weight: 400;
+    color: var(--color-text);
+    line-height: 1.4;
+}
+
+/* success — green */
+.tazko-toast--success .tazko-toast__bar  { background: #22c55e; }
+.tazko-toast--success .tazko-toast__icon { background: color-mix(in srgb, #22c55e 15%, transparent); color: #16a34a; }
+
+/* error — red */
+.tazko-toast--error .tazko-toast__bar  { background: #ef4444; }
+.tazko-toast--error .tazko-toast__icon { background: color-mix(in srgb, #ef4444 15%, transparent); color: #dc2626; }
+
+/* info — theme accent */
+.tazko-toast--info .tazko-toast__bar  { background: var(--color-accent); }
+.tazko-toast--info .tazko-toast__icon {
+    background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+    color: var(--color-accent);
 }
 
 .os-scrollbar-handle {

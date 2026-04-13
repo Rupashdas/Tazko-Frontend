@@ -241,11 +241,9 @@ const handleDelete = () => {
 		<!-- ════════════════════════════════════════════ -->
 		<!-- HERO + TAB BAR                              -->
 		<!-- ════════════════════════════════════════════ -->
-		<div class="relative overflow-hidden rounded-t-sm">
+		<div class="relative rounded-t-sm">
 			<div class="absolute inset-0 bg-accent/8" />
-			<div
-				class="absolute inset-0 bg-panel/80 backdrop-blur-sm border border-b-0 border-heading/8 rounded-t-sm" />
-			<div class="absolute -right-12 -top-12 w-48 h-48 rounded-full bg-accent/5 blur-2xl pointer-events-none" />
+			<div class="absolute inset-0 bg-panel/80 backdrop-blur-sm border border-b-0 border-heading/8 rounded-t-sm" />
 
 			<div class="relative px-6 pt-5">
 
@@ -362,12 +360,12 @@ const handleDelete = () => {
 				</div>
 
 				<!-- Tab bar -->
-				<div class="flex items-end gap-0.5 -mb-px relative z-10 flex-wrap">
+				<div class="flex items-center gap-1 flex-wrap">
 					<button v-for="tab in tabs" :key="tab.key" @click="setActiveTab(tab.key)" :class="[
-						'relative flex items-center gap-1.5 px-4 py-2.5 rounded-t-sm border select-none transition-all duration-150',
+						'inline-flex items-center gap-1.5 px-4 py-3 text-base font-semibold transition-all border-b-2 -mb-px select-none',
 						activeTab === tab.key
-							? 'bg-panel border-heading/8 border-b-panel text-accent font-semibold -mb-px pb-[11px] shadow-sm text-base'
-							: 'border-transparent text-text hover:text-text hover:bg-heading/5 text-base font-medium',
+							? 'text-accent border-accent'
+							: 'text-text border-transparent hover:text-heading hover:border-heading/15',
 					]">
 						<v-icon :name="tab.icon" scale="0.85" />
 						{{ tab.label }}
@@ -380,7 +378,7 @@ const handleDelete = () => {
 		<!-- ════════════════════════════════════════════ -->
 		<!-- TAB CONTENT PANEL                           -->
 		<!-- ════════════════════════════════════════════ -->
-		<div class="bg-panel border border-heading/8 border-t-0 rounded-b-sm shadow-sm">
+		<div class="bg-panel border border-heading/8 rounded-sm">
 
 			<ProjectBoardTab
 				v-show="activeTab === 'board'"
@@ -508,7 +506,7 @@ const handleDelete = () => {
 
 .modal-enter-from .relative,
 .modal-leave-to .relative {
-	transform: scale(0.96);
+	transform: scale(0.97);
 }
 
 .fade-drop-enter-active,

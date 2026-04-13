@@ -16,6 +16,7 @@ const props = defineProps({
 	size: { type: String, default: 'md' }, // 'sm' | 'md'
 	highlight: { type: Boolean, default: false },
 	inactiveValue: { default: null },
+	disabled: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -92,6 +93,7 @@ const toggle = (value) => {
 }
 
 const openDropdown = () => {
+	if (props.disabled) return
 	open.value = !open.value
 	if (open.value && props.searchable) {
 		setTimeout(() => searchInput.value?.focus(), 50)
@@ -128,8 +130,9 @@ const textCls = computed(() =>
 		<button
 			type="button"
 			@click="openDropdown"
-			class="w-full flex items-center gap-2 rounded-sm border transition-colors focus:outline-none focus:border-accent cursor-pointer text-left leading-tight min-w-0"
-			:class="[triggerPadding, triggerBg, open ? 'border-accent' : '']">
+			:disabled="disabled"
+			class="w-full flex items-center gap-2 rounded-sm border transition-colors focus:outline-none focus:border-accent text-left leading-tight min-w-0"
+			:class="[triggerPadding, triggerBg, open ? 'border-accent' : '', disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']">
 
 			<!-- Multi: chips -->
 			<template v-if="multiple && selectedAvatars.length">
@@ -184,7 +187,7 @@ const textCls = computed(() =>
 				</div>
 
 				<!-- Options -->
-				<ul class="max-h-56 overflow-y-auto">
+				<ul v-scrollbar class="max-h-56 overflow-y-auto">
 					<li v-if="!filtered.length">
 						<span class="block px-3 py-2 text-sm text-text">No options</span>
 					</li>

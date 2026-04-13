@@ -198,7 +198,7 @@ function getModuleIcon(module) {
 				</div>
 
 				<!-- Role List — this part scrolls independently -->
-				<ul class="flex-1 overflow-y-auto py-3  px-3 space-y-1">
+				<div v-scrollbar class="flex-1 overflow-y-auto"><ul class="py-3 px-3 space-y-1">
 					<li v-for="role in roleStore.roles" :key="role.id">
 						<button @click="roleStore.selectRole(role)"
 							class="w-full text-base text-left px-3 py-3 rounded-sm transition-all duration-150 flex items-center gap-3 group"
@@ -225,7 +225,7 @@ function getModuleIcon(module) {
 							Create one →
 						</button>
 					</li>
-				</ul>
+				</ul></div>
 
 				<!-- Sidebar Footer -->
 				<div class="px-5 py-4 border-t border-heading/10 shrink-0">
@@ -311,7 +311,7 @@ function getModuleIcon(module) {
 				</div>
 
 				<!-- ── MODULE CARDS — this is the ONLY scrolling region ── -->
-				<div class="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
+				<div v-scrollbar class="flex-1 overflow-y-auto"><div class="px-4 sm:px-8 py-6">
 
 					<!-- No role selected -->
 					<div v-if="!roleStore.selectedRole"
@@ -413,7 +413,7 @@ function getModuleIcon(module) {
 					</div>
 				</div>
 				<!-- END scrollable region -->
-			</div>
+			</div></div>
 		</div>
 		<!-- END body -->
 
@@ -451,7 +451,7 @@ function getModuleIcon(module) {
 							</div>
 
 							<!-- Role List -->
-							<ul class="flex-1 overflow-y-auto py-3  px-3 space-y-1">
+							<div v-scrollbar class="flex-1 overflow-y-auto"><ul class="py-3 px-3 space-y-1">
 								<li v-for="role in roleStore.roles" :key="role.id">
 									<button @click="selectRoleAndClose(role)"
 										class="w-full text-left px-3 py-3 rounded-sm transition-all duration-150 flex items-center gap-3 group"
@@ -478,7 +478,7 @@ function getModuleIcon(module) {
 										Create one →
 									</button>
 								</li>
-							</ul>
+							</ul></div>
 
 							<!-- Drawer Footer -->
 							<div class="px-5 py-4 border-t border-heading/10 shrink-0">
@@ -584,7 +584,8 @@ function getModuleIcon(module) {
 								</button>
 								<button type="submit" :disabled="roleStore.loading.create"
 									class="flex-1 tazko-btn">
-									<v-icon name="bi-check2" scale="1" />
+									<v-icon v-if="roleStore.loading.create" name="bi-arrow-repeat" scale="1" class="animate-spin" />
+									<v-icon v-else name="bi-check2" scale="1" />
 									{{ roleStore.loading.create ? 'Creating…' : 'Create Role' }}
 								</button>
 							</div>

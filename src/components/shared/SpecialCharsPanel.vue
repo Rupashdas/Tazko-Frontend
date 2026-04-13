@@ -137,7 +137,7 @@ const emit = defineEmits(['pick', 'close'])
 				@click="activeCategory = i"
 			>{{ cat.name }}</button>
 		</div>
-		<div class="grid grid-cols-8 gap-0.5 max-h-[200px] overflow-y-auto">
+		<div v-scrollbar class="grid grid-cols-8 gap-0.5 max-h-[200px] overflow-y-auto">
 			<button
 				v-for="item in categories[activeCategory].chars" :key="item.char"
 				type="button"

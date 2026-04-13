@@ -269,7 +269,7 @@ function endCall() { store.endCall() }
     color: white;
 }
 .ctrl-btn:hover { transform: scale(1.06); }
-.ctrl-btn:active { transform: scale(0.96); }
+.ctrl-btn:active { transform: scale(0.97); }
 
 .ctrl-btn--default {
     background: rgba(255, 255, 255, 0.12);

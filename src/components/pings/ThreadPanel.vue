@@ -82,7 +82,7 @@ function getUser(id) { return store.getUser(id) }
             </div>
 
             <!-- ── Replies list ────────────────────────────────── -->
-            <div class="flex-1 overflow-y-auto px-3 py-2 space-y-3 [scrollbar-width:thin]">
+            <div v-scrollbar class="flex-1 overflow-y-auto"><div class="px-3 py-2 space-y-3">
                 <div v-if="!store.threadReplies.length"
                      class="flex flex-col items-center gap-2 py-8 text-center">
                     <span class="text-2xl opacity-30">💬</span>
@@ -111,7 +111,7 @@ function getUser(id) { return store.getUser(id) }
                         </div>
                     </div>
                 </TransitionGroup>
-            </div>
+            </div></div>
 
             <!-- ── Reply input ────────────────────────────────── -->
             <div class="px-3 pb-3 pt-2 border-t border-heading/8 shrink-0">

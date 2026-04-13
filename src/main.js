@@ -12,13 +12,15 @@ import '@fontsource-variable/manrope';
 
 import { OverlayScrollbars } from 'overlayscrollbars';
 import 'overlayscrollbars/overlayscrollbars.css';
+import { vScrollbar } from './directives/scrollbar'
 
 import './assets/main.css'
 
 const app = createApp(App)
 
 app.config.globalProperties.$toast = Toastify
-app.component("v-icon", OhVueIcon);
+app.component("v-icon", OhVueIcon)
+app.directive('scrollbar', vScrollbar)
 
 const pinia = createPinia()
 app.use(pinia)

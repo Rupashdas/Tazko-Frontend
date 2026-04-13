@@ -562,7 +562,7 @@ const handleCancel = async () => {
 					@mousedown.self="closeUserPopup">
 					<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="closeUserPopup" />
 					<div
-						class="relative w-full max-w-xl bg-panel rounded-sm shadow-2xl border border-heading/10 overflow-hidden max-h-[90vh] overflow-y-auto transition-all">
+						v-scrollbar class="relative w-full max-w-xl bg-panel rounded-sm shadow-2xl border border-heading/10 overflow-hidden max-h-[90vh] overflow-y-auto transition-all">
 
 						<div class="px-6 py-5 border-b border-heading/8 flex items-start justify-between gap-3">
 							<div class="flex items-center gap-3 min-w-0">

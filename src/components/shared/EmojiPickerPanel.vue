@@ -676,7 +676,7 @@ onMounted(() => {
 		</div>
 
 		<!-- Emoji grid -->
-		<div class="grid grid-cols-8 gap-px max-h-[200px] overflow-y-auto">
+		<div v-scrollbar class="grid grid-cols-8 gap-px max-h-[200px] overflow-y-auto">
 			<button
 				v-for="(item, idx) in displayEmojis" :key="`${item.emoji}-${item.name}-${idx}`"
 				type="button"

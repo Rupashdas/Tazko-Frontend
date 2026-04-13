@@ -250,7 +250,7 @@ function toggleMute() {
 <style scoped>
 
 .menu-pop-enter-active, .menu-pop-leave-active { transition: all 0.15s cubic-bezier(0.4,0,0.2,1); }
-.menu-pop-enter-from, .menu-pop-leave-to { opacity: 0; transform: translateY(-6px) scale(0.96); }
+.menu-pop-enter-from, .menu-pop-leave-to { opacity: 0; transform: translateY(-6px) scale(0.97); }
 
 .search-bar-enter-active, .search-bar-leave-active { transition: all 0.18s ease; }
 .search-bar-enter-from, .search-bar-leave-to { opacity: 0; transform: translateY(-6px); }

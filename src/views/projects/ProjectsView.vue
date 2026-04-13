@@ -7,26 +7,28 @@ import {
 	MdFolderspecialOutlined, BiCalendar3,
 	BiThreeDotsVertical, BiArchive, BiPencil, BiTrash,
 	BiCheckCircle, BiClock,
-	BiArrowRight,
+	BiArrowRight, BiArrowRepeat,
 	BiX, BiLightningCharge, BiGraphUp,
 } from 'oh-vue-icons/icons'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import ProjectFormModal from '@/components/projects/ProjectFormModal.vue'
 import { useProjectStore } from '@/stores/useProjectStore'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useToast } from '@/utils/toast'
 
 addIcons(
 	BiPlusCircle, BiSearch, BiGrid3X3Gap, BiListUl,
 	MdFolderspecialOutlined, BiCalendar3,
 	BiThreeDotsVertical, BiArchive, BiPencil, BiTrash,
 	BiCheckCircle, BiClock,
-	BiArrowRight,
+	BiArrowRight, BiArrowRepeat,
 	BiX, BiLightningCharge, BiGraphUp,
 )
 
 const router = useRouter()
 const store  = useProjectStore()
 const auth   = useAuthStore()
+const { successToast, errorToast } = useToast()
 
 const canCreate  = computed(() => auth.hasCapability('projects.create'))
 const canUpdate  = computed(() => auth.hasCapability('projects.update'))
@@ -45,6 +47,7 @@ const openMenuId     = ref(null)
 // ── Archive confirm ────────────────────────────────────────────
 const showArchiveConfirm = ref(false)
 const pendingArchiveId   = ref(null)
+const archiving          = ref(false)
 
 // ── Available project colors ───────────────────────────────────
 const projectColors = [
@@ -79,9 +82,29 @@ const closeFormModal = () => {
 	editingProject.value = null
 }
 
-const handleFormSave = () => {
-	closeFormModal()
-	store.reset()
+const handleFormSave = async (data) => {
+	const payload = {
+		name:        data.name,
+		description: data.description,
+		goal:        data.goal,
+		color:       data.color,
+		priority:    data.priority,
+		status:      data.status,
+		start_date:  data.startDate,
+		end_date:    data.endDate,
+	}
+
+	const result = formMode.value === 'edit'
+		? await store.updateProject(editingProject.value.id, payload)
+		: await store.createProject(payload)
+
+	if (result.success) {
+		successToast(result.message)
+		closeFormModal()
+		if (formMode.value === 'create') store.reset()
+	} else {
+		errorToast(result.message)
+	}
 }
 
 const statuses   = ['All', 'Planning', 'In Progress', 'On Hold', 'Completed']
@@ -138,9 +161,15 @@ const requestArchive = (id) => {
 	showArchiveConfirm.value = true
 }
 
-const handleArchive = () => {
-	// TODO: axios.patch(`/api/projects/${pendingArchiveId.value}/archive`)
-	store.projects = store.projects.filter(p => p.id !== pendingArchiveId.value)
+const handleArchive = async () => {
+	archiving.value = true
+	const result = await store.archiveProject(pendingArchiveId.value)
+	archiving.value = false
+	if (result.success) {
+		successToast(result.message)
+	} else {
+		errorToast(result.message)
+	}
 	showArchiveConfirm.value = false
 	pendingArchiveId.value = null
 }
@@ -171,15 +200,22 @@ const decoratedProjects = computed(() =>
 
 // ── Delete confirm (was an unwired no-op menu item) ───────────
 const showDeleteConfirm = ref(false)
-const pendingDeleteId = ref(null)
+const pendingDeleteId   = ref(null)
+const deleting          = ref(false)
 const requestDelete = (id) => {
 	openMenuId.value = null
 	pendingDeleteId.value = id
 	showDeleteConfirm.value = true
 }
-const handleDelete = () => {
-	// TODO: axios.delete(`/api/projects/${pendingDeleteId.value}`)
-	store.projects = store.projects.filter(p => p.id !== pendingDeleteId.value)
+const handleDelete = async () => {
+	deleting.value = true
+	const result = await store.deleteProject(pendingDeleteId.value)
+	deleting.value = false
+	if (result.success) {
+		successToast(result.message)
+	} else {
+		errorToast(result.message)
+	}
 	showDeleteConfirm.value = false
 	pendingDeleteId.value = null
 }
@@ -234,6 +270,14 @@ const onKeydown = (e) => {
 onMounted(() => {
 	window.addEventListener('keydown', onKeydown)
 	isMounted = true
+	// Always wipe any leftover filter state from a previous visit
+	// so the UI dropdowns and the store are in sync from the start.
+	store.filters.search   = ''
+	store.filters.status   = ''
+	store.filters.priority = ''
+	searchQuery.value    = ''
+	statusFilter.value   = 'All'
+	priorityFilter.value = 'All'
 	store.reset()
 	setupObserver()
 })
@@ -566,17 +610,17 @@ onBeforeUnmount(() => {
 		</div>
 
 		<!-- ── LIST VIEW ──────────────────────────────── -->
-		<div v-else-if="store.projects.length" class="bg-panel rounded-sm border border-heading/8 overflow-x-auto">
-			<table class="w-full min-w-[960px]">
+		<div v-else-if="store.projects.length" class="bg-panel rounded-sm border border-heading/8">
+			<table class="w-full">
 				<thead>
 					<tr class="border-b border-heading/8 bg-heading/[0.02]">
 						<th class="text-left px-5 py-3 text-sm font-semibold uppercase tracking-wide text-text">Project</th>
-						<th class="text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text">Status</th>
-						<th class="text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text">Priority</th>
-						<th class="text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text w-36">Progress</th>
-						<th class="text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text">Tasks</th>
-						<th class="text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text">Team</th>
-						<th class="text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text">Due</th>
+						<th class="hidden sm:table-cell text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text">Status</th>
+						<th class="hidden md:table-cell text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text">Priority</th>
+						<th class="hidden md:table-cell text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text w-36">Progress</th>
+						<th class="hidden md:table-cell text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text">Tasks</th>
+						<th class="hidden lg:table-cell text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text">Team</th>
+						<th class="hidden lg:table-cell text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text">Due</th>
 						<th class="px-4 py-3" />
 					</tr>
 				</thead>
@@ -595,18 +639,18 @@ onBeforeUnmount(() => {
 								</div>
 							</div>
 						</td>
-						<td class="px-4 py-4">
+						<td class="hidden sm:table-cell px-4 py-4">
 							<span :class="[status.cls, 'inline-flex items-center gap-1.5 text-sm px-2.5 py-1 rounded-full font-semibold']">
 								<span :class="[status.dot, 'w-1.5 h-1.5 rounded-full']" />
 								{{ project.status }}
 							</span>
 						</td>
-						<td class="px-4 py-4">
+						<td class="hidden md:table-cell px-4 py-4">
 							<span :class="[priority.cls, 'text-sm px-2.5 py-1 rounded-full font-semibold']">
 								{{ project.priority }}
 							</span>
 						</td>
-						<td class="px-4 py-4">
+						<td class="hidden md:table-cell px-4 py-4">
 							<div class="flex items-center gap-2">
 								<div class="flex-1 h-1.5 bg-heading/8 rounded-full overflow-hidden min-w-16">
 									<div :class="[progressColor(project.progress), 'h-full rounded-full transition-all']"
@@ -615,10 +659,10 @@ onBeforeUnmount(() => {
 								<span class="text-sm font-bold text-text w-8 text-right tabular-nums">{{ project.progress }}%</span>
 							</div>
 						</td>
-						<td class="px-4 py-4">
+						<td class="hidden md:table-cell px-4 py-4">
 							<span class="text-base text-text font-medium">{{ project.taskCounts.done }}/{{ project.taskCounts.total }}</span>
 						</td>
-						<td class="px-4 py-4">
+						<td class="hidden lg:table-cell px-4 py-4">
 							<div class="flex -space-x-1.5">
 								<div v-for="(m, i) in project.members.slice(0, 3)" :key="i"
 									:class="[m.color, 'w-6 h-6 rounded-full border-2 border-panel flex items-center justify-center text-white text-sm font-bold overflow-hidden']"
@@ -632,7 +676,7 @@ onBeforeUnmount(() => {
 								</div>
 							</div>
 						</td>
-						<td class="px-4 py-4">
+						<td class="hidden lg:table-cell px-4 py-4">
 							<span class="text-sm font-medium" :class="due.cls">
 								{{ due.label }}
 							</span>
@@ -682,7 +726,7 @@ onBeforeUnmount(() => {
 		</div>
 
 		<!-- ── Infinite scroll sentinel ─────────────────── -->
-		<div ref="sentinel"></div>
+		<div ref="sentinel" class="h-1"></div>
 
 		<!-- ── Skeleton: Grid (infinite scroll) ─────────────── -->
 		<div v-if="store.loading && store.projects.length > 0 && viewMode === 'grid'"
@@ -755,14 +799,15 @@ onBeforeUnmount(() => {
 							This project will be moved to the archive. You can restore it at any time from the Archived Projects page.
 						</p>
 						<div class="flex gap-3">
-							<button @click="showArchiveConfirm = false" class="flex-1 tazko-btn-cancel">
+							<button @click="showArchiveConfirm = false" :disabled="archiving" class="flex-1 tazko-btn-cancel">
 								<v-icon name="bi-x" scale="1" />
 								Cancel
 							</button>
-							<button @click="handleArchive"
-								class="flex-1 inline-flex gap-2 items-center justify-center px-6 py-3 text-base tracking-wide rounded-sm shadow-sm text-white bg-amber-500 hover:bg-amber-600 active:scale-95 transition-all cursor-pointer">
-								<v-icon name="bi-archive" scale="1" />
-								Archive
+							<button @click="handleArchive" :disabled="archiving"
+								class="flex-1 inline-flex gap-2 items-center justify-center px-6 py-3 text-base tracking-wide rounded-sm shadow-sm text-white bg-amber-500 hover:bg-amber-600 active:scale-95 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
+								<v-icon v-if="archiving" name="bi-arrow-repeat" scale="1" class="animate-spin" />
+								<v-icon v-else name="bi-archive" scale="1" />
+								{{ archiving ? 'Archiving…' : 'Archive' }}
 							</button>
 						</div>
 					</div>
@@ -784,14 +829,15 @@ onBeforeUnmount(() => {
 							This action cannot be undone. All tasks, comments, and files associated with this project will be permanently removed.
 						</p>
 						<div class="flex gap-3">
-							<button @click="showDeleteConfirm = false" class="flex-1 tazko-btn-cancel">
+							<button @click="showDeleteConfirm = false" :disabled="deleting" class="flex-1 tazko-btn-cancel">
 								<v-icon name="bi-x" scale="1" />
 								Cancel
 							</button>
-							<button @click="handleDelete"
-								class="flex-1 inline-flex gap-2 items-center justify-center px-6 py-3 text-base tracking-wide rounded-sm shadow-sm text-white bg-red-500 hover:bg-red-600 active:scale-95 transition-all cursor-pointer">
-								<v-icon name="bi-trash" scale="1" />
-								Delete
+							<button @click="handleDelete" :disabled="deleting"
+								class="flex-1 inline-flex gap-2 items-center justify-center px-6 py-3 text-base tracking-wide rounded-sm shadow-sm text-white bg-red-500 hover:bg-red-600 active:scale-95 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
+								<v-icon v-if="deleting" name="bi-arrow-repeat" scale="1" class="animate-spin" />
+								<v-icon v-else name="bi-trash" scale="1" />
+								{{ deleting ? 'Deleting…' : 'Delete' }}
 							</button>
 						</div>
 					</div>
@@ -804,6 +850,7 @@ onBeforeUnmount(() => {
 			:show="showFormModal"
 			:mode="formMode"
 			:project="editingProject"
+			:saving="store.saving"
 			@close="closeFormModal"
 			@save="handleFormSave" />
 
@@ -831,7 +878,7 @@ onBeforeUnmount(() => {
 }
 .modal-enter-from .relative,
 .modal-leave-to .relative {
-	transform: scale(0.96);
+	transform: scale(0.97);
 }
 
 .line-clamp-2 {

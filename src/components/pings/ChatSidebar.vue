@@ -49,7 +49,7 @@ function is(key) { return collapsed.value.has(key) }
         </div>
 
         <!-- ── Conversation List ─────────────────────────────── -->
-        <div class="flex-1 overflow-y-auto py-2 [scrollbar-width:thin]">
+        <div v-scrollbar class="flex-1 overflow-y-auto"><div class="py-2">
 
             <!-- Pinned -->
             <template v-if="store.filteredConversations.filter(c => c.pinned).length">
@@ -124,7 +124,7 @@ function is(key) { return collapsed.value.has(key) }
                 <span class="text-3xl opacity-40">💬</span>
                 <p class="text-[13px] text-text/45 font-medium">No conversations found</p>
             </div>
-        </div>
+        </div></div>
 
         <!-- ── Footer ─────────────────────────────────────────── -->
         <div class="px-4 py-3 border-t border-heading/8 shrink-0 flex items-center gap-3 bg-body/50">

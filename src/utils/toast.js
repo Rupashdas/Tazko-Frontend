@@ -1,44 +1,61 @@
 import { getCurrentInstance } from 'vue'
+
+function makeHtml(icon, title, message) {
+    return `
+        <div class="tazko-toast__inner">
+            <div class="tazko-toast__bar"></div>
+            <div class="tazko-toast__body">
+                <div class="tazko-toast__icon">${icon}</div>
+                <div class="tazko-toast__text">
+                    <span class="tazko-toast__title">${title}</span>
+                    ${message ? `<span class="tazko-toast__msg">${message}</span>` : ''}
+                </div>
+            </div>
+        </div>
+    `
+}
+
 export function useToast() {
     const { appContext } = getCurrentInstance()
 
-    const successToast = (message = "Success!") => {
-        const toast = appContext.config.globalProperties.$toast
-        toast({
-            text: message,
-            duration: 1500,
-            gravity: "top",
-            position: "center",
-            style: {
-                color: "#155724",
-                background: "#d4edda",
-                borderRadius: "6px",
-                padding: "12px 16px",
-                fontSize: "14px",
-                fontWeight: "500",
-            },
-            close: true
+    const successToast = (message = 'Success!', title = 'Done') => {
+        appContext.config.globalProperties.$toast({
+            text: makeHtml('✓', title, message === title ? '' : message),
+            escapeMarkup: false,
+            duration: 2500,
+            gravity: 'top',
+            position: 'right',
+            className: 'tazko-toast tazko-toast--success',
+            style: {},
+            close: false,
         }).showToast()
     }
 
-    const errorToast = (message = "Something went wrong!") => {
-        const toast = appContext.config.globalProperties.$toast
-        toast({
-            text: message,
+    const errorToast = (message = 'Something went wrong!', title = 'Error') => {
+        appContext.config.globalProperties.$toast({
+            text: makeHtml('✕', title, message === title ? '' : message),
+            escapeMarkup: false,
+            duration: 4000,
+            gravity: 'top',
+            position: 'right',
+            className: 'tazko-toast tazko-toast--error',
+            style: {},
+            close: false,
+        }).showToast()
+    }
+
+    const infoToast = (message = '', title = 'Info') => {
+        appContext.config.globalProperties.$toast({
+            text: makeHtml('ℹ', title, message === title ? '' : message),
+            escapeMarkup: false,
             duration: 3000,
-            gravity: "top",
-            position: "center",
-            style: {
-                color: "#721c24",
-                background: "#f8d7da",
-                borderRadius: "6px",
-                padding: "12px 16px",
-                fontSize: "14px",
-                fontWeight: "500",
-            },
-            close: true
+            gravity: 'top',
+            position: 'right',
+            className: 'tazko-toast tazko-toast--info',
+            style: {},
+            close: false,
         }).showToast()
     }
 
-    return { successToast, errorToast }
+    return { successToast, errorToast, infoToast }
 }
