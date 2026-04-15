@@ -17,6 +17,7 @@ const props = defineProps({
 	highlight: { type: Boolean, default: false },
 	inactiveValue: { default: null },
 	disabled: { type: Boolean, default: false },
+	disabledValues: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -80,6 +81,7 @@ const isActive = computed(() => {
 })
 
 const toggle = (value) => {
+	if (props.disabledValues.includes(value)) return
 	if (props.multiple) {
 		const cur = [...selectedArr.value]
 		const idx = cur.indexOf(value)
@@ -195,8 +197,12 @@ const textCls = computed(() =>
 						<button
 							type="button"
 							@click="toggle(opt.value)"
-							class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left transition-colors hover:bg-heading/5"
-							:class="isSelected(opt.value) ? 'text-accent bg-accent/5' : 'text-heading'">
+							class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left transition-colors"
+							:class="[
+								disabledValues.includes(opt.value)
+									? 'opacity-50 cursor-default'
+									: isSelected(opt.value) ? 'text-accent bg-accent/5 hover:bg-accent/5' : 'text-heading hover:bg-heading/5'
+							]">
 
 							<span
 								v-if="opt.color && opt.initials"
@@ -206,7 +212,7 @@ const textCls = computed(() =>
 
 							<span class="flex-1 font-medium">{{ opt.label }}</span>
 
-							<v-icon v-if="isSelected(opt.value)" name="bi-check2" class="text-accent shrink-0" scale="0.85" />
+							<v-icon v-if="isSelected(opt.value) || disabledValues.includes(opt.value)" name="bi-check2" class="shrink-0" :class="disabledValues.includes(opt.value) ? 'text-text' : 'text-accent'" scale="0.85" />
 						</button>
 					</li>
 				</ul>

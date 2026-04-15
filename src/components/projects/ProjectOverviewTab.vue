@@ -13,6 +13,7 @@ addIcons(
 
 const props = defineProps({
 	project: { type: Object, required: true },
+	progress: { type: Number, default: null },
 	tasks: { type: Array, required: true },
 	activity: { type: Array, default: () => [] },
 	canManageMembers: { type: Boolean, default: false },
@@ -81,12 +82,11 @@ const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'shor
 					<div class="flex items-center justify-between mb-2">
 						<span class="text-base text-text">{{ doneCount }} of {{ totalTasks }} tasks
 							done</span>
-						<span class="text-base font-bold text-accent tabular-nums">{{ project.progress
-						}}%</span>
+						<span class="text-base font-bold text-accent tabular-nums">{{ progress ?? project.progress }}%</span>
 					</div>
 					<div class="h-2.5 bg-heading/8 rounded-full overflow-hidden mb-4">
 						<div class="h-full bg-accent rounded-full transition-all duration-700"
-							:style="`width:${project.progress}%`" />
+							:style="`width:${progress ?? project.progress}%`" />
 					</div>
 					<div class="grid grid-cols-4 gap-3">
 						<div v-for="st in columnStatuses" :key="st" class="text-center">

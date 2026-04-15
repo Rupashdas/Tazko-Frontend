@@ -27,6 +27,10 @@ export const useProjectStore = defineStore('projects', {
 		loadingProject: false,
 		projectError: null,
 
+		// ── Tasks (for current project) ───────────────────────
+		tasks: [],
+		loadingTasks: false,
+
 		// ── Archived ──────────────────────────────────────────────
 		archived: [],
 		archivedLoading: false,
@@ -43,6 +47,76 @@ export const useProjectStore = defineStore('projects', {
 	}),
 
 	actions: {
+		async reorderTasks(projectId, taskOrders) {
+			// taskOrders: [{id, sort_order}]
+			try {
+				await axios.post(`/api/projects/${projectId}/tasks/reorder`, { tasks: taskOrders })
+				taskOrders.forEach(({ id, sort_order }) => {
+					const task = this.tasks.find(t => t.id === id)
+					if (task) task.sort_order = sort_order
+				})
+				return { success: true }
+			} catch (err) {
+				return { success: false }
+			}
+		},
+
+		async updateTask(projectId, taskId, payload) {
+			try {
+				const { data } = await axios.patch(`/api/projects/${projectId}/tasks/${taskId}`, payload)
+				const idx = this.tasks.findIndex(t => t.id === taskId)
+				if (idx !== -1) this.tasks[idx] = { ...data.data, due: data.data.due_date ?? null }
+				return { success: true }
+			} catch (err) {
+				return {
+					success: false,
+					message: err.response?.data?.message ?? 'Failed to update task.',
+				}
+			}
+		},
+
+		async deleteTask(projectId, taskId) {
+			try {
+				await axios.delete(`/api/projects/${projectId}/tasks/${taskId}`)
+				this.tasks = this.tasks.filter(t => t.id !== taskId)
+				return { success: true }
+			} catch (err) {
+				return {
+					success: false,
+					message: err.response?.data?.message ?? 'Failed to delete task.',
+				}
+			}
+		},
+
+		async createTask(projectId, payload) {
+			try {
+				const { data } = await axios.post(`/api/projects/${projectId}/tasks`, payload)
+				const task = { ...data.data, due: data.data.due_date ?? null }
+				this.tasks.push(task)
+				return { success: true, task }
+			} catch (err) {
+				return {
+					success: false,
+					message: err.response?.data?.message ?? 'Failed to create task.',
+					errors: err.response?.data?.errors ?? {},
+				}
+			}
+		},
+
+		async fetchTasks(projectId) {
+			this.loadingTasks = true
+			try {
+				const { data } = await axios.get(`/api/projects/${projectId}/tasks`)
+				// Normalize due_date → due so the board template stays consistent
+				this.tasks = (data.data ?? []).map(t => ({ ...t, due: t.due_date ?? null }))
+			} catch (err) {
+				console.error('[ProjectStore] fetchTasks:', err)
+				this.tasks = []
+			} finally {
+				this.loadingTasks = false
+			}
+		},
+
 		async fetchProject(id) {
 			this.loadingProject = true
 			this.projectError = null
@@ -101,6 +175,7 @@ export const useProjectStore = defineStore('projects', {
 				const { data } = await axios.put(`/api/projects/${projectId}`, payload)
 				const idx = this.projects.findIndex(p => p.id === projectId)
 				if (idx !== -1) this.projects[idx] = data.data
+				if (this.currentProject?.id === projectId) this.currentProject = data.data
 				return { success: true, message: data.message, project: data.data }
 			} catch (err) {
 				return {

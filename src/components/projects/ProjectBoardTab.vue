@@ -6,13 +6,13 @@ import { addIcons } from 'oh-vue-icons'
 import {
 	BiListTask, BiKanban, BiGripVertical, BiPlus, BiSearch, BiX,
 	BiLightningCharge, BiCheckCircle, BiClock, BiCalendar3,
-	BiCheck2,
+	BiCheck2, BiTrash,
 } from 'oh-vue-icons/icons'
 
 addIcons(
 	BiListTask, BiKanban, BiGripVertical, BiPlus, BiSearch, BiX,
 	BiLightningCharge, BiCheckCircle, BiClock, BiCalendar3,
-	BiCheck2,
+	BiCheck2, BiTrash,
 )
 
 const props = defineProps({
@@ -20,7 +20,7 @@ const props = defineProps({
 	members: { type: Array, required: true },
 })
 
-const emit = defineEmits(['update:tasks', 'open-task', 'add-task-click'])
+const emit = defineEmits(['open-task', 'add-task-click', 'tasks-reordered', 'delete-task'])
 
 const columnStatuses = ['Todo', 'In Progress', 'Review', 'Done']
 
@@ -39,8 +39,15 @@ const priorityConfig = {
 }
 
 const memberColorMap = computed(() =>
-	Object.fromEntries(props.members.map(m => [m.initials, m.color]))
+	Object.fromEntries(props.members.map(m => [m.id, m.color]))
 )
+
+const getInitials = (name) => {
+	if (!name) return '?'
+	const parts = name.trim().split(/\s+/)
+	if (parts.length === 1) return parts[0][0].toUpperCase()
+	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
 
 // ── Filters & view ─────────────────────────────────────
 const searchQuery = ref('')
@@ -54,10 +61,6 @@ const dragOverColumn = ref(null)
 const onDragStart = () => { isDragging.value = true }
 const onDragEnd = () => { isDragging.value = false; dragOverColumn.value = null }
 const onDragEnterColumn = (s) => { if (isDragging.value) dragOverColumn.value = s }
-
-// ── Inline add ─────────────────────────────────────────
-const addingInColumn = ref(null)
-const inlineTaskTitle = ref('')
 
 const matchesFilter = (t) => {
 	const s = !searchQuery.value || t.title.toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -77,31 +80,45 @@ const overdueCount = computed(() => {
 })
 
 // ── Board columns ──────────────────────────────────────
+// Must be a ref (not computed) — vuedraggable mutates the array directly
 const buildColumns = () => Object.fromEntries(columnStatuses.map(s => [s, props.tasks.filter(t => t.status === s)]))
 const boardColumns = ref(buildColumns())
-watch(() => props.tasks, () => { boardColumns.value = buildColumns() }, { deep: false })
+
+// Rebuild when tasks are replaced (fetchTasks) or count changes (add/delete)
+watch(() => props.tasks, () => { boardColumns.value = buildColumns() })
+watch(() => props.tasks.length, () => { boardColumns.value = buildColumns() })
 
 const onBoardChange = (targetStatus, event) => {
 	if (event.added) {
 		const moved = props.tasks.find(t => t.id === event.added.element.id)
-		if (moved) moved.status = targetStatus
+		if (moved) moved.status = targetStatus  // optimistic
+	}
+
+	if (event.added || event.moved) {
+		const orders = boardColumns.value[targetStatus].map((t, i) => ({
+			id: t.id,
+			sort_order: i + 1,
+			status: targetStatus,
+		}))
+		emit('tasks-reordered', orders)
 	}
 }
 
-const listModel = computed({
-	get: () => props.tasks,
-	set: (val) => emit('update:tasks', val),
-})
+const listItems = ref([...props.tasks])
+watch(() => props.tasks, () => { listItems.value = [...props.tasks] })
+watch(() => props.tasks.length, () => { listItems.value = [...props.tasks] })
 
-const confirmInlineAdd = (s) => {
-	if (!inlineTaskTitle.value.trim()) { addingInColumn.value = null; return }
-	const t2 = { id: Date.now(), title: inlineTaskTitle.value.trim(), status: s, priority: 'Medium', assignees: ['AH'], due: '' }
-	props.tasks.push(t2)
-	boardColumns.value[s].push(t2)
-	inlineTaskTitle.value = ''
-	addingInColumn.value = null
+const onListChange = (event) => {
+	if (event.moved) {
+		const orders = listItems.value.map((t, i) => ({
+			id: t.id,
+			sort_order: i + 1,
+			status: t.status,
+		}))
+		emit('tasks-reordered', orders)
+	}
 }
-const cancelInlineAdd = () => { addingInColumn.value = null; inlineTaskTitle.value = '' }
+
 
 const formatShort = (d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 const isDueOverdue = (due) => due && new Date(due) < new Date()
@@ -197,8 +214,8 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 
 			<div v-for="status in columnStatuses" :key="status" :class="[
 				'board-column flex flex-col rounded-sm border transition-all duration-200',
-				dragOverColumn === status && isDragging ? `column-drop-active ${columnConfig[status].borderActive}` : 'border-heading/5',
-			]" :style="dragOverColumn === status && isDragging ? `box-shadow: 0 0 0 1px ${columnConfig[status].accent}22, 0 4px 24px 0 ${columnConfig[status].glowColor}` : ''"
+				dragOverColumn === status && isDragging ? 'column-drop-active border-accent/20' : 'border-heading/5',
+			]"
 				@dragenter.prevent="onDragEnterColumn(status)" @dragover.prevent="onDragEnterColumn(status)">
 
 				<!-- Column header -->
@@ -214,7 +231,7 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 							{{ boardColumns[status]?.length ?? 0 }}
 						</span>
 					</div>
-					<button @click="addingInColumn = status; inlineTaskTitle = ''"
+					<button @click="emit('add-task-click', status)"
 						class="column-add-btn w-6 h-6 rounded-sm flex items-center justify-center hover:bg-heading/10 text-text transition-all">
 						<v-icon name="bi-plus" scale="0.9" />
 					</button>
@@ -223,25 +240,26 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 				<!-- Draggable list -->
 				<div class="p-2 flex-1 flex flex-col">
 					<draggable :list="boardColumns[status]" item-key="id" :group="{ name: 'board-tasks' }"
-						:animation="200" ghost-class="task-ghost" drag-class="task-dragging"
-						chosen-class="task-chosen" handle=".drag-handle" :force-fallback="false"
+						:animation="150" ghost-class="task-ghost" drag-class="task-dragging"
+						chosen-class="task-chosen" :force-fallback="true" :fallback-class="'task-fallback'"
 						@start="onDragStart" @end="onDragEnd" @change="(e) => onBoardChange(status, e)"
 						class="tasks-list flex-1 flex flex-col gap-2">
 
 						<template #item="{ element: task }">
 							<div :class="[
-								'task-card group relative flex flex-col gap-2.5 p-3 rounded-sm border cursor-pointer select-none',
+								'task-card group relative flex flex-col gap-2.5 p-3 rounded-sm border cursor-grab active:cursor-grabbing select-none',
 								task.status === 'Done'
 									? 'opacity-55 bg-heading/[0.02] border-heading/5'
 									: 'bg-panel border-heading/8 hover:border-heading/15 hover:shadow-sm',
 							]" @click="emit('open-task', task.id)">
 
-								<div class="drag-handle absolute left-0 top-0 bottom-0 w-5 flex items-center justify-center rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none"
-									@click.stop>
-									<v-icon name="bi-grip-vertical" scale="0.75" class="text-text" />
-								</div>
+								<button
+									class="absolute top-2 right-2 w-6 h-6 rounded-sm flex items-center justify-center opacity-0 group-hover:opacity-100 text-text hover:text-red-500 hover:bg-red-500/10 transition-all z-10"
+									@click.stop="emit('delete-task', task.id)">
+									<v-icon name="bi-trash" scale="0.75" />
+								</button>
 
-								<div class="pl-1">
+								<div>
 									<div class="flex items-start gap-2 mb-2.5">
 										<span
 											:class="[priorityConfig[task.priority]?.dot, 'w-1.5 h-1.5 rounded-full mt-1.5 shrink-0']" />
@@ -268,10 +286,11 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 											</span>
 											<div class="flex items-center">
 												<div
-													v-for="(ini, ai) in task.assignees.slice(0, 3)" :key="ini"
-													:class="[memberColorMap[ini] || 'bg-accent', 'w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ring-2 ring-panel', ai > 0 ? '-ml-1.5' : '']"
-													:title="ini">
-													{{ ini }}
+													v-for="(a, ai) in task.assignees.slice(0, 3)" :key="a.id"
+													:class="[!a.avatar && (memberColorMap[a.id] || 'bg-accent'), 'w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ring-2 ring-panel overflow-hidden', ai > 0 ? '-ml-1.5' : '']"
+													:title="a.name">
+													<img v-if="a.avatar" :src="a.avatar" class="w-full h-full object-cover" :alt="a.name" />
+													<span v-else>{{ getInitials(a.name) }}</span>
 												</div>
 												<div v-if="task.assignees.length > 3"
 													class="w-7 h-7 rounded-full bg-heading/10 flex items-center justify-center text-[10px] font-bold text-text shrink-0 ring-2 ring-panel -ml-1.5">
@@ -285,32 +304,13 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 						</template>
 
 						<template #footer>
-							<div v-if="boardColumns[status]?.length === 0 && addingInColumn !== status"
-								:class="['empty-drop-zone rounded-sm border-2 border-dashed flex items-center justify-center min-h-[64px] transition-all duration-200', dragOverColumn === status && isDragging ? columnConfig[status].borderActive : 'border-heading/8']">
+							<div v-if="boardColumns[status]?.length === 0"
+								:class="['empty-drop-zone rounded-sm flex items-center justify-center min-h-[64px] transition-all duration-200', dragOverColumn === status && isDragging ? 'bg-accent/5 border-2 border-dashed border-accent/20' : 'border-2 border-dashed border-heading/8']">
 								<p class="text-sm text-text font-medium select-none">{{ isDragging ?
 									'Drop here' : 'No tasks' }}</p>
 							</div>
 						</template>
 					</draggable>
-
-					<!-- Inline add card -->
-					<div v-if="addingInColumn === status"
-						class="inline-add-card mt-2 rounded-sm border-2 border-accent/30 bg-accent/5 p-2.5">
-						<input v-model="inlineTaskTitle" type="text" placeholder="Task name…"
-							class="w-full bg-transparent text-sm text-heading placeholder:text-text focus:outline-none mb-2"
-							@keydown.enter="confirmInlineAdd(status)" @keydown.esc="cancelInlineAdd"
-							autofocus />
-						<div class="flex items-center gap-1.5">
-							<button @click="confirmInlineAdd(status)" class="tazko-btn">
-								<v-icon name="bi-plus" scale="1" />
-								Add
-							</button>
-							<button @click="cancelInlineAdd" class="tazko-btn-cancel">
-								<v-icon name="bi-x" scale="1" />
-								Cancel
-							</button>
-						</div>
-					</div>
 
 					<button @click="emit('add-task-click', status)"
 						class="column-add-footer w-full mt-2 flex items-center gap-1.5 px-2.5 py-2 rounded-sm text-sm font-medium text-text hover:text-text hover:bg-heading/4 transition-all group/add">
@@ -342,14 +342,16 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 					<span class="text-sm font-bold uppercase text-text w-16 text-right">Due</span>
 				</div>
 
-				<draggable v-model="listModel" item-key="id" handle=".row-handle" :animation="200"
+				<draggable v-model="listItems" item-key="id" handle=".row-handle" :animation="150"
 					ghost-class="list-row-ghost" drag-class="list-row-dragging" chosen-class="list-row-chosen"
-					@start="onDragStart" @end="onDragEnd" class="divide-y divide-heading/[0.04]">
+					:force-fallback="true"
+					@start="onDragStart" @end="onDragEnd" @change="onListChange"
+					class="divide-y divide-heading/[0.04]">
 					<template #item="{ element: task }">
 						<div v-if="matchesFilter(task)"
 							class="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 items-center px-5 py-3 hover:bg-heading/[0.02] transition-colors group select-none cursor-pointer"
 							@click="emit('open-task', task.id)">
-							<div class="row-handle opacity-0 group-hover:opacity-100 text-text transition-opacity cursor-grab active:cursor-grabbing"
+							<div class="row-handle text-heading/15 group-hover:text-text transition-colors cursor-grab active:cursor-grabbing"
 								@click.stop>
 								<v-icon name="bi-grip-vertical" scale="0.85" />
 							</div>
@@ -377,10 +379,11 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 							<div class="w-14 flex justify-center">
 								<div class="flex items-center">
 									<div
-										v-for="(ini, ai) in task.assignees.slice(0, 2)" :key="ini"
-										:class="[memberColorMap[ini] || 'bg-accent', 'w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0 ring-2 ring-panel', ai > 0 ? '-ml-1' : '']"
-										:title="ini">
-										{{ ini }}
+										v-for="(a, ai) in task.assignees.slice(0, 2)" :key="a.id"
+										:class="[!a.avatar && (memberColorMap[a.id] || 'bg-accent'), 'w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0 ring-2 ring-panel overflow-hidden', ai > 0 ? '-ml-1' : '']"
+										:title="a.name">
+										<img v-if="a.avatar" :src="a.avatar" class="w-full h-full object-cover" :alt="a.name" />
+										<span v-else>{{ getInitials(a.name) }}</span>
 									</div>
 									<div v-if="task.assignees.length > 2"
 										class="w-6 h-6 rounded-full bg-heading/10 flex items-center justify-center text-[9px] font-bold text-text shrink-0 ring-2 ring-panel -ml-1">
@@ -413,7 +416,8 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 }
 
 .column-drop-active {
-	transition: border-color 0.12s ease, box-shadow 0.12s ease;
+	background: color-mix(in srgb, var(--color-accent, #6c63ff) 3%, var(--color-panel));
+	transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .column-add-btn {
@@ -429,87 +433,72 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 	transition: background 0.15s ease, color 0.15s ease;
 }
 
-/* ── TASK CARD DND ───────────────────────────────── */
+/* ── BOARD CARD — GHOST (placeholder where card will land) ── */
 :deep(.task-ghost) {
 	opacity: 1 !important;
-	background: transparent !important;
-	border: 2px dashed var(--color-accent, #6c63ff) !important;
-	border-radius: 8px !important;
+	background: var(--color-accent, #6c63ff) !important;
+	opacity: 0.08 !important;
+	border: none !important;
+	border-radius: 6px !important;
 	box-shadow: none !important;
-	overflow: hidden;
 }
 
 :deep(.task-ghost) * {
 	opacity: 0 !important;
 }
 
+/* ── BOARD CARD — CHOSEN (picked up, before moving) ── */
 :deep(.task-chosen) {
 	cursor: grabbing !important;
-	box-shadow: 0 0 0 2px var(--color-accent, #6c63ff), 0 8px 24px rgba(0, 0, 0, 0.12) !important;
-	border-color: transparent !important;
-	border-radius: 8px !important;
 	z-index: 10;
 }
 
-:deep(.task-dragging) {
+/* ── BOARD CARD — DRAGGING (the card following the cursor) ── */
+:deep(.task-dragging),
+:deep(.task-fallback) {
 	opacity: 1 !important;
-	transform: rotate(1.5deg) scale(1.03) !important;
+	transform: rotate(2deg) !important;
 	box-shadow:
-		0 2px 8px rgba(0, 0, 0, 0.08),
-		0 16px 40px rgba(0, 0, 0, 0.18),
-		0 0 0 2px var(--color-accent, #6c63ff) !important;
-	border-radius: 10px !important;
+		0 8px 25px rgba(0, 0, 0, 0.15),
+		0 2px 6px rgba(0, 0, 0, 0.08) !important;
+	border-radius: 6px !important;
 	cursor: grabbing !important;
 	z-index: 9999 !important;
 	background: var(--color-panel) !important;
-	border-color: transparent !important;
+	border-color: rgba(0,0,0,0.06) !important;
 }
 
-/* ── LIST ROW DND ────────────────────────────────── */
+/* ── LIST ROW — GHOST ──────────────────────────────── */
 :deep(.list-row-ghost) {
 	opacity: 1 !important;
-	background: transparent !important;
-	outline: 2px dashed var(--color-accent, #6c63ff) !important;
-	outline-offset: -1px;
+	background: var(--color-accent, #6c63ff) !important;
+	opacity: 0.06 !important;
 	border-radius: 4px !important;
 	box-shadow: none !important;
-	overflow: hidden;
+	outline: none !important;
 }
 
 :deep(.list-row-ghost) * {
 	opacity: 0 !important;
 }
 
+/* ── LIST ROW — CHOSEN ─────────────────────────────── */
 :deep(.list-row-chosen) {
 	cursor: grabbing !important;
-	box-shadow: 0 0 0 2px var(--color-accent, #6c63ff), 0 8px 24px rgba(0, 0, 0, 0.12) !important;
 	background: var(--color-panel) !important;
-	border-radius: 4px !important;
 	z-index: 10;
 }
 
+/* ── LIST ROW — DRAGGING ───────────────────────────── */
 :deep(.list-row-dragging) {
 	opacity: 1 !important;
-	transform: scale(1.01) !important;
 	box-shadow:
-		0 2px 8px rgba(0, 0, 0, 0.08),
-		0 16px 40px rgba(0, 0, 0, 0.18),
-		0 0 0 2px var(--color-accent, #6c63ff) !important;
-	border-radius: 8px !important;
+		0 8px 25px rgba(0, 0, 0, 0.15),
+		0 2px 6px rgba(0, 0, 0, 0.08) !important;
+	border-radius: 6px !important;
 	background: var(--color-panel) !important;
 	cursor: grabbing !important;
 	z-index: 9999 !important;
-}
-
-/* ── DRAG HANDLE ─────────────────────────────────── */
-.drag-handle {
-	touch-action: none;
-	-webkit-user-select: none;
-	user-select: none;
-}
-
-.task-card:hover .drag-handle {
-	opacity: 1;
 }
 
 /* ── GLOBAL DRAG CURSOR ──────────────────────────── */
@@ -518,22 +507,6 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 	cursor: grabbing !important;
 }
 
-/* ── INLINE ADD ──────────────────────────────────── */
-.inline-add-card {
-	animation: fade-slide-in 0.14s ease-out both;
-}
-
-@keyframes fade-slide-in {
-	from {
-		opacity: 0;
-		transform: translateY(-4px);
-	}
-
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
 
 /* ── MISC ────────────────────────────────────────── */
 .empty-drop-zone {
@@ -546,16 +519,6 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 }
 
 .task-card {
-	transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, opacity 0.2s ease;
-	will-change: transform;
-}
-
-.task-card:hover:not(.task-chosen):not(.task-dragging) {
-	transform: translateY(-1px);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 0 0 1px color-mix(in srgb, var(--color-heading) 8%, transparent);
-}
-
-.task-card:active:not(.drag-handle) {
-	transform: translateY(0);
+	transition: border-color 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, opacity 0.2s ease;
 }
 </style>

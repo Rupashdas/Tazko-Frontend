@@ -1,18 +1,19 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { addIcons } from 'oh-vue-icons'
-import { BiX, BiPlus } from 'oh-vue-icons/icons'
+import { BiX, BiPlus, BiArrowRepeat } from 'oh-vue-icons/icons'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import AppDatePicker from '@/components/ui/AppDatePicker.vue'
 import RichTextEditor from '@/components/shared/RichTextEditor.vue'
 
-addIcons(BiX, BiPlus)
+addIcons(BiX, BiPlus, BiArrowRepeat)
 
 const props = defineProps({
 	show: { type: Boolean, default: false },
 	members: { type: Array, default: () => [] },
 	columnStatuses: { type: Array, default: () => ['Todo', 'In Progress', 'Review', 'Done'] },
 	defaultStatus: { type: String, default: 'Todo' },
+	saving: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['close', 'save'])
@@ -44,12 +45,12 @@ watch(() => props.defaultStatus, (val) => {
 const handleSave = () => {
 	if (!title.value.trim()) return
 	emit('save', {
-		title: title.value.trim(),
-		description: description.value || '',
-		status: status.value,
-		priority: priority.value,
-		assignees: assignees.value.length ? assignees.value : ['AH'],
-		due: due.value || '',
+		title:        title.value.trim(),
+		description:  description.value || '',
+		status:       status.value,
+		priority:     priority.value,
+		assignee_ids: assignees.value,
+		due_date:     due.value || null,
 	})
 }
 
@@ -101,7 +102,7 @@ const handleClose = () => emit('close')
 							<label class="block text-base font-semibold text-text mb-1.5">Assignees</label>
 							<AppSelect
 								v-model="assignees"
-								:options="members.map(m => ({ label: m.name, value: m.initials, color: m.color, initials: m.initials }))"
+								:options="members.map(m => ({ label: m.name, value: m.id, color: m.color, initials: m.initials }))"
 								placeholder="Select assignees…"
 								:multiple="true" />
 						</div>
@@ -123,9 +124,10 @@ const handleClose = () => emit('close')
 							<v-icon name="bi-x" scale="1" />
 							Cancel
 						</button>
-						<button @click="handleSave" class="flex-1 tazko-btn">
-							<v-icon name="bi-plus" scale="1" />
-							Add Task
+						<button @click="handleSave" :disabled="saving" class="flex-1 tazko-btn disabled:opacity-60 disabled:cursor-not-allowed">
+							<v-icon v-if="saving" name="bi-arrow-repeat" scale="1" class="animate-spin" />
+							<v-icon v-else name="bi-plus" scale="1" />
+							{{ saving ? 'Adding…' : 'Add Task' }}
 						</button>
 					</div>
 				</div>

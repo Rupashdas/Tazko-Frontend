@@ -1,10 +1,11 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { addIcons } from 'oh-vue-icons'
-import { BiX, BiPersonPlus, BiSearch, BiCheck2, BiArrowLeft, BiArrowRight, BiArrowRepeat } from 'oh-vue-icons/icons'
+import { BiX, BiPersonPlus, BiArrowLeft, BiArrowRight, BiArrowRepeat } from 'oh-vue-icons/icons'
 import axios from '@/axios'
+import AppSelect from '@/components/ui/AppSelect.vue'
 
-addIcons(BiX, BiPersonPlus, BiSearch, BiCheck2, BiArrowLeft, BiArrowRight, BiArrowRepeat)
+addIcons(BiX, BiPersonPlus, BiArrowLeft, BiArrowRight, BiArrowRepeat)
 
 const props = defineProps({
 	show: { type: Boolean, default: false },
@@ -31,9 +32,8 @@ const step = ref(1)
 const users = ref([])
 const loading = ref(false)
 const fetchError = ref(false)
-const selected = ref([])
+const selectedIds = ref([])   // array of user IDs — AppSelect v-model
 const roles = ref({})
-const searchQuery = ref('')
 
 // ── Reset + fetch on open ─────────────────────────────────
 const fetchUsers = async () => {
@@ -52,34 +52,32 @@ const fetchUsers = async () => {
 watch(() => props.show, (val) => {
 	if (val) {
 		step.value = 1
-		selected.value = []
+		selectedIds.value = []
 		roles.value = {}
-		searchQuery.value = ''
 		fetchUsers()
 	}
 })
 
 // ── Step 1 computed ───────────────────────────────────────
-const existingKeys = computed(() => new Set(props.existingMembers.map(m => m.id)))
+const existingIds = computed(() => props.existingMembers.map(m => m.id))
 
-const availablePeople = computed(() => {
-	const q = searchQuery.value.toLowerCase().trim()
-	return users.value
-		.filter(u => !existingKeys.value.has(u.id))
-		.filter(u => !q || u.name.toLowerCase().includes(q))
-})
+// All users as AppSelect options; existing members are disabledValues (shown checked, non-interactive)
+const userOptions = computed(() =>
+	users.value.map((u, i) => ({
+		label:    u.name,
+		value:    u.id,
+		initials: getInitials(u.name),
+		color:    colorFor(i),
+	}))
+)
 
-const toggle = (user) => {
-	const idx = selected.value.findIndex(s => s.id === user.id)
-	if (idx === -1) {
-		selected.value.push(user)
-	} else {
-		selected.value.splice(idx, 1)
-		delete roles.value[user.id]
-	}
-}
-
-const isSelected = (user) => selected.value.some(s => s.id === user.id)
+// Newly selected user objects (excludes pre-existing members)
+const selected = computed(() =>
+	selectedIds.value
+		.filter(id => !existingIds.value.includes(id))
+		.map(id => users.value.find(u => u.id === id))
+		.filter(Boolean)
+)
 
 // ── Navigation ────────────────────────────────────────────
 const goNext = () => { if (selected.value.length) step.value = 2 }
@@ -106,10 +104,10 @@ const handleClose = () => emit('close')
 			<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4"
 				@click.self="handleClose">
 				<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="handleClose"></div>
-				<div class="relative bg-panel rounded-sm shadow-2xl w-full max-w-md z-10 overflow-hidden transition-all flex flex-col max-h-[80vh]">
+				<div class="relative bg-panel rounded-sm shadow-2xl w-full max-w-md z-10 transition-all flex flex-col max-h-[80vh]">
 
 					<!-- Header -->
-					<div class="border-b border-heading/8 px-6 pt-6 pb-5 shrink-0">
+					<div class="border-b border-heading/8 px-6 pt-6 pb-5 shrink-0 rounded-t-sm">
 						<div class="flex items-center justify-between">
 							<div>
 								<h2 class="section-title">
@@ -131,66 +129,31 @@ const handleClose = () => emit('close')
 						</div>
 					</div>
 
-					<!-- Step 1: Search + Select -->
+					<!-- Step 1: Select members via dropdown -->
 					<template v-if="step === 1">
-						<div class="p-5 shrink-0 border-b border-heading/5">
-							<div class="relative">
-								<v-icon name="bi-search"
-									class="absolute left-3 top-1/2 -translate-y-1/2 text-text pointer-events-none"
-									scale="0.85" />
-								<input v-model="searchQuery" type="text" placeholder="Search people…"
-									class="w-full pl-9 pr-3 py-2 rounded-sm border border-heading/8 bg-heading/3 text-base text-heading placeholder:text-text focus:outline-none focus:border-accent/40 transition-colors" />
+						<div class="px-6 py-5 shrink-0">
+							<label class="block text-base font-semibold text-text mb-1.5">Select People</label>
+
+							<!-- Loading / error states -->
+							<div v-if="loading" class="py-2 text-sm text-text">Loading users…</div>
+							<div v-else-if="fetchError" class="flex items-center gap-2 py-2">
+								<span class="text-sm text-text">Failed to load users.</span>
+								<button @click="fetchUsers" class="text-sm text-accent hover:underline">Retry</button>
 							</div>
-						</div>
 
-						<div v-scrollbar class="flex-1 overflow-y-auto">
-							<div>
-								<!-- Loading -->
-								<div v-if="loading" class="p-10 text-center">
-									<p class="text-base text-text">Loading members…</p>
-								</div>
-
-								<!-- Fetch error -->
-								<div v-else-if="fetchError" class="p-10 text-center">
-									<p class="text-base text-text mb-3">Failed to load users.</p>
-									<button @click="fetchUsers" class="tazko-btn-cancel text-sm px-4 py-1.5">
-										Retry
-									</button>
-								</div>
-
-								<!-- Empty state -->
-								<div v-else-if="availablePeople.length === 0" class="p-10 text-center">
-									<v-icon name="bi-person-plus" scale="2" class="text-text mx-auto mb-3" />
-									<p class="text-base text-text">
-										{{ searchQuery ? 'No people match your search.' : 'Everyone is already on this project.' }}
-									</p>
-								</div>
-
-								<!-- People list -->
-								<div v-else class="divide-y divide-heading/5">
-									<button v-for="(person, i) in availablePeople" :key="person.id"
-										type="button"
-										@click="toggle(person)"
-										class="w-full flex items-center gap-3 px-5 py-3 hover:bg-heading/[0.03] transition-colors text-left">
-										<div :class="[!person.avatar && colorFor(i), 'w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm overflow-hidden']">
-											<img v-if="person.avatar" :src="person.avatar" class="w-full h-full object-cover" :alt="person.name" />
-											<span v-else>{{ getInitials(person.name) }}</span>
-										</div>
-										<div class="min-w-0 flex-1">
-											<p class="text-base font-semibold text-heading truncate">{{ person.name }}</p>
-											<p class="text-sm text-text truncate">{{ person.email }}</p>
-										</div>
-										<div :class="['w-5 h-5 rounded-sm border-2 flex items-center justify-center shrink-0 transition-all',
-											isSelected(person) ? 'bg-accent border-accent' : 'border-heading/20']">
-											<v-icon v-if="isSelected(person)" name="bi-check2" scale="0.75" class="text-white" />
-										</div>
-									</button>
-								</div>
-							</div>
+							<!-- AppSelect dropdown -->
+							<AppSelect
+								v-else
+								v-model="selectedIds"
+								:options="userOptions"
+								:disabled-values="existingIds"
+								:multiple="true"
+								:searchable="true"
+								placeholder="Search and select people…" />
 						</div>
 
 						<!-- Step 1 Footer -->
-						<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0">
+						<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0 rounded-b-sm">
 							<button @click="handleClose" class="flex-1 tazko-btn-cancel">
 								<v-icon name="bi-x" scale="1" />
 								Cancel
@@ -227,7 +190,7 @@ const handleClose = () => emit('close')
 						</div>
 
 						<!-- Step 2 Footer -->
-						<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0">
+						<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0 rounded-b-sm">
 							<button @click="goBack" :disabled="saving" class="flex-1 tazko-btn-cancel">
 								<v-icon name="bi-arrow-left" scale="1" />
 								Back

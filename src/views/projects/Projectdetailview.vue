@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useProjectStore } from '@/stores/useProjectStore'
+import { useCommentStore } from '@/stores/useCommentStore'
 import { useToast } from '@/utils/toast'
 import { addIcons } from 'oh-vue-icons'
 import {
@@ -35,17 +36,25 @@ const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 const store = useProjectStore()
+const commentStore = useCommentStore()
 const { successToast, errorToast } = useToast()
 
-const canViewFiles    = computed(() => auth.hasCapability('files.view'))
-const canViewActivity = computed(() => auth.hasCapability('activity.view'))
-const canUploadFiles  = computed(() => auth.hasCapability('files.upload'))
-const canCreateTask   = computed(() => auth.hasCapability('tasks.create'))
+const canViewFiles      = computed(() => auth.hasCapability('files.view'))
+const canViewActivity   = computed(() => auth.hasCapability('activity.view'))
+const canUploadFiles    = computed(() => auth.hasCapability('files.upload'))
+const canCreateTask     = computed(() => auth.hasCapability('tasks.create'))
 const canUpdate         = computed(() => auth.hasCapability('projects.update'))
 const canArchive        = computed(() => auth.hasCapability('projects.archive'))
 const canDelete         = computed(() => auth.hasCapability('projects.delete'))
 const canManageMembers  = computed(() => auth.hasCapability('projects.members.manage'))
 const hasAnyAction      = computed(() => canUpdate.value || canArchive.value || canDelete.value)
+
+// Comment capabilities
+const canViewComments   = computed(() => auth.hasCapability('comments.view'))
+const canCreateComment  = computed(() => auth.hasCapability('comments.create'))
+const canEditComment    = computed(() => auth.hasCapability('comments.update'))
+const canDeleteComment  = computed(() => auth.hasCapability('comments.delete'))
+const canReactComment   = computed(() => auth.hasCapability('comments.react'))
 
 // ── Project data (from store) ──────────────────────────
 const memberColors = ['bg-accent', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500']
@@ -72,8 +81,14 @@ const project = computed(() => {
 	}
 })
 
-// ── Tasks (populated when task API is implemented) ────
-const tasks = ref([])
+
+// ── Live progress — recalculates as tasks change status ──
+const liveProgress = computed(() => {
+	const tasks = store.tasks
+	if (!tasks.length) return project.value?.progress ?? 0
+	const done = tasks.filter(t => t.status === 'Done').length
+	return Math.round((done / tasks.length) * 100)
+})
 
 // ── Activity (populated when activity API is implemented) ──
 const recentActivity = ref([])
@@ -91,7 +106,7 @@ const allTabs = [
 	{ key: 'board', label: 'Board', icon: 'bi-kanban', requiredCap: null },
 	{ key: 'overview', label: 'Overview', icon: 'bi-bar-chart', requiredCap: null },
 	{ key: 'files', label: 'Files', icon: 'bi-file-earmark', requiredCap: 'files.view' },
-	{ key: 'comments', label: 'Comments', icon: 'bi-chat', requiredCap: null },
+	{ key: 'comments', label: 'Comments', icon: 'bi-chat', requiredCap: 'comments.view' },
 	{ key: 'activity', label: 'Activity', icon: 'bi-activity', requiredCap: 'activity.view' },
 ]
 const tabs = computed(() =>
@@ -117,6 +132,15 @@ watch(tabs, (val) => {
 		syncTabFromQuery()
 	}
 }, { immediate: true })
+
+// Lazy-load comments on first open
+const commentsFetched = ref(false)
+watch(activeTab, (tab) => {
+	if (tab === 'comments' && !commentsFetched.value && store.currentProject) {
+		commentsFetched.value = true
+		commentStore.fetchComments(store.currentProject.id)
+	}
+})
 
 const setActiveTab = (key) => {
 	if (key === activeTab.value) return
@@ -146,16 +170,23 @@ const openAddTaskModal = (status = 'Todo') => {
 	showAddTask.value = true
 }
 
-const handleAddTaskSave = (data) => {
-	const t2 = { id: Date.now(), ...data }
-	tasks.value.push(t2)
-	showAddTask.value = false
+const addingTask = ref(false)
+const handleAddTaskSave = async (data) => {
+	addingTask.value = true
+	const result = await store.createTask(project.value.id, data)
+	addingTask.value = false
+	if (result.success) {
+		showAddTask.value = false
+	} else {
+		errorToast(result.message)
+	}
 }
 
 const handleAddTaskClick = (status) => {
 	setActiveTab('board')
 	openAddTaskModal(status || 'Todo')
 }
+
 
 const openTask = (taskId) => router.push({ name: 'task-detail', params: { id: route.params.id, taskId } })
 
@@ -207,7 +238,6 @@ const handleEditProjectSave = async (data) => {
 
 	if (result.success) {
 		successToast(result.message)
-		await store.fetchProject(route.params.id)
 		showEditProject.value = false
 	} else {
 		errorToast(result.message)
@@ -226,10 +256,40 @@ const closeMoreMenu = () => { moreMenuOpen.value = false }
 // the component is actually in the DOM.
 onMounted(async () => {
 	document.addEventListener('click', closeMoreMenu)
-	await store.fetchProject(route.params.id)
+	await Promise.all([
+		store.fetchProject(route.params.id),
+		store.fetchTasks(route.params.id),
+	])
 	syncTabFromQuery()
 })
-onBeforeUnmount(() => document.removeEventListener('click', closeMoreMenu))
+onBeforeUnmount(() => {
+	document.removeEventListener('click', closeMoreMenu)
+	commentStore.clearComments()
+})
+
+// ── Task reorder (drag — handles both status change + sort order) ──
+const handleTasksReordered = (orders) => {
+	store.reorderTasks(project.value.id, orders)
+}
+
+// ── Task delete ───────────────────────────
+const showDeleteTaskConfirm = ref(false)
+const taskToDelete = ref(null)
+const deletingTask = ref(false)
+
+const requestDeleteTask = (taskId) => {
+	taskToDelete.value = taskId
+	showDeleteTaskConfirm.value = true
+}
+
+const handleDeleteTask = async () => {
+	deletingTask.value = true
+	const result = await store.deleteTask(project.value.id, taskToDelete.value)
+	deletingTask.value = false
+	showDeleteTaskConfirm.value = false
+	taskToDelete.value = null
+	if (!result.success) errorToast(result.message)
+}
 
 // ── Archive / Delete  confirm ──────────────
 const showArchiveConfirm = ref(false)
@@ -422,9 +482,9 @@ const handleDelete = async () => {
 					<div class="flex items-center gap-2.5 min-w-52">
 						<div class="flex-1 h-1.5 bg-heading/10 rounded-full overflow-hidden">
 							<div class="h-full bg-accent rounded-full transition-all duration-700"
-								:style="`width:${project.progress}%`" />
+								:style="`width:${liveProgress}%`" />
 						</div>
-						<span class="text-sm font-bold text-heading tabular-nums">{{ project.progress }}%</span>
+						<span class="text-sm font-bold text-heading tabular-nums">{{ liveProgress }}%</span>
 					</div>
 					<div class="flex items-center gap-1.5 text-sm text-text">
 						<v-icon name="bi-calendar3" scale="0.75" />
@@ -483,15 +543,18 @@ const handleDelete = async () => {
 
 			<ProjectBoardTab
 				v-show="activeTab === 'board'"
-				v-model:tasks="tasks"
+				:tasks="store.tasks"
 				:members="project.members"
 				@open-task="openTask"
-				@add-task-click="openAddTaskModal" />
+				@add-task-click="openAddTaskModal"
+				@tasks-reordered="handleTasksReordered"
+				@delete-task="requestDeleteTask" />
 
 			<ProjectOverviewTab
 				v-show="activeTab === 'overview'"
 				:project="project"
-				:tasks="tasks"
+				:progress="liveProgress"
+				:tasks="store.tasks"
 				:activity="recentActivity"
 				:can-manage-members="canManageMembers"
 				@add-member-click="openAddMember" />
@@ -502,8 +565,14 @@ const handleDelete = async () => {
 				:can-upload="canUploadFiles" />
 
 			<ProjectCommentsTab
+				v-if="canViewComments"
 				v-show="activeTab === 'comments'"
-				:members="project.members" />
+				:project-id="project.id"
+				:members="project.members"
+				:can-create="canCreateComment"
+				:can-edit="canEditComment"
+				:can-delete="canDeleteComment"
+				:can-react="canReactComment" />
 
 			<ProjectActivityTab
 				v-show="activeTab === 'activity'"
@@ -519,6 +588,7 @@ const handleDelete = async () => {
 			:show="showAddTask"
 			:members="project?.members ?? []"
 			:default-status="addTaskDefaultStatus"
+			:saving="addingTask"
 			@close="showAddTask = false"
 			@save="handleAddTaskSave" />
 
@@ -562,6 +632,17 @@ const handleDelete = async () => {
 			:loading="deleting"
 			@close="showDeleteConfirm = false"
 			@confirm="handleDelete" />
+
+		<ConfirmModal
+			:show="showDeleteTaskConfirm"
+			title="Delete Task?"
+			message="This task will be permanently deleted and cannot be recovered."
+			icon="bi-trash"
+			confirm-label="Delete"
+			confirming-label="Deleting…"
+			:loading="deletingTask"
+			@close="showDeleteTaskConfirm = false"
+			@confirm="handleDeleteTask" />
 
 	</div>
 </template>
