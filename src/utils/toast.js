@@ -1,14 +1,25 @@
 import { getCurrentInstance } from 'vue'
 
+function escapeHtml(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+}
+
 function makeHtml(icon, title, message) {
+    const safeTitle   = escapeHtml(title)
+    const safeMessage = escapeHtml(message)
     return `
         <div class="tazko-toast__inner">
             <div class="tazko-toast__bar"></div>
             <div class="tazko-toast__body">
                 <div class="tazko-toast__icon">${icon}</div>
                 <div class="tazko-toast__text">
-                    <span class="tazko-toast__title">${title}</span>
-                    ${message ? `<span class="tazko-toast__msg">${message}</span>` : ''}
+                    <span class="tazko-toast__title">${safeTitle}</span>
+                    ${safeMessage ? `<span class="tazko-toast__msg">${safeMessage}</span>` : ''}
                 </div>
             </div>
         </div>

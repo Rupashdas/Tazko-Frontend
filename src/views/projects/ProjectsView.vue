@@ -16,6 +16,7 @@ import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 import { useProjectStore } from '@/stores/useProjectStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useToast } from '@/utils/toast'
+import { sanitize } from '@/utils/sanitize'
 
 addIcons(
 	BiPlusCircle, BiSearch, BiGrid3X3Gap, BiListUl,
@@ -561,7 +562,7 @@ onBeforeUnmount(() => {
 					<div
 						v-if="project.description"
 						class="text-base text-text leading-relaxed line-clamp-2 mb-4 rich-content"
-						v-html="project.description" />
+						v-html="sanitize(project.description)" />
 					<p v-else class="text-base text-text leading-relaxed line-clamp-2 mb-4 italic">No description</p>
 
 					<div class="mb-4">

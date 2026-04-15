@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import { useProjectStore } from '@/stores/useProjectStore'
 import { useCommentStore } from '@/stores/useCommentStore'
 import { useToast } from '@/utils/toast'
+import { sanitize } from '@/utils/sanitize'
 import { addIcons } from 'oh-vue-icons'
 import {
 	BiPencil, BiThreeDotsVertical, BiPlus, BiCheck2, BiX,
@@ -471,7 +472,7 @@ const handleDelete = async () => {
 				<!-- Description — edit via three-dot menu -->
 				<div class="rounded-sm mb-4">
 					<div v-if="hasDescription"
-						class="project-rich-content px-2 py-1 -ml-2" v-html="project.description" />
+						class="project-rich-content px-2 py-1 -ml-2" v-html="sanitize(project.description)" />
 					<p v-else class="text-sm text-text italic opacity-60 px-2 py-1 -ml-2">
 						No description yet.
 					</p>
@@ -732,7 +733,7 @@ const handleDelete = async () => {
 	margin: 12px 0;
 	display: block;
 }
-:deep([data-node-view-wrapper]) {
+:deep(div[data-node-view-wrapper]) {
 	display: block;
 }
 :deep([data-node-view-wrapper]:not(.file-attachment-wrapper) .me-aspect) {

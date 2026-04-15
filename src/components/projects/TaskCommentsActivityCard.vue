@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import RichTextEditor from '@/components/shared/RichTextEditor.vue'
+import { sanitize } from '@/utils/sanitize'
 import { addIcons } from 'oh-vue-icons'
 import {
 	BiChat, BiActivity, BiPencil, BiCheck2, BiX, BiHandThumbsUp,
@@ -127,7 +128,7 @@ const toggleLike = (comment) => {
 					<div
 						class="bg-heading/[0.03] rounded-sm rounded-tl-none px-4 py-3 border border-heading/[0.06]">
 						<div v-if="editingCommentId !== comment.id" class="text-base text-text leading-relaxed rich-content"
-							v-html="comment.text" />
+							v-html="sanitize(comment.text)" />
 						<div v-else class="space-y-2">
 							<rich-text-editor :ref="setEditingCommentEditorRef" v-model="editingCommentText"
 								min-height="80px" :autofocus="true" :enable-mention="true" :users="members" />

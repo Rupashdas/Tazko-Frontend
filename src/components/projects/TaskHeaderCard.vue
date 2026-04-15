@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import RichTextEditor from '@/components/shared/RichTextEditor.vue'
+import { sanitize } from '@/utils/sanitize'
 import { addIcons } from 'oh-vue-icons'
 import {
 	BiTrash, BiCheck2,
@@ -96,7 +97,7 @@ const saveDesc = () => {
 			<div v-if="!editingDesc" @click="startEditDesc"
 				class="group cursor-pointer rounded-sm bg-heading/[0.025] hover:bg-heading/[0.045] border border-transparent hover:border-heading/8 px-4 py-3 transition-all">
 				<div v-if="task.description && task.description !== '<p></p>'"
-					class="text-base text-text leading-relaxed prose-sm" v-html="task.description" />
+					class="text-base text-text leading-relaxed prose-sm" v-html="sanitize(task.description)" />
 				<p v-else class="text-base text-text italic">
 					Click to add a description…
 				</p>

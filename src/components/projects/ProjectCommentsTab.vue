@@ -3,7 +3,9 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useCommentStore } from '@/stores/useCommentStore'
 import { useToast } from '@/utils/toast'
+import { sanitize } from '@/utils/sanitize'
 import RichTextEditor from '@/components/shared/RichTextEditor.vue'
+import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 import { addIcons } from 'oh-vue-icons'
 import {
 	BiPencil, BiHandThumbsUp, BiCheck2, BiX, BiChat,
@@ -107,9 +109,27 @@ const cancelEdit = () => {
 }
 
 // ── Delete ─────────────────────────────────────────────
-const deleteComment = async (commentId) => {
-	const result = await store.deleteComment(props.projectId, commentId)
+const showDeleteModal = ref(false)
+const deletingCommentId = ref(null)
+const deleting = ref(false)
+
+const requestDeleteComment = (commentId) => {
+	deletingCommentId.value = commentId
+	showDeleteModal.value = true
+}
+
+const confirmDeleteComment = async () => {
+	deleting.value = true
+	const result = await store.deleteComment(props.projectId, deletingCommentId.value)
+	deleting.value = false
+	showDeleteModal.value = false
+	deletingCommentId.value = null
 	if (!result.success) errorToast(result.message)
+}
+
+const cancelDeleteComment = () => {
+	showDeleteModal.value = false
+	deletingCommentId.value = null
 }
 
 // ── Like ───────────────────────────────────────────────
@@ -176,12 +196,12 @@ const toggleLike = (commentId) => {
 									<v-icon name="bi-pencil" scale="0.7" />
 								</button>
 
-								<span v-if="canEdit && isOwnComment(comment) && canDelete" class="text-text/30">|</span>
+								<span v-if="canEdit && canDelete && isOwnComment(comment)" class="text-text/30">|</span>
 
 								<!-- Delete -->
 								<button
-									v-if="canDelete && (isOwnComment(comment) || true)"
-									@click="deleteComment(comment.id)"
+									v-if="canDelete && isOwnComment(comment)"
+									@click="requestDeleteComment(comment.id)"
 									class="inline-flex items-center gap-1 text-text hover:text-red-500 transition-colors"
 									title="Delete comment">
 									<v-icon name="bi-trash" scale="0.7" />
@@ -210,7 +230,7 @@ const toggleLike = (commentId) => {
 							<div
 								v-if="editingCommentId !== comment.id"
 								class="text-base text-text leading-relaxed rich-content"
-								v-html="comment.body" />
+								v-html="sanitize(comment.body)" />
 
 							<!-- Edit mode -->
 							<div v-else class="space-y-2">
@@ -296,5 +316,16 @@ const toggleLike = (commentId) => {
 			</div>
 
 		</div>
+
+		<ConfirmModal
+			:show="showDeleteModal"
+			title="Delete Comment"
+			message="Are you sure you want to delete this comment? This action cannot be undone."
+			icon="bi-trash"
+			confirm-label="Delete"
+			confirming-label="Deleting…"
+			:loading="deleting"
+			@close="cancelDeleteComment"
+			@confirm="confirmDeleteComment" />
 	</div>
 </template>
