@@ -143,7 +143,8 @@ const handleClose = () => {
 								v-model="form.description"
 								placeholder="Describe what this project is about…"
 								:show-toolbar="true"
-								min-height="100px" />
+								min-height="100px"
+								:project-id="isEdit ? props.project?.id : null" />
 						</div>
 
 						<div>

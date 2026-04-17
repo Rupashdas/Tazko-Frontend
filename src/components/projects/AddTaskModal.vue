@@ -14,6 +14,7 @@ const props = defineProps({
 	columnStatuses: { type: Array, default: () => ['Todo', 'In Progress', 'Review', 'Done'] },
 	defaultStatus: { type: String, default: 'Todo' },
 	saving: { type: Boolean, default: false },
+	projectId: { type: [Number, String], default: null },
 })
 
 const emit = defineEmits(['close', 'save'])
@@ -115,7 +116,7 @@ const handleClose = () => emit('close')
 						</div>
 						<div>
 							<label class="block text-base font-semibold text-text mb-1.5">Description</label>
-							<RichTextEditor v-model="description" placeholder="Describe the task…" min-height="120px" :enable-mention="true" :users="members" />
+							<RichTextEditor v-model="description" placeholder="Describe the task…" min-height="120px" :enable-mention="true" :users="members" :project-id="projectId" />
 						</div>
 					</div></div>
 

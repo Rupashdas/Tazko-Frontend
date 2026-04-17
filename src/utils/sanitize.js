@@ -35,6 +35,9 @@ export function sanitize(html) {
             'data-file-attachment', 'data-file-name', 'data-file-type',
             'data-file-src', 'data-file-mime', 'data-file-size',
             'data-file-align',
+            // Backend linkage — the real attachment row id. AttachmentSyncService
+            // reads this to commit orphan uploads to their parent model.
+            'data-attachment-id',
         ],
         // Keep data-* attributes so mention chips and file attachments
         // survive the sanitize pass. DOMPurify still blocks event

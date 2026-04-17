@@ -13,6 +13,10 @@ const props = defineProps({
 	comments: { type: Array, required: true },
 	activity: { type: Array, required: true },
 	members: { type: Array, default: () => [] },
+	// Required for RichTextEditor attachments — the task's project id. Parents
+	// pass `task.project_id` through. Nullable so the component still renders
+	// if a consumer forgets, but uploads will be blocked with a clear toast.
+	projectId: { type: [Number, String], default: null },
 	currentUser: {
 		type: Object,
 		default: () => ({ initials: 'YO', name: 'You', color: 'bg-accent' }),
@@ -131,7 +135,8 @@ const toggleLike = (comment) => {
 							v-html="sanitize(comment.text)" />
 						<div v-else class="space-y-2">
 							<rich-text-editor :ref="setEditingCommentEditorRef" v-model="editingCommentText"
-								min-height="80px" :autofocus="true" :enable-mention="true" :users="members" />
+								min-height="80px" :autofocus="true" :enable-mention="true" :users="members"
+								:project-id="projectId" />
 							<div class="flex items-center gap-2 justify-end">
 								<button @click="saveCommentEdit(comment)" class="tazko-btn">
 									<v-icon name="bi-check2" scale="0.85" />
@@ -156,6 +161,7 @@ const toggleLike = (comment) => {
 					<rich-text-editor ref="commentEditorRef"
 						placeholder="Write a comment… (use @ to mention someone)"
 						:show-toolbar="commentEditorFocused" :enable-mention="true" :users="members"
+						:project-id="projectId"
 						min-height="120px" @focus="commentEditorFocused = true" />
 					<div v-if="commentEditorFocused" class="flex items-center gap-2 mt-2">
 						<button type="button" class="inline-flex items-center px-3 py-1.5 rounded-sm bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors" @click="sendComment">Add Comment</button>

@@ -156,7 +156,8 @@ const activity = [
 				<TaskCommentsActivityCard
 					v-model:comments="comments"
 					:activity="activity"
-					:members="members" />
+					:members="members"
+					:project-id="task.project?.id" />
 			</div>
 
 			<!-- RIGHT: Sticky sidebar -->

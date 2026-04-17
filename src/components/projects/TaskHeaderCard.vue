@@ -106,7 +106,8 @@ const saveDesc = () => {
 			<div v-else class="space-y-2">
 				<rich-text-editor ref="descEditorRef" v-model="descDraft" placeholder="Describe this task…"
 					:show-toolbar="true" min-height="120px"
-					:autofocus="true" :enable-mention="true" :users="members" />
+					:autofocus="true" :enable-mention="true" :users="members"
+					:project-id="task.project_id" />
 				<div class="flex items-center gap-2">
 					<button type="button" class="inline-flex items-center px-3 py-1.5 rounded-sm bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors" @click="saveDesc">Save</button>
 					<button type="button" class="inline-flex items-center px-3 py-1.5 rounded-sm border border-heading/10 text-text text-sm font-semibold hover:bg-heading/5 transition-colors" @click="editingDesc = false">Cancel</button>

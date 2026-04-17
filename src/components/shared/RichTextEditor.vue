@@ -15,6 +15,8 @@ import FileAttachmentView from './FileAttachmentView.vue'
 import { MediaEmbed, urlToEmbedInfo } from './MediaEmbedPlugin'
 import EditorToolbar from './EditorToolbar.vue'
 import MentionView from './MentionView.vue'
+import { uploadAttachment, streamUrl } from '@/services/attachmentService'
+import { useToast } from '@/utils/toast'
 
 // ── Placeholder ─────────────────────────────────────────────
 function buildPlaceholderExtension(placeholderText) {
@@ -145,6 +147,20 @@ const FileAttachment = TipTapNode.create({
 			mimeType: { default: '' },
 			fileSize: { default: 0 },
 			align: { default: 'left' },
+
+			// Real backend attachment id, populated after upload completes.
+			// The HTML emitted for storage includes this as `data-attachment-id`
+			// — that's what App\Services\AttachmentSyncService parses to link
+			// orphan rows to the saved parent.
+			attachmentId: { default: null },
+			// Transient, editor-only: a client-generated uuid so the async
+			// upload callback can find "its" node again after the user may
+			// have typed/reordered. Not persisted — stripped in renderHTML.
+			tempId: { default: null },
+			// Transient UI flags. Not persisted (dropped in renderHTML) so a
+			// saved document never carries ambiguous upload state.
+			uploading: { default: false },
+			uploadError: { default: null },
 		}
 	},
 	parseHTML() {
@@ -159,6 +175,14 @@ const FileAttachment = TipTapNode.create({
 						mimeType: el.getAttribute('data-file-mime') || '',
 						fileSize: parseInt(el.getAttribute('data-file-size') || '0', 10),
 						align: el.getAttribute('data-file-align') || 'left',
+						attachmentId: (() => {
+							const raw = el.getAttribute('data-attachment-id')
+							return raw && /^\d+$/.test(raw) ? parseInt(raw, 10) : null
+						})(),
+						// tempId + upload flags are transient — always start clean.
+						tempId: null,
+						uploading: false,
+						uploadError: null,
 					}
 				},
 			},
@@ -173,6 +197,11 @@ const FileAttachment = TipTapNode.create({
 			'data-file-mime': node.attrs.mimeType,
 			'data-file-size': String(node.attrs.fileSize),
 			'data-file-align': node.attrs.align,
+		}
+		// Only stamp the real attachment id — never the tempId or upload
+		// state. Saved HTML stays clean and backend-parseable.
+		if (node.attrs.attachmentId) {
+			attrs['data-attachment-id'] = String(node.attrs.attachmentId)
 		}
 		const type = node.attrs.fileType || 'file'
 		const src = node.attrs.src || ''
@@ -265,6 +294,12 @@ const props = defineProps({
 	minHeight: { type: String, default: '80px' },
 	autofocus: { type: Boolean, default: false },
 	accept: { type: String, default: '*' },
+
+	// Tenancy anchor for file uploads. REQUIRED when the user may attach files
+	// (which is always, unless the caller has hidden the toolbar's attach
+	// button). When null, picking a file shows an error toast and no-ops —
+	// this covers the "create new project" flow where no id exists yet.
+	projectId: { type: [Number, String], default: null },
 })
 
 const emit = defineEmits(['update:modelValue', 'focus', 'blur'])
@@ -290,25 +325,158 @@ function revokeTrackedObjectUrl(url) {
 
 // ── File upload ─────────────────────────────────────────────
 const fileInput = ref(null)
+const { errorToast } = useToast()
+
+// Every in-flight upload has an AbortController so we can cancel mid-flight
+// if the component unmounts. Keyed by tempId to avoid cross-wires when the
+// user picks several files in quick succession.
+const pendingUploads = new Map()
 
 function triggerFileUpload() { fileInput.value?.click() }
 
-function handleFileSelect(event) {
+/**
+ * Walk the editor doc and return {node, pos} for the fileAttachment whose
+ * `tempId` matches, or null if it's gone (user deleted during upload).
+ */
+function findNodeByTempId(tempId) {
+	if (!editor.value) return null
+	let found = null
+	editor.value.state.doc.descendants((node, pos) => {
+		if (found) return false
+		if (node.type.name === 'fileAttachment' && node.attrs.tempId === tempId) {
+			found = { node, pos }
+			return false
+		}
+	})
+	return found
+}
+
+/**
+ * Upload one file and reconcile its node with the server response.
+ *
+ * Flow per file:
+ *   1. Insert a node immediately with a blob preview + `uploading:true` +
+ *      a temp client-side id. User sees the file instantly.
+ *   2. Start upload in parallel.
+ *   3. On success → find node by tempId, swap src to the authed stream URL,
+ *      stamp `attachmentId` (so the emitted HTML carries data-attachment-id),
+ *      clear uploading flag, revoke blob URL.
+ *   4. On failure → remove the node, toast the error, revoke blob.
+ *
+ * We rely on `node.attrs.tempId` (not position) to locate the node because
+ * the user may have typed above it while the upload was in flight.
+ */
+async function uploadOne(file, tempId) {
+	const controller = new AbortController()
+	pendingUploads.set(tempId, controller)
+
+	try {
+		const attachment = await uploadAttachment(
+			props.projectId,
+			file,
+			null, // TODO: per-node progress UI — wire onProgress later if desired
+			controller.signal,
+		)
+
+		const target = findNodeByTempId(tempId)
+		if (!target) return // user yanked the node mid-upload — nothing to do
+
+		// Swap blob preview for the real stream URL so the saved content
+		// survives a reload. Keep mimeType/fileType from the server in case
+		// it refined what the browser reported.
+		const blobSrc = target.node.attrs.src
+		editor.value
+			.chain()
+			.command(({ tr }) => {
+				tr.setNodeMarkup(target.pos, null, {
+					...target.node.attrs,
+					attachmentId: attachment.id,
+					src: streamUrl(attachment.id),
+					mimeType: attachment.mime_type ?? target.node.attrs.mimeType,
+					fileType: attachment.file_type ?? target.node.attrs.fileType,
+					fileSize: attachment.size ?? target.node.attrs.fileSize,
+					uploading: false,
+					uploadError: null,
+					tempId: null,
+				})
+				return true
+			})
+			.run()
+		revokeTrackedObjectUrl(blobSrc)
+	} catch (err) {
+		// AbortController fires a different error on cancel — we just quit
+		// silently; the reaper will clean up any orphan row on the server.
+		if (controller.signal.aborted) return
+
+		const target = findNodeByTempId(tempId)
+		if (target) {
+			const blobSrc = target.node.attrs.src
+			editor.value
+				.chain()
+				.command(({ tr }) => {
+					tr.delete(target.pos, target.pos + target.node.nodeSize)
+					return true
+				})
+				.run()
+			revokeTrackedObjectUrl(blobSrc)
+		}
+		const msg = err?.response?.data?.errors?.file?.[0]
+			?? err?.response?.data?.message
+			?? 'Failed to upload file.'
+		errorToast(`${file.name}: ${msg}`, 'Upload failed')
+	} finally {
+		pendingUploads.delete(tempId)
+	}
+}
+
+async function handleFileSelect(event) {
 	const files = event.target.files
 	if (!files || files.length === 0 || !editor.value) return
-	const content = Array.from(files).map(file => ({
+
+	// Guard the "no project context" case up front — covers the brand-new
+	// project form where the project id doesn't exist yet. Silent failure
+	// here would leave blobs in the doc that can never be persisted.
+	if (!props.projectId) {
+		errorToast('Save the project first before adding attachments.', 'Cannot upload')
+		event.target.value = ''
+		return
+	}
+
+	// Insert all optimistic nodes in one transaction so caret placement is
+	// predictable and `onUpdate` fires once rather than N times.
+	const picked = Array.from(files).map(file => {
+		// Prefer the web-standard crypto.randomUUID() when available; fall
+		// back to a Math.random string for older browsers.
+		const tempId = (globalThis.crypto?.randomUUID?.() ?? ('tmp-' + Math.random().toString(36).slice(2) + Date.now()))
+		return {
+			file,
+			tempId,
+			blobUrl: createTrackedObjectUrl(file),
+		}
+	})
+
+	const content = picked.map(({ file, tempId, blobUrl }) => ({
 		type: 'fileAttachment',
 		attrs: {
-			src: createTrackedObjectUrl(file),
+			src: blobUrl,
 			fileName: file.name,
 			fileType: detectFileType(file.type, file.name),
 			mimeType: file.type,
 			fileSize: file.size,
 			align: 'left',
+			attachmentId: null,
+			tempId,
+			uploading: true,
+			uploadError: null,
 		},
 	}))
+
 	editor.value.chain().focus().insertContent(content).run()
 	event.target.value = ''
+
+	// Fire uploads in parallel — order of completion doesn't matter because
+	// each one locates its own node via tempId.
+	for (const { file, tempId } of picked) uploadOne(file, tempId)
 }
 
 // ── @mention ────────────────────────────────────────────────
@@ -388,8 +556,15 @@ function removeAttachment(pos, nodeSize) {
 	if (!editor.value) return
 	const node = editor.value.state.doc.nodeAt(pos)
 	const src = node?.attrs?.src
+	const tempId = node?.attrs?.tempId
 	editor.value.chain().focus().deleteRange({ from: pos, to: pos + nodeSize }).run()
 	if (src) revokeTrackedObjectUrl(src)
+	// If an upload was still in flight, cancel it so the server-side reaper
+	// has one less orphan row to deal with.
+	if (tempId && pendingUploads.has(tempId)) {
+		pendingUploads.get(tempId).abort()
+		pendingUploads.delete(tempId)
+	}
 }
 
 // ── Word count ──────────────────────────────────────────────
@@ -502,6 +677,10 @@ const editor = useEditor({
 
 onBeforeUnmount(() => {
 	if (blurTimer !== null) clearTimeout(blurTimer)
+	// Cancel any still-running uploads so we don't leave orphan rows behind
+	// from sessions the user walked away from mid-submit.
+	for (const [, controller] of pendingUploads) controller.abort()
+	pendingUploads.clear()
 	// Revoke any blob URLs we created to avoid memory leaks
 	for (const url of createdObjectUrls) URL.revokeObjectURL(url)
 	createdObjectUrls.clear()
@@ -569,16 +748,26 @@ defineExpose({ getHTML, getText, clear, focus, isEmpty })
 
 			<div v-if="showAttachments" class="px-2.5 pb-2 flex flex-col gap-1">
 				<div v-for="(file, i) in attachedFiles" :key="i"
-					class="flex items-center gap-2.5 px-2 py-1.5 rounded-[6px] bg-heading/[0.03] border border-heading/6">
-					<div class="w-9 h-9 rounded-[4px] overflow-hidden bg-heading/6 flex items-center justify-center shrink-0">
+					class="flex items-center gap-2.5 px-2 py-1.5 rounded-[6px] bg-heading/[0.03] border border-heading/6"
+					:class="{ 'opacity-60': file.uploading }">
+					<div class="w-9 h-9 rounded-[4px] overflow-hidden bg-heading/6 flex items-center justify-center shrink-0 relative">
 						<img v-if="file.fileType === 'image'" :src="file.src" :alt="file.fileName" class="w-full h-full object-cover" />
 						<span v-else class="text-[1.2rem] leading-none">
 							{{ file.fileType === 'video' ? '🎬' : file.fileType === 'audio' ? '🎵' : file.fileType === 'pdf' ? '📄' : '📎' }}
 						</span>
+						<!-- Spinner overlay while the file is uploading -->
+						<div v-if="file.uploading" class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-[4px]">
+							<svg class="animate-spin w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
+								<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" />
+								<path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+							</svg>
+						</div>
 					</div>
 					<div class="flex-1 min-w-0 flex flex-col gap-0.5">
 						<span class="text-[0.78rem] font-semibold text-heading overflow-hidden text-ellipsis whitespace-nowrap">{{ file.fileName }}</span>
-						<span class="text-[0.68rem] text-text/45 uppercase tracking-[0.04em]">{{ file.fileType }}{{ file.fileSize ? ' · ' + formatFileSize(file.fileSize) : '' }}</span>
+						<span class="text-[0.68rem] text-text/45 uppercase tracking-[0.04em]">
+							{{ file.uploading ? 'Uploading…' : file.fileType }}{{ file.fileSize ? ' · ' + formatFileSize(file.fileSize) : '' }}
+						</span>
 					</div>
 					<button type="button"
 						class="w-[22px] h-[22px] rounded-full border-0 bg-red-500/10 text-red-500 cursor-pointer flex items-center justify-center p-0 shrink-0 transition-colors duration-[120ms] hover:bg-red-500 hover:text-white"

@@ -240,7 +240,8 @@ const toggleLike = (commentId) => {
 									min-height="80px"
 									:autofocus="true"
 									:enable-mention="true"
-									:users="members" />
+									:users="members"
+									:project-id="projectId" />
 								<div class="flex items-center gap-2 justify-end">
 									<button
 										@click="saveEdit(comment)"
@@ -289,6 +290,7 @@ const toggleLike = (commentId) => {
 						:show-toolbar="commentEditorFocused"
 						:enable-mention="true"
 						:users="members"
+						:project-id="projectId"
 						min-height="120px"
 						@focus="commentEditorFocused = true" />
 					<div v-if="commentEditorFocused" class="flex items-center gap-2 mt-2">
