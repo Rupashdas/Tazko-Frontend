@@ -90,7 +90,11 @@ export async function uploadAttachment(projectId, file, onProgress, signal) {
  */
 export async function listProjectAttachments(projectId, params = {}) {
 	const res = await axios.get(`/api/projects/${projectId}/attachments`, { params })
-	return unwrap(res)
+	// Preserve paginator metadata (last_page, total, current_page, …) so the
+	// Files tab can render pagination controls. Laravel's paginator returns
+	// `{ data: [...], meta: {...}, links: {...} }` at the top level — we want
+	// the whole thing, not just the inner data array.
+	return res?.data ?? { data: [] }
 }
 
 /**

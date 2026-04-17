@@ -23,6 +23,7 @@ import ProjectsView from '@/views/projects/ProjectsView.vue';
 import ArchivedProjectsView from '@/views/projects/ArchivedProjectsView.vue';
 import ProjectDetailView from '@/views/projects/Projectdetailview.vue'
 import TaskDetailView from '@/views/projects/TaskDetailView.vue';
+import TimeTrackingView from '@/views/time-tracking/TimeTrackingView.vue';
 
 import AcceptInvitationView from '@/views/auth/AcceptInvitationView.vue';
 
@@ -35,6 +36,7 @@ const routes = [
             { path: '', name: 'home', component: HomeView },
             { path: 'my-stuff', name: 'my-stuff', component: MyStuffView },
             { path: 'pings', name: 'pings', component: PingsView },
+            { path: 'time-tracking', name: 'time-tracking', component: TimeTrackingView, meta: { requiresCapability: 'time.view.own' } },
             { path: 'profile', name: 'profile', component: ProfileView },
             { path: 'preferences', name: 'preferences', component: PreferencesView },
 

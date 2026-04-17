@@ -71,19 +71,18 @@ async function fetchFiles(targetPage = page.value) {
 		const result = await listProjectAttachments(props.projectId, params)
 		if (myToken !== fetchToken) return // stale response — a newer fetch is in flight
 
-		// Laravel paginator shape arrives as either:
-		//   - an array after unwrap (attachmentService.unwrap returns response.data.data)
-		//   - the full paginator when meta lives alongside data
-		// We defensively handle both and pull pagination off the original response
-		// when available.
+		// Laravel's ResourceCollection::paginate() serializes as:
+		//   { data: [...items], meta: { current_page, last_page, total, … },
+		//     links: { first, last, prev, next } }
+		// Defensively handle plain-array responses too (e.g. non-paginated tests).
 		if (Array.isArray(result)) {
 			files.value = result
 			lastPage.value = 1
 			total.value = result.length
 		} else if (result?.data) {
-			files.value = result.data
-			lastPage.value = result.last_page ?? 1
-			total.value = result.total ?? result.data.length
+			files.value = Array.isArray(result.data) ? result.data : []
+			lastPage.value = result.meta?.last_page ?? result.last_page ?? 1
+			total.value    = result.meta?.total     ?? result.total     ?? files.value.length
 		} else {
 			files.value = []
 			lastPage.value = 1
@@ -100,11 +99,6 @@ async function fetchFiles(targetPage = page.value) {
 
 onMounted(() => fetchFiles(1))
 
-onBeforeUnmount(() => {
-	// Invalidate any in-flight fetch so its late resolution can't mutate state.
-	fetchToken++
-})
-
 // Re-fetch when filter or search changes (with a tiny debounce for search).
 // Always reset to page 1 when filters change.
 let searchTimer = null
@@ -114,7 +108,12 @@ watch(searchQuery, () => {
 	searchTimer = setTimeout(() => fetchFiles(1), 300)
 })
 
-onBeforeUnmount(() => clearTimeout(searchTimer))
+onBeforeUnmount(() => {
+	// Invalidate any in-flight fetch so its late resolution can't mutate state,
+	// and clear the search debounce so it can't fire after unmount.
+	fetchToken++
+	clearTimeout(searchTimer)
+})
 
 // ── Delete ───────────────────────────────────────────────────
 function requestDelete(file) {

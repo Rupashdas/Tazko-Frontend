@@ -8,8 +8,8 @@ import { useRoute } from 'vue-router'
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useToast } from "@/utils/toast.js"
 
-import { CoHome, BiChatDots, LaUserCircleSolid, CoSettings, MdLogoutOutlined, LaUserEditSolid, BiPalette, MdMenuRound, MdCloseRound, BiFolder2Open, BiChevronDown, BiClipboardCheck } from "oh-vue-icons/icons";
-addIcons(CoHome, BiChatDots, LaUserCircleSolid, CoSettings, MdLogoutOutlined, LaUserEditSolid, BiPalette, MdMenuRound, MdCloseRound, BiFolder2Open, BiChevronDown, BiClipboardCheck);
+import { CoHome, BiChatDots, LaUserCircleSolid, CoSettings, MdLogoutOutlined, LaUserEditSolid, BiPalette, MdMenuRound, MdCloseRound, BiFolder2Open, BiChevronDown, BiClipboardCheck, BiStopwatch } from "oh-vue-icons/icons";
+addIcons(CoHome, BiChatDots, LaUserCircleSolid, CoSettings, MdLogoutOutlined, LaUserEditSolid, BiPalette, MdMenuRound, MdCloseRound, BiFolder2Open, BiChevronDown, BiClipboardCheck, BiStopwatch);
 
 const { errorToast } = useToast()
 
@@ -103,6 +103,13 @@ watch(() => route.fullPath, () => {
                                 class="flex items-center gap-2 px-4 py-2 rounded-sm text-base font-medium transition-all duration-150"
                                 :class="route.name === 'pings' ? 'bg-accent/10 text-accent' : 'text-text hover:bg-heading/6 hover:text-heading'">
                                 <v-icon name="bi-chat-dots" scale="1" /> Pings
+                            </router-link>
+                        </li>
+                        <li>
+                            <router-link :to="{ name: 'time-tracking' }"
+                                class="flex items-center gap-2 px-4 py-2 rounded-sm text-base font-medium transition-all duration-150"
+                                :class="route.name === 'time-tracking' ? 'bg-accent/10 text-accent' : 'text-text hover:bg-heading/6 hover:text-heading'">
+                                <v-icon name="bi-stopwatch" scale="1" /> Time
                             </router-link>
                         </li>
                     </ul>
@@ -243,6 +250,13 @@ watch(() => route.fullPath, () => {
                                 class="flex items-center gap-3 px-3 py-3  rounded-sm text-base font-medium transition-all"
                                 :class="route.name === 'pings' ? 'bg-accent/10 text-accent' : 'text-text hover:bg-heading/6 hover:text-heading'">
                                 <v-icon name="bi-chat-dots" scale="1" /> Pings
+                            </router-link>
+                        </li>
+                        <li>
+                            <router-link :to="{ name: 'time-tracking' }"
+                                class="flex items-center gap-3 px-3 py-3  rounded-sm text-base font-medium transition-all"
+                                :class="route.name === 'time-tracking' ? 'bg-accent/10 text-accent' : 'text-text hover:bg-heading/6 hover:text-heading'">
+                                <v-icon name="bi-stopwatch" scale="1" /> Time Tracking
                             </router-link>
                         </li>
                     </ul>

@@ -74,13 +74,27 @@ watch(() => props.file, async (file) => {
 
 onBeforeUnmount(() => { loadToken++ })
 
+// Convert a YYYY-MM-DD string from the date input into an ISO timestamp at
+// end-of-day local time. Necessary because the backend validates
+// `expires_at > now`, and sending just 'YYYY-MM-DD' parses as 00:00:00 — so
+// picking today would always fail validation. End-of-day gives the user
+// "expires at the end of the day they picked" semantics they intuitively
+// expect.
+function expiryToIso(dateStr) {
+	if (!dateStr) return null
+	const [y, m, d] = dateStr.split('-').map(Number)
+	if (!y || !m || !d) return null
+	const dt = new Date(y, m - 1, d, 23, 59, 59, 999)
+	return dt.toISOString()
+}
+
 // ── Create share ─────────────────────────────────────────────
 async function handleCreate() {
 	if (!props.file || creating.value) return
 	creating.value = true
 	const result = await createShare(props.file.id, {
 		allow_download: newAllowDownload.value,
-		expires_at: newExpiry.value || null,
+		expires_at: expiryToIso(newExpiry.value),
 	})
 	creating.value = false
 	if (result.success) {
