@@ -235,10 +235,10 @@ const openProject = (projectId) => {
 </script>
 
 <template>
-	<div class="pb-20 pt-6 px-1">
+	<div class="pb-20 pt-8">
 
 		<!-- Page header -->
-		<div class="mb-5">
+		<div class="mb-8">
 			<h1 class="page-title">My Stuff</h1>
 			<p class="page-subtitle">Your tasks across all projects</p>
 		</div>
@@ -255,7 +255,7 @@ const openProject = (projectId) => {
 					<v-icon :name="stat.icon" :class="stat.cls" scale="1.4" />
 				</div>
 				<div>
-					<p :class="[stat.cls, 'text-xl font-bold leading-none tabular-nums']">{{ stat.value }}</p>
+					<p :class="[stat.cls, 'text-2xl font-bold leading-none tabular-nums']">{{ stat.value }}</p>
 					<p class="text-sm text-text mt-0.5">{{ stat.label }}</p>
 				</div>
 			</div>

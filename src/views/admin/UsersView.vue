@@ -71,28 +71,28 @@ const isSuperAdminUser = (user) => user.roles?.some(r => r.name === 'super-admin
 const getInitials = (name) => name?.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase() || '?'
 
 const avatarColors = [
-	{ bg: 'bg-violet-100', text: 'text-violet-600' },
-	{ bg: 'bg-sky-100', text: 'text-sky-600' },
-	{ bg: 'bg-emerald-100', text: 'text-emerald-600' },
-	{ bg: 'bg-amber-100', text: 'text-amber-600' },
-	{ bg: 'bg-rose-100', text: 'text-rose-600' },
-	{ bg: 'bg-indigo-100', text: 'text-indigo-600' },
+	{ bg: 'bg-violet-500/20', text: 'text-violet-600 dark:text-violet-400' },
+	{ bg: 'bg-sky-500/20', text: 'text-sky-600 dark:text-sky-400' },
+	{ bg: 'bg-emerald-500/20', text: 'text-emerald-600 dark:text-emerald-400' },
+	{ bg: 'bg-amber-500/20', text: 'text-amber-600 dark:text-amber-400' },
+	{ bg: 'bg-rose-500/20', text: 'text-rose-600 dark:text-rose-400' },
+	{ bg: 'bg-indigo-500/20', text: 'text-indigo-600 dark:text-indigo-400' },
 ]
 const getAvatar = (id) => avatarColors[id % avatarColors.length]
 const getPrimaryRole = (user) => user.roles?.[0] ?? null
 
 const getRoleBadge = (roleName) => {
 	const map = {
-		'super-admin': 'bg-violet-100 text-violet-700',
-		'admin': 'bg-blue-100 text-blue-700',
-		'manager': 'bg-emerald-100 text-emerald-700',
+		'super-admin': 'bg-violet-500/15 text-violet-600 dark:text-violet-400',
+		'admin': 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
+		'manager': 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
 		'member': 'bg-heading/8 text-text border border-heading/10',
 	}
 	return map[roleName] ?? 'bg-heading/8 text-text border border-heading/10'
 }
 
 const getStatusBadge = (status) => {
-	const map = { pending: 'bg-amber-100 text-amber-700', expired: 'bg-red-100 text-red-600', accepted: 'bg-emerald-100 text-emerald-700' }
+	const map = { pending: 'bg-amber-500/15 text-amber-600 dark:text-amber-400', expired: 'bg-red-500/15 text-red-600 dark:text-red-400', accepted: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' }
 	return map[status] ?? 'bg-heading/8 text-text'
 }
 
@@ -269,11 +269,11 @@ const handleCancel = async () => {
 					<v-icon name="bi-search"
 						class="absolute left-3.5 top-1/2 -translate-y-1/2 text-text pointer-events-none" scale="0.85" />
 					<input v-model="searchQuery" type="text" placeholder="Search users…"
-						class="w-full pl-10 pr-4 py-2 text-base bg-heading/5 border border-transparent focus:border-accent/30 focus:bg-panel rounded-sm outline-none transition-all" />
+						class="w-full pl-10 pr-4 py-2 text-base bg-heading/3 border border-heading/8 focus:border-accent/40 focus:outline-none rounded-sm transition-colors" />
 				</div>
 				<div class="flex items-center gap-1.5 flex-wrap">
 					<button v-for="role in ['All', ...allRoles.map(r => r.label)]" :key="role"
-						@click="roleFilter = role" class="px-3 py-2 rounded-sm text-base font-semibold transition-all"
+						@click="roleFilter = role" class="px-3 py-2 rounded-sm text-sm font-semibold transition-all"
 						:class="roleFilter === role ? 'bg-accent text-white' : 'bg-heading/6 text-text hover:bg-heading/10'">
 						{{ role }}
 					</button>
@@ -285,11 +285,11 @@ const handleCancel = async () => {
 				<table class="w-full min-w-[520px]">
 					<thead>
 						<tr class="border-b border-heading/6 bg-body/40">
-							<th class="px-7 py-3 text-left text-base font-semibold text-text">User</th>
-							<th class="px-4 py-3 text-left text-base font-semibold text-text">Role</th>
-							<th class="px-4 py-3 text-left text-base font-semibold text-text">Status</th>
-							<th class="px-4 py-3 text-left text-base font-semibold text-text">Joined</th>
-							<th class="px-7 py-3 text-right text-base font-semibold text-text">Actions</th>
+							<th class="px-7 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">User</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Role</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Status</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Joined</th>
+							<th class="px-7 py-3 text-right text-sm font-semibold uppercase tracking-wide text-text">Actions</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-heading/5">
@@ -327,9 +327,9 @@ const handleCancel = async () => {
 							<td class="px-4 py-4">
 								<span
 									class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-sm font-semibold"
-									:class="user.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'">
+									:class="user.is_active ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/15 text-red-600 dark:text-red-400'">
 									<span class="w-2 h-2 rounded-full"
-										:class="user.is_active ? 'bg-emerald-500' : 'bg-red-400'" />
+										:class="user.is_active ? 'bg-emerald-500' : 'bg-red-500'" />
 									{{ user.is_active ? 'Active' : 'Inactive' }}
 								</span>
 							</td>
@@ -347,12 +347,12 @@ const handleCancel = async () => {
 										@click="handleToggleActive(user)" :disabled="userStore.loading.activate"
 										:title="user.is_active ? 'Deactivate' : 'Activate'"
 										class="w-9 h-9 rounded-sm flex items-center justify-center cursor-pointer transition-all disabled:opacity-40"
-										:class="user.is_active ? 'text-text hover:text-amber-500 hover:bg-amber-50' : 'text-text hover:text-emerald-500 hover:bg-emerald-50'">
+										:class="user.is_active ? 'text-text hover:text-amber-500 hover:bg-amber-500/10' : 'text-text hover:text-emerald-500 hover:bg-emerald-500/10'">
 										<v-icon name="bi-power" scale="1.1" />
 									</button>
 									<button v-if="canDelete && !isOwnAccount(user.id) && !isSuperAdminUser(user)"
 										@click="confirmDelete(user.id)"
-										class="w-9 h-9 rounded-sm flex items-center justify-center cursor-pointer text-text hover:text-red-500 hover:bg-red-50 transition-all"
+										class="w-9 h-9 rounded-sm flex items-center justify-center cursor-pointer text-text hover:text-red-500 hover:bg-red-500/10 transition-all"
 										title="Delete">
 										<v-icon name="bi-trash" scale="1" />
 									</button>
@@ -395,9 +395,9 @@ const handleCancel = async () => {
 								{{ getPrimaryRole(user).label }}
 							</span>
 							<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-sm font-semibold"
-								:class="user.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'">
+								:class="user.is_active ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/15 text-red-600 dark:text-red-400'">
 								<span class="w-1.5 h-1.5 rounded-full"
-									:class="user.is_active ? 'bg-emerald-500' : 'bg-red-400'" />
+									:class="user.is_active ? 'bg-emerald-500' : 'bg-red-500'" />
 								{{ user.is_active ? 'Active' : 'Inactive' }}
 							</span>
 						</div>
@@ -411,12 +411,12 @@ const handleCancel = async () => {
 								@click="handleToggleActive(user)" :disabled="userStore.loading.activate"
 								:title="user.is_active ? 'Deactivate' : 'Activate'"
 								class="w-9 h-9 rounded-sm flex items-center justify-center cursor-pointer transition-all disabled:opacity-40"
-								:class="user.is_active ? 'text-text hover:text-amber-500 hover:bg-amber-50' : 'text-text hover:text-emerald-500 hover:bg-emerald-50'">
+								:class="user.is_active ? 'text-text hover:text-amber-500 hover:bg-amber-500/10' : 'text-text hover:text-emerald-500 hover:bg-emerald-500/10'">
 								<v-icon name="bi-power" scale="1.1" />
 							</button>
 							<button v-if="canDelete && !isOwnAccount(user.id) && !isSuperAdminUser(user)"
 								@click="confirmDelete(user.id)"
-								class="w-9 h-9 rounded-sm flex items-center justify-center cursor-pointer text-text hover:text-red-500 hover:bg-red-50 transition-all"
+								class="w-9 h-9 rounded-sm flex items-center justify-center cursor-pointer text-text hover:text-red-500 hover:bg-red-500/10 transition-all"
 								title="Delete">
 								<v-icon name="bi-trash" scale="1" />
 							</button>
@@ -440,14 +440,14 @@ const handleCancel = async () => {
 			class="flex flex-col bg-panel border border-heading/8 rounded-sm shadow-sm overflow-hidden">
 			<div class="px-5 sm:px-7 py-5 border-b border-heading/8 flex items-center justify-between flex-wrap gap-3">
 				<div class="flex items-center gap-3">
-					<div class="w-11 h-11 rounded-sm bg-amber-100 flex items-center justify-center shrink-0">
+					<div class="w-11 h-11 rounded-sm bg-amber-500/10 flex items-center justify-center shrink-0">
 						<v-icon name="bi-envelope" class="text-amber-600" scale="1.1" />
 					</div>
 					<div>
 						<div class="flex items-center gap-2">
 							<h2 class="section-title">Pending Invitations</h2>
 							<span
-								class="px-2.5 py-0.5 rounded-full text-base font-bold bg-amber-100 text-amber-700 tabular-nums">{{
+								class="px-2.5 py-0.5 rounded-full text-base font-bold bg-amber-500/15 text-amber-600 tabular-nums">{{
 									invitations.length }}</span>
 						</div>
 						<p class="section-desc mt-0.5">Invitations waiting to be accepted</p>
@@ -459,12 +459,12 @@ const handleCancel = async () => {
 				<table class="w-full min-w-[620px]">
 					<thead>
 						<tr class="border-b border-heading/6 bg-body/40">
-							<th class="px-7 py-3 text-left text-base font-semibold text-text">Invitee</th>
-							<th class="px-4 py-3 text-left text-base font-semibold text-text">Role</th>
-							<th class="px-4 py-3 text-left text-base font-semibold text-text">Invited By</th>
-							<th class="px-4 py-3 text-left text-base font-semibold text-text">Status</th>
-							<th class="px-4 py-3 text-left text-base font-semibold text-text">Expires</th>
-							<th class="px-7 py-3 text-right text-base font-semibold text-text">Actions</th>
+							<th class="px-7 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Invitee</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Role</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Invited By</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Status</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Expires</th>
+							<th class="px-7 py-3 text-right text-sm font-semibold uppercase tracking-wide text-text">Actions</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-heading/5">
@@ -512,7 +512,7 @@ const handleCancel = async () => {
 										<v-icon name="bi-arrow-repeat" scale="1.1" />
 									</button>
 									<button @click="pendingCancelId = inv.id; showCancelConfirm = true"
-										class="w-9 h-9 rounded-sm flex items-center justify-center cursor-pointer text-text hover:text-red-500 hover:bg-red-50 transition-all"
+										class="w-9 h-9 rounded-sm flex items-center justify-center cursor-pointer text-text hover:text-red-500 hover:bg-red-500/10 transition-all"
 										title="Cancel">
 										<v-icon name="md-cancel-outlined" scale="1.1" />
 									</button>
@@ -545,7 +545,7 @@ const handleCancel = async () => {
 								<v-icon name="bi-arrow-repeat" scale="1.1" />
 							</button>
 							<button @click="pendingCancelId = inv.id; showCancelConfirm = true"
-								class="w-9 h-9 rounded-sm flex items-center justify-center text-text hover:text-red-500 hover:bg-red-50 transition-all"
+								class="w-9 h-9 rounded-sm flex items-center justify-center text-text hover:text-red-500 hover:bg-red-500/10 transition-all"
 								title="Cancel">
 								<v-icon name="md-cancel-outlined" scale="1.1" />
 							</button>
@@ -614,14 +614,14 @@ const handleCancel = async () => {
 										<label class="block text-base font-semibold text-text">Name</label>
 										<input v-model="editName" type="text" class="input-field"
 											:class="{ 'border-red-400': editErrors.name }" />
-										<p v-if="editErrors.name" class="text-red-500 text-base mt-1">{{ editErrors.name
+										<p v-if="editErrors.name" class="text-red-500 text-sm mt-1">{{ editErrors.name
 										}}</p>
 									</div>
 									<div class="flex flex-col gap-1.5">
 										<label class="block text-base font-semibold text-text">Email</label>
 										<input v-model="editEmail" type="email" class="input-field"
 											:class="{ 'border-red-400': editErrors.email }" />
-										<p v-if="editErrors.email" class="text-red-500 text-base mt-1">{{
+										<p v-if="editErrors.email" class="text-red-500 text-sm mt-1">{{
 											editErrors.email }}</p>
 									</div>
 									<div class="flex gap-2">
@@ -646,8 +646,8 @@ const handleCancel = async () => {
 								<button @click="handleToggleActive(selectedUser)" :disabled="userStore.loading.activate"
 									class="w-full inline-flex items-center justify-center gap-2 py-3 rounded-sm text-base font-semibold transition-all disabled:opacity-40"
 									:class="selectedUser.is_active
-										? 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200'
-										: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200'">
+										? 'bg-amber-500/8 text-amber-600 hover:bg-amber-500/15 border border-amber-500/20'
+										: 'bg-emerald-500/8 text-emerald-600 hover:bg-emerald-500/15 border border-emerald-500/20'">
 									<v-icon v-if="userStore.loading.activate" name="bi-arrow-repeat"
 										class="animate-spin" scale="1" />
 									<v-icon v-else name="bi-power" scale="1" />
@@ -728,7 +728,7 @@ const handleCancel = async () => {
 										class="text-red-400">*</span></label>
 								<input v-model="newUser.name" type="text" placeholder="John Doe" class="input-field"
 									:class="{ 'border-red-400': inviteErrors.name }" />
-								<p v-if="inviteErrors.name" class="text-red-500 text-base mt-1">{{ inviteErrors.name }}
+								<p v-if="inviteErrors.name" class="text-red-500 text-sm mt-1">{{ inviteErrors.name }}
 								</p>
 							</div>
 							<div class="flex flex-col gap-1.5">
@@ -736,7 +736,7 @@ const handleCancel = async () => {
 										class="text-red-400">*</span></label>
 								<input v-model="newUser.email" type="email" placeholder="john@company.com"
 									class="input-field" :class="{ 'border-red-400': inviteErrors.email }" />
-								<p v-if="inviteErrors.email" class="text-red-500 text-base mt-1">{{ inviteErrors.email
+								<p v-if="inviteErrors.email" class="text-red-500 text-sm mt-1">{{ inviteErrors.email
 								}}</p>
 							</div>
 							<div class="flex flex-col gap-1.5">

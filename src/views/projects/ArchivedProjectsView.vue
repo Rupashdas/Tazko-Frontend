@@ -147,7 +147,7 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 </script>
 
 <template>
-	<div class="pb-20 pt-8 px-1">
+	<div class="pb-20 pt-8">
 
 		<!-- ── Page Header ──────────────────────────────── -->
 		<div class="mb-8 flex items-end justify-between gap-4 flex-wrap">
@@ -158,7 +158,7 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 			</div>
 			<button
 				@click="router.push({ name: 'projects' })"
-				class="inline-flex items-center gap-2 px-5 py-3 rounded-sm border border-heading/10 text-base font-semibold text-text hover:bg-heading/5 hover:text-heading transition-all">
+				class="tazko-btn-outline">
 				← Back to Projects
 			</button>
 		</div>
@@ -171,7 +171,7 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 				</div>
 				<div>
 					<p class="text-2xl font-bold text-heading leading-none tabular-nums">{{ store.archivedMeta.total }}</p>
-					<p class="text-base text-text mt-0.5">Archived</p>
+					<p class="text-sm text-text mt-0.5">Archived</p>
 				</div>
 			</div>
 			<div class="bg-panel rounded-sm border border-heading/8 p-4 flex items-center gap-3">
@@ -180,7 +180,7 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 				</div>
 				<div>
 					<p class="text-2xl font-bold text-heading leading-none tabular-nums">{{ store.archivedMeta.completed }}</p>
-					<p class="text-base text-text mt-0.5">Completed</p>
+					<p class="text-sm text-text mt-0.5">Completed</p>
 				</div>
 			</div>
 			<div class="bg-panel rounded-sm border border-heading/8 p-4 flex items-center gap-3 col-span-2 sm:col-span-1">
@@ -189,7 +189,7 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 				</div>
 				<div>
 					<p class="text-2xl font-bold text-heading leading-none tabular-nums">{{ store.archivedMeta.incomplete }}</p>
-					<p class="text-base text-text mt-0.5">Incomplete</p>
+					<p class="text-sm text-text mt-0.5">Incomplete</p>
 				</div>
 			</div>
 		</div>
@@ -528,8 +528,7 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 								<v-icon name="bi-x" scale="1" />
 								Cancel
 							</button>
-							<button @click="handleDelete" :disabled="deleting"
-								class="flex-1 inline-flex gap-2 items-center justify-center px-6 py-3 text-base tracking-wide rounded-sm shadow-sm text-white bg-red-500 hover:bg-red-600 active:scale-95 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
+							<button @click="handleDelete" :disabled="deleting" class="flex-1 tazko-btn-danger">
 								<v-icon v-if="deleting" name="bi-arrow-repeat" scale="1" class="animate-spin" />
 								<v-icon v-else name="bi-trash" scale="1" />
 								{{ deleting ? 'Deleting…' : 'Delete' }}

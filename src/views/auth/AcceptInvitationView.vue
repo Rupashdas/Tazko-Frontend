@@ -149,7 +149,7 @@ const submit = async () => {
 		<!-- Done state -->
 		<div v-else-if="done" class="text-center py-8">
 			<div
-				class="w-16 h-16 rounded-sm bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center mx-auto mb-6">
+				class="w-16 h-16 rounded-sm bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-6">
 				<v-icon name="bi-check-circle-fill" class="text-emerald-500" scale="1.8" />
 			</div>
 			<h2 class="auth-title mb-3">Account Created! 🎉</h2>
@@ -171,7 +171,7 @@ const submit = async () => {
 					<v-icon name="bi-person-plus" class="text-accent" scale="1.2" />
 				</div>
 				<h2 class="auth-title">Accept Invitation</h2>
-				<p class="mt-2 text-base text-text leading-relaxed">
+				<p class="section-desc">
 					You've been invited by <strong class="text-heading">{{ invitation.invited_by }}</strong>.
 					Set a password to create your account.
 				</p>
@@ -216,7 +216,7 @@ const submit = async () => {
 							<v-icon :name="showPassword ? 'ri-eye-off-line' : 'ri-eye-line'" scale="0.85" />
 						</button>
 					</div>
-					<p v-if="errors.password" class="text-red-500 text-base mt-1">{{ errors.password }}</p>
+					<p v-if="errors.password" class="text-red-500 text-sm mt-1">{{ errors.password }}</p>
 
 					<!-- Strength bar -->
 					<div v-if="password" class="flex items-center gap-2 mt-0.5">

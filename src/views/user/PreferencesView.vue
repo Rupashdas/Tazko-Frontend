@@ -71,10 +71,10 @@ const saveDateTime = async () => {
 </script>
 
 <template>
-	<div class="max-w-3xl mx-auto mt-6 md:mt-10 mb-24 px-4">
+	<div class="max-w-3xl mx-auto py-8">
 
 		<!-- Page Header -->
-		<div class="mb-6 md:mb-8">
+		<div class="mb-8">
 			<p class="page-eyebrow">User</p>
 			<h1 class="page-title">Preferences</h1>
 			<p class="page-subtitle">Customize your workspace to feel just right.</p>
@@ -186,7 +186,7 @@ const saveDateTime = async () => {
 
 						<div class="py-3 px-3 flex items-center justify-between bg-panel">
 							<div>
-								<p class="section-title text-left">{{ option.label }}</p>
+								<p class="section-title">{{ option.label }}</p>
 								<p class="section-desc mt-0.5">{{ option.desc }}</p>
 							</div>
 							<div class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors"
@@ -263,7 +263,7 @@ const saveDateTime = async () => {
 							<div class="flex gap-2 flex-wrap">
 								<button v-for="opt in TIME_FORMAT_OPTIONS" :key="opt.value" type="button"
 									@click="time_format = opt.value"
-									class="px-4 py-3 rounded-sm text-base font-semibold transition-all duration-150 border"
+									class="px-3 py-2 rounded-sm text-base font-semibold transition-all duration-150 border"
 									:class="time_format === opt.value
 										? 'bg-accent text-white border-accent shadow-sm'
 										: 'bg-body text-text border-heading/10 hover:border-accent/40 hover:text-text'">

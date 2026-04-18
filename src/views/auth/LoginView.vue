@@ -143,7 +143,7 @@ const handleLogin = async () => {
                         class="input-field has-icon" :class="{ 'border-red-400': errors.email }"
                         @input="clearError('email')" />
                 </div>
-                <p v-if="errors.email" class="text-red-500 text-base mt-1">{{ errors.email }}</p>
+                <p v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</p>
             </div>
 
             <!-- Password -->
@@ -171,7 +171,7 @@ const handleLogin = async () => {
                         <v-icon :name="showPassword ? 'ri-eye-off-line' : 'ri-eye-line'" scale="0.85" />
                     </button>
                 </div>
-                <p v-if="errors.password" class="text-red-500 text-base mt-1">{{ errors.password }}</p>
+                <p v-if="errors.password" class="text-red-500 text-sm mt-1">{{ errors.password }}</p>
             </div>
 
             <!-- Submit -->

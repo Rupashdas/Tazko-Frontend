@@ -290,7 +290,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<div class="pb-20 pt-8 px-1" @click="openMenuId = null">
+	<div class="pb-20 pt-8" @click="openMenuId = null">
 
 		<!-- ── Header ─────────────────────────────────── -->
 		<div class="mb-8 flex items-end justify-between gap-4 flex-wrap">
@@ -303,7 +303,7 @@ onBeforeUnmount(() => {
 				<!-- Archived button -->
 				<button
 					@click.stop="router.push({ name: 'archived-projects' })"
-					class="inline-flex items-center gap-2 px-5 py-3 rounded-sm border border-heading/10 text-base font-semibold text-text hover:bg-heading/5 hover:text-heading transition-all">
+					class="tazko-btn-outline">
 					<v-icon name="bi-archive" scale="0.9" />
 					Archived
 					<span v-if="archivedCount > 0"
@@ -312,8 +312,7 @@ onBeforeUnmount(() => {
 					</span>
 				</button>
 				<!-- New Project button -->
-				<button v-if="canCreate" @click.stop="openCreateModal"
-					class="inline-flex items-center gap-2 px-6 py-3 rounded-sm bg-accent text-white text-base font-semibold hover:bg-accent/90 active:scale-95 transition-all shadow-lg shadow-accent/25">
+				<button v-if="canCreate" @click.stop="openCreateModal" class="tazko-btn shadow-lg shadow-accent/20">
 					<v-icon name="bi-plus-circle" scale="0.9" />
 					New Project
 				</button>
@@ -328,7 +327,7 @@ onBeforeUnmount(() => {
 				</div>
 				<div>
 					<p class="text-2xl font-bold text-heading leading-none tabular-nums">{{ totalProjects }}</p>
-					<p class="text-base text-text mt-0.5">Total</p>
+					<p class="text-sm text-text mt-0.5">Total</p>
 				</div>
 			</div>
 			<div class="bg-panel rounded-sm border border-heading/8 p-4 flex items-center gap-3">
@@ -337,7 +336,7 @@ onBeforeUnmount(() => {
 				</div>
 				<div>
 					<p class="text-2xl font-bold text-heading leading-none tabular-nums">{{ activeCount }}</p>
-					<p class="text-base text-text mt-0.5">Active</p>
+					<p class="text-sm text-text mt-0.5">Active</p>
 				</div>
 			</div>
 			<div class="bg-panel rounded-sm border border-heading/8 p-4 flex items-center gap-3">
@@ -346,7 +345,7 @@ onBeforeUnmount(() => {
 				</div>
 				<div>
 					<p class="text-2xl font-bold text-heading leading-none tabular-nums">{{ completedCount }}</p>
-					<p class="text-base text-text mt-0.5">Completed</p>
+					<p class="text-sm text-text mt-0.5">Completed</p>
 				</div>
 			</div>
 			<div class="bg-panel rounded-sm border border-heading/8 p-4 flex items-center gap-3">
@@ -356,7 +355,7 @@ onBeforeUnmount(() => {
 				<div>
 					<p class="text-2xl font-bold text-heading leading-none tabular-nums">{{ avgProgress }}<span
 							class="text-base font-medium text-text">%</span></p>
-					<p class="text-base text-text mt-0.5">Avg Progress</p>
+					<p class="text-sm text-text mt-0.5">Avg Progress</p>
 				</div>
 			</div>
 		</div>
@@ -541,7 +540,7 @@ onBeforeUnmount(() => {
 										</button>
 										<button v-if="canArchive"
 											@click.stop="requestArchive(project.id)"
-											class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:text-amber-600 transition-colors">
+											class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-amber-500/10 hover:text-amber-600 transition-colors">
 											<v-icon name="bi-archive" scale="0.85" /> Archive
 										</button>
 										<template v-if="canDelete">
@@ -707,7 +706,7 @@ onBeforeUnmount(() => {
 										</button>
 										<button v-if="canArchive"
 											@click.stop="requestArchive(project.id)"
-											class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:text-amber-600 transition-colors">
+											class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-amber-500/10 hover:text-amber-600 transition-colors">
 											<v-icon name="bi-archive" scale="0.85" /> Archive
 										</button>
 										<template v-if="canDelete">
@@ -792,7 +791,7 @@ onBeforeUnmount(() => {
 			title="Archive Project?"
 			message="This project will be moved to the archive. You can restore it at any time from the Archived Projects page."
 			icon="bi-archive"
-			icon-bg="bg-amber-50 dark:bg-amber-500/10"
+			icon-bg="bg-amber-500/10"
 			icon-color="text-amber-500"
 			confirm-label="Archive"
 			confirming-label="Archiving…"

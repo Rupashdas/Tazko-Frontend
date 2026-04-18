@@ -98,8 +98,8 @@ const recentActivity = ref([])
 const statusConfig = {
 	'Planning': { cls: 'bg-slate-400/15 text-slate-500', dot: 'bg-slate-400' },
 	'In Progress': { cls: 'bg-accent/10 text-accent', dot: 'bg-accent animate-pulse' },
-	'On Hold': { cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', dot: 'bg-amber-500' },
-	'Completed': { cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', dot: 'bg-emerald-500' },
+	'On Hold': { cls: 'bg-amber-500/15 text-amber-600', dot: 'bg-amber-500' },
+	'Completed': { cls: 'bg-emerald-500/15 text-emerald-600', dot: 'bg-emerald-500' },
 }
 
 // ── Tabs with URL query persistence ───────────────────
@@ -335,20 +335,21 @@ const handleDelete = async () => {
 </script>
 
 <template>
-	<div class="pb-20 pt-6 px-1">
+	<div class="pb-20 pt-8">
 
 		<!-- ════════════════════════════════════════════ -->
 		<!-- SKELETON LOADER                             -->
 		<!-- ════════════════════════════════════════════ -->
 		<div v-if="store.loadingProject" class="animate-pulse">
+			<!-- Breadcrumb skeleton -->
+			<div class="flex items-center gap-1.5 mb-4">
+				<div class="h-3 w-16 bg-heading/10 rounded" />
+				<div class="h-3 w-3 bg-heading/10 rounded" />
+				<div class="h-3 w-36 bg-heading/10 rounded" />
+			</div>
+
 			<!-- Hero section -->
 			<div class="bg-panel border border-heading/8 rounded-t-sm px-6 pt-5 pb-0">
-				<!-- Breadcrumb skeleton -->
-				<div class="flex items-center gap-1.5 mb-4">
-					<div class="h-3 w-16 bg-heading/10 rounded" />
-					<div class="h-3 w-3 bg-heading/10 rounded" />
-					<div class="h-3 w-36 bg-heading/10 rounded" />
-				</div>
 				<!-- Title row skeleton -->
 				<div class="flex flex-wrap gap-5 items-start justify-between mb-4">
 					<div class="flex items-start gap-4 flex-1 min-w-0">
@@ -445,8 +446,7 @@ const handleDelete = async () => {
 				<v-icon name="bi-x" class="text-red-500" scale="1.6" />
 			</div>
 			<p class="text-base font-semibold text-heading">{{ store.projectError }}</p>
-			<button @click="router.push({ name: 'projects' })"
-				class="px-5 py-2 rounded-sm bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-all">
+			<button @click="router.push({ name: 'projects' })" class="tazko-btn-outline">
 				Back to Projects
 			</button>
 		</div>
@@ -455,21 +455,23 @@ const handleDelete = async () => {
 		<!-- HERO + TAB BAR                              -->
 		<!-- ════════════════════════════════════════════ -->
 		<template v-else-if="store.currentProject">
+
+		<!-- Breadcrumb -->
+		<div class="flex items-center gap-1.5 mb-4">
+			<button @click="router.push({ name: 'projects' })"
+				class="text-sm font-medium text-text hover:text-accent transition-colors">
+				Projects
+			</button>
+			<v-icon name="bi-chevron-right" scale="0.7" class="text-text" />
+			<span class="text-sm font-semibold text-text">{{ project.name }}</span>
+		</div>
+
+		<!-- Hero panel -->
 		<div class="relative rounded-t-sm">
 			<div class="absolute inset-0 bg-accent/8" />
 			<div class="absolute inset-0 bg-panel/80 backdrop-blur-sm border border-b-0 border-heading/8 rounded-t-sm" />
 
 			<div class="relative px-6 pt-5">
-
-				<!-- Breadcrumb -->
-				<div class="flex items-center gap-1.5 mb-4">
-					<button @click="router.push({ name: 'projects' })"
-						class="text-sm font-medium text-text hover:text-accent transition-colors">
-						Projects
-					</button>
-					<v-icon name="bi-chevron-right" scale="0.7" class="text-text" />
-					<span class="text-sm font-semibold text-text">{{ project.name }}</span>
-				</div>
 
 				<!-- Title row -->
 				<div class="flex flex-wrap gap-5 items-start justify-between mb-4">
@@ -494,8 +496,7 @@ const handleDelete = async () => {
 
 					<!-- Action buttons -->
 					<div class="flex items-center gap-2 shrink-0 mt-1">
-						<button v-if="canCreateTask" @click="handleAddTaskClick('Todo')"
-							class="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm bg-accent text-white text-base font-semibold hover:bg-accent/90 active:scale-95 transition-all shadow-md shadow-accent/20">
+						<button v-if="canCreateTask" @click="handleAddTaskClick('Todo')" class="tazko-btn shadow-md shadow-accent/20">
 							<v-icon name="bi-plus" scale="0.9" />
 							Add Task
 						</button>
@@ -516,7 +517,7 @@ const handleDelete = async () => {
 										<v-icon name="bi-pencil" scale="0.85" /> Edit Project
 									</button>
 									<button v-if="canArchive" @click="requestArchive"
-										class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:text-amber-600 transition-colors">
+										class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-amber-500/10 hover:text-amber-600 transition-colors">
 										<v-icon name="bi-archive" scale="0.85" /> Archive
 									</button>
 									<div v-if="canDelete && (canUpdate || canArchive)" class="h-px bg-heading/5 mx-2" />
@@ -678,7 +679,7 @@ const handleDelete = async () => {
 			title="Archive Project?"
 			message="This project will be moved to the archive. You can restore it at any time from the Archived Projects page."
 			icon="bi-archive"
-			icon-bg="bg-amber-50 dark:bg-amber-500/10"
+			icon-bg="bg-amber-500/10"
 			icon-color="text-amber-500"
 			confirm-label="Archive"
 			confirming-label="Archiving…"

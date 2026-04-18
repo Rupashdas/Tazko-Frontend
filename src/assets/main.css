@@ -44,25 +44,25 @@
         disabled:opacity-50 disabled:cursor-not-allowed;
     }
 
-    .tazko-btn-delete {
+    .tazko-btn-outline {
         @apply inline-flex gap-2 items-center justify-center px-6 py-3
-        text-base tracking-wide
-        rounded-sm text-text bg-heading/8
+        text-base tracking-wide font-medium
+        rounded-sm border border-heading/10 text-text bg-transparent
         transition-all duration-200 ease-in-out cursor-pointer
-        hover:shadow-md
-        hover:bg-heading/12
-        active:scale-95;
+        hover:bg-heading/5 hover:text-heading hover:border-heading/20
+        active:scale-95
+        disabled:opacity-50 disabled:cursor-not-allowed;
     }
 
     .container {
-        @apply mx-auto px-5;
+        @apply mx-auto px-5 max-w-7xl;
     }
 
     /* ── Page Header System ─────────────────────────────────── */
 
     /* Small eyebrow label above page title (e.g. "Admin", "Workspace") */
     .page-eyebrow {
-        @apply text-sm font-semibold uppercase  text-text mb-1;
+        @apply text-sm font-semibold uppercase tracking-wider text-text mb-1;
     }
 
     /* Main page title — use on <h1> inside page headers */
@@ -84,7 +84,7 @@
 
     /* Small descriptor below a section title */
     .section-desc {
-        @apply text-base text-text mt-0.5;
+        @apply text-sm text-text mt-0.5;
     }
 
     .auth-title {
@@ -92,6 +92,22 @@
         font-size: 2rem;
         letter-spacing: 0.01em;
         line-height: 1.1;
+    }
+
+    /* ── Form utilities ─────────────────────────────── */
+
+    .form-label {
+        @apply block text-sm font-semibold text-text;
+    }
+
+    .form-error {
+        @apply text-sm text-red-500 mt-1;
+    }
+
+    /* Consistent search/filter input used in toolbars */
+    .tazko-search {
+        @apply w-full rounded-sm border border-heading/8 bg-heading/3 text-base text-heading
+        placeholder:text-text focus:outline-none focus:border-accent/40 transition-colors;
     }
 }
 
@@ -131,7 +147,7 @@
     }
 
     .input-field {
-        @apply w-full px-4 py-3  rounded-sm border bg-panel focus:border-accent border-heading/15 focus:outline-none text-base leading-tight;
+        @apply w-full px-4 py-3 rounded-sm border bg-panel text-heading placeholder:text-text focus:border-accent border-heading/15 focus:outline-none text-base leading-tight transition-colors;
     }
     .input-field.has-icon {
         @apply pl-10;

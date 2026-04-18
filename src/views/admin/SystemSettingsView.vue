@@ -42,10 +42,10 @@ const isActive = (name) => name && route.matched.some(r => r.name === name)
 </script>
 
 <template>
-	<div class="mt-6 md:mt-10 mb-24 px-4">
+	<div class="py-8">
 
 		<!-- Page Header -->
-		<div class="mb-4 md:mb-6">
+		<div class="mb-8">
 			<p class="page-eyebrow">Admin</p>
 			<h1 class="page-title">System Settings</h1>
 			<p class="page-subtitle">Configure your workspace</p>

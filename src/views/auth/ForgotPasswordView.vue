@@ -78,7 +78,7 @@ const resetForm = () => {
         <div v-if="submitted" class="text-center">
             <!-- ✅ Replaced email envelope SVG with v-icon -->
             <div
-                class="w-16 h-16 rounded-sm bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center mx-auto mb-6">
+                class="w-16 h-16 rounded-sm bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-6">
                 <v-icon name="bi-envelope-check" class="w-8 h-8 text-emerald-500" scale="1.6" />
             </div>
 
@@ -142,7 +142,7 @@ const resetForm = () => {
                             class="input-field has-icon" :class="{ 'border-red-400': errors.email }"
                             @input="clearError('email')" />
                     </div>
-                    <p v-if="errors.email" class="text-red-500 text-base mt-1">{{ errors.email }}</p>
+                    <p v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</p>
                 </div>
 
                 <div class="flex items-start gap-2.5 p-3.5 rounded-sm bg-accent/5 border border-accent/15">

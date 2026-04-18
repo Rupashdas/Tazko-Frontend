@@ -253,7 +253,7 @@ function getModuleIcon(module) {
 					<!-- Desktop Stats + Actions -->
 					<div v-if="roleStore.selectedRole" class="hidden lg:flex items-center gap-3 shrink-0">
 						<!-- Coverage pill -->
-						<div class="flex items-center gap-2 px-6 py-3 bg-heading/5 rounded-full">
+						<div class="flex items-center gap-2 px-4 py-2 bg-heading/5 rounded-sm">
 							<div class="w-2 h-2 rounded-full"
 								:class="coveragePercent > 66 ? 'bg-emerald-400' : coveragePercent > 33 ? 'bg-yellow-400' : 'bg-red-400'" />
 							<span class="text-sm font-semibold text-text">
@@ -263,8 +263,8 @@ function getModuleIcon(module) {
 
 						<button v-if="canDelete && !roleStore.selectedRole.is_system_role"
 							@click="showDeleteConfirm = true"
-							class="flex items-center gap-2 px-6 py-3 rounded-sm text-base text-red-400 cursor-pointer ransition-all duration-200 ease-in-out hover:bg-red-50 hover:text-red-500 transition-all border border-red-100 active:scale-95">
-							<v-icon name="bi-trash" class="text-red-500" scale="0.8" />
+							class="inline-flex items-center gap-2 px-6 py-3 rounded-sm text-base font-medium text-red-500 border border-red-500/20 hover:bg-red-500/8 hover:border-red-500/30 active:scale-95 transition-all cursor-pointer">
+							<v-icon name="bi-trash" scale="0.8" />
 							Delete
 						</button>
 
@@ -296,15 +296,15 @@ function getModuleIcon(module) {
 							class="absolute left-3.5 top-1/2 -translate-y-1/2 text-text pointer-events-none"
 							scale="0.85" />
 						<input v-model="searchQuery" type="text" placeholder="Search permissions…"
-							class="w-full pl-9 pr-4 py-2 text-base bg-heading/5 border border-transparent focus:border-accent/30 focus:bg-panel rounded-sm outline-none transition-all" />
+							class="w-full pl-9 pr-4 py-2 text-base bg-heading/3 border border-heading/8 focus:border-accent/40 focus:outline-none rounded-sm transition-colors" />
 					</div>
 				</div>
 
 				<!-- Super-admin notice -->
 				<div v-if="roleStore.isSuperAdmin"
-					class="mx-4 sm:mx-8 mt-4 px-4 py-3  bg-amber-50 border border-amber-200 rounded-sm flex items-center gap-1 shrink-0">
+					class="mx-4 sm:mx-8 mt-4 px-4 py-3 bg-amber-500/8 border border-amber-500/20 rounded-sm flex items-center gap-1 shrink-0">
 					<v-icon name="co-warning" class="text-amber-500" scale="0.8" />
-					<p class="text-sm text-amber-700 font-medium">
+					<p class="text-sm text-amber-600 font-medium">
 						Super-admin has all permissions by default. Changes cannot be made to this role.
 					</p>
 
@@ -423,7 +423,7 @@ function getModuleIcon(module) {
 			<Transition name="fade">
 				<div v-if="mobileSidebarOpen" class="fixed inset-0 z-50 lg:hidden flex">
 					<!-- Backdrop -->
-					<div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="mobileSidebarOpen = false" />
+					<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="mobileSidebarOpen = false" />
 
 					<!-- Drawer panel -->
 					<Transition name="slide-left">
@@ -504,7 +504,7 @@ function getModuleIcon(module) {
 							class="absolute top-3 right-3 w-7 h-7 rounded-sm flex items-center justify-center text-text hover:bg-heading/8 transition-all">
 							<v-icon name="bi-x" scale="1.3" />
 						</button>
-						<div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+						<div class="w-12 h-12 rounded-sm bg-red-500/10 flex items-center justify-center mx-auto mb-4">
 							<v-icon name="bi-trash" class="text-red-500" scale="1.2" />
 						</div>
 						<h3 class="section-title text-center mb-1">Delete Role?</h3>

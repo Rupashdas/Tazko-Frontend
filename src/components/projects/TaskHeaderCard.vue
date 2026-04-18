@@ -18,17 +18,28 @@ const props = defineProps({
 	members: { type: Array, default: () => [] },
 	statusConfig: { type: Object, required: true },
 	priorityConfig: { type: Object, required: true },
+	// Capability flags from parent — drive disable/hide of edit controls
+	canUpdate: { type: Boolean, default: false },
+	canDelete: { type: Boolean, default: false },
+	saving:    { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['update:task', 'delete'])
+// Emits a partial patch (only the changed fields), not the whole task.
+// Parent PATCHes just that payload to the API.
+const emit = defineEmits(['save', 'delete'])
 
 // ── Inline title edit ──────────────────────────────────
 const editingTitle = ref(false)
 const titleDraft = ref('')
-const startEditTitle = () => { editingTitle.value = true; titleDraft.value = props.task.title }
+const startEditTitle = () => {
+	if (!props.canUpdate) return
+	editingTitle.value = true
+	titleDraft.value = props.task.title
+}
 const saveTitle = () => {
-	if (titleDraft.value.trim()) {
-		emit('update:task', { ...props.task, title: titleDraft.value.trim() })
+	const next = titleDraft.value.trim()
+	if (next && next !== props.task.title) {
+		emit('save', { title: next })
 	}
 	editingTitle.value = false
 }
@@ -39,13 +50,17 @@ const descDraft = ref('')
 const descEditorRef = ref(null)
 
 const startEditDesc = () => {
+	if (!props.canUpdate) return
 	editingDesc.value = true
 	descDraft.value = props.task.description
 }
 
 const saveDesc = () => {
 	if (descEditorRef.value) {
-		emit('update:task', { ...props.task, description: descEditorRef.value.getHTML() })
+		const next = descEditorRef.value.getHTML()
+		if (next !== props.task.description) {
+			emit('save', { description: next })
+		}
 	}
 	editingDesc.value = false
 }
@@ -67,15 +82,18 @@ const saveDesc = () => {
 			</span>
 			<div class="flex-1" />
 			<button
+				v-if="canDelete"
 				@click="emit('delete')"
-				class="p-1.5 rounded-sm text-text hover:text-red-500 hover:bg-red-500/8 transition-colors">
+				class="p-1.5 rounded-sm text-text hover:text-red-500 hover:bg-red-500/8 transition-colors"
+				title="Delete task">
 				<v-icon name="bi-trash" scale="0.85" />
 			</button>
 		</div>
 
 		<!-- Editable title -->
 		<div class="mb-5">
-			<div v-if="!editingTitle" class="cursor-pointer"
+			<div v-if="!editingTitle"
+				:class="[canUpdate ? 'cursor-pointer' : 'cursor-default']"
 				@click="startEditTitle">
 				<h1 class="text-xl font-bold text-heading leading-snug">{{ task.title }}</h1>
 			</div>
@@ -83,7 +101,7 @@ const saveDesc = () => {
 				<input v-model="titleDraft"
 					class="flex-1 text-xl font-bold text-heading bg-transparent border-0 border-b-2 border-accent/50 focus:outline-none focus:border-accent pb-0.5 leading-snug"
 					@keydown.enter="saveTitle" @keydown.esc="editingTitle = false" autofocus />
-				<button @click="saveTitle" class="mt-1 tazko-btn">
+				<button @click="saveTitle" :disabled="saving" class="mt-1 tazko-btn disabled:opacity-60">
 					<v-icon name="bi-check2" scale="1" />
 					Save
 				</button>
@@ -95,11 +113,12 @@ const saveDesc = () => {
 			<p class="text-sm font-semibold uppercase tracking-wide text-text mb-2">Description</p>
 
 			<div v-if="!editingDesc" @click="startEditDesc"
-				class="group cursor-pointer rounded-sm bg-heading/[0.025] hover:bg-heading/[0.045] border border-transparent hover:border-heading/8 px-4 py-3 transition-all">
+				:class="['group rounded-sm bg-heading/[0.025] border border-transparent px-4 py-3 transition-all',
+					canUpdate ? 'cursor-pointer hover:bg-heading/[0.045] hover:border-heading/8' : 'cursor-default']">
 				<div v-if="task.description && task.description !== '<p></p>'"
 					class="text-base text-text leading-relaxed prose-sm" v-html="sanitize(task.description)" />
 				<p v-else class="text-base text-text italic">
-					Click to add a description…
+					{{ canUpdate ? 'Click to add a description…' : 'No description.' }}
 				</p>
 			</div>
 
@@ -109,7 +128,7 @@ const saveDesc = () => {
 					:autofocus="true" :enable-mention="true" :users="members"
 					:project-id="task.project_id" />
 				<div class="flex items-center gap-2">
-					<button type="button" class="inline-flex items-center px-3 py-1.5 rounded-sm bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors" @click="saveDesc">Save</button>
+					<button type="button" :disabled="saving" class="inline-flex items-center px-3 py-1.5 rounded-sm bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors disabled:opacity-60" @click="saveDesc">Save</button>
 					<button type="button" class="inline-flex items-center px-3 py-1.5 rounded-sm border border-heading/10 text-text text-sm font-semibold hover:bg-heading/5 transition-colors" @click="editingDesc = false">Cancel</button>
 				</div>
 			</div>

@@ -138,7 +138,7 @@ watch(() => route.fullPath, () => {
                                 <p class="text-base font-semibold text-heading leading-tight">{{ auth.user?.name ||
                                     'User'
                                 }}</p>
-                                <p class="text-base text-text leading-tight">{{ auth.user?.roles?.[0]?.label ||
+                                <p class="text-sm text-text leading-tight">{{ auth.user?.roles?.[0]?.label ||
                                     'Member' }}</p>
                             </div>
                             <v-icon name="bi-chevron-down"
@@ -161,7 +161,7 @@ watch(() => route.fullPath, () => {
                                     <div class="min-w-0">
                                         <h4 class="text-base font-bold text-heading truncate">{{ auth.user?.name ||
                                             'User' }}</h4>
-                                        <p class="text-base text-text truncate mt-0.5">{{ auth.user?.roles?.[0]?.label
+                                        <p class="text-sm text-text truncate mt-0.5">{{ auth.user?.roles?.[0]?.label
                                             ||
                                             'Member' }}</p>
                                         <p v-if="auth.user?.email" class="text-sm text-text truncate mt-0.5">{{
@@ -179,7 +179,7 @@ watch(() => route.fullPath, () => {
                                         </span>
                                         <div>
                                             <p class="text-base font-semibold text-heading">Edit Profile</p>
-                                            <p class="text-base text-text">Update your personal info</p>
+                                            <p class="text-sm text-text">Update your personal info</p>
                                         </div>
                                     </router-link>
 
@@ -191,7 +191,7 @@ watch(() => route.fullPath, () => {
                                         </span>
                                         <div>
                                             <p class="text-base font-semibold text-heading">Preferences</p>
-                                            <p class="text-base text-text">Theme & display settings</p>
+                                            <p class="text-sm text-text">Theme & display settings</p>
                                         </div>
                                     </router-link>
 
@@ -204,7 +204,7 @@ watch(() => route.fullPath, () => {
                                         </span>
                                         <div>
                                             <p class="text-base font-semibold text-heading">System Settings</p>
-                                            <p class="text-base text-text">Manage users & roles</p>
+                                            <p class="text-sm text-text">Manage users & roles</p>
                                         </div>
                                     </router-link>
                                 </div>
@@ -233,28 +233,35 @@ watch(() => route.fullPath, () => {
                     <ul class="flex flex-col gap-1">
                         <li>
                             <router-link :to="{ name: 'home' }"
-                                class="flex items-center gap-3 px-3 py-3  rounded-sm text-base font-medium transition-all"
+                                class="flex items-center gap-3 px-3 py-3 rounded-sm text-base font-medium transition-all"
                                 :class="route.name === 'home' ? 'bg-accent/10 text-accent' : 'text-text hover:bg-heading/6 hover:text-heading'">
-                                <v-icon name="si-homeadvisor" scale="1" /> Home
+                                <v-icon name="co-home" scale="1" /> Home
                             </router-link>
                         </li>
                         <li>
                             <router-link :to="{ name: 'my-stuff' }"
-                                class="flex items-center gap-3 px-3 py-3  rounded-sm text-base font-medium transition-all"
+                                class="flex items-center gap-3 px-3 py-3 rounded-sm text-base font-medium transition-all"
                                 :class="route.name === 'my-stuff' ? 'bg-accent/10 text-accent' : 'text-text hover:bg-heading/6 hover:text-heading'">
                                 <v-icon name="bi-clipboard-check" scale="1" /> My Stuff
                             </router-link>
                         </li>
                         <li>
+                            <router-link :to="{ name: 'projects' }"
+                                class="flex items-center gap-3 px-3 py-3 rounded-sm text-base font-medium transition-all"
+                                :class="route.name === 'projects' ? 'bg-accent/10 text-accent' : 'text-text hover:bg-heading/6 hover:text-heading'">
+                                <v-icon name="bi-folder2-open" scale="1" /> Projects
+                            </router-link>
+                        </li>
+                        <li>
                             <router-link :to="{ name: 'pings' }"
-                                class="flex items-center gap-3 px-3 py-3  rounded-sm text-base font-medium transition-all"
+                                class="flex items-center gap-3 px-3 py-3 rounded-sm text-base font-medium transition-all"
                                 :class="route.name === 'pings' ? 'bg-accent/10 text-accent' : 'text-text hover:bg-heading/6 hover:text-heading'">
                                 <v-icon name="bi-chat-dots" scale="1" /> Pings
                             </router-link>
                         </li>
                         <li>
                             <router-link :to="{ name: 'time-tracking' }"
-                                class="flex items-center gap-3 px-3 py-3  rounded-sm text-base font-medium transition-all"
+                                class="flex items-center gap-3 px-3 py-3 rounded-sm text-base font-medium transition-all"
                                 :class="route.name === 'time-tracking' ? 'bg-accent/10 text-accent' : 'text-text hover:bg-heading/6 hover:text-heading'">
                                 <v-icon name="bi-stopwatch" scale="1" /> Time Tracking
                             </router-link>

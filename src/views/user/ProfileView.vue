@@ -265,10 +265,10 @@ const submitAvatar = async () => {
 </script>
 
 <template>
-	<div class="max-w-6xl mx-auto mt-6 md:mt-10 mb-24 px-4">
+	<div class="max-w-6xl mx-auto py-8">
 
 		<!-- Page Header -->
-		<div class="mb-6 md:mb-8">
+		<div class="mb-8">
 			<h1 class="page-title">My Profile</h1>
 			<p class="page-subtitle">Manage your personal information and account security.</p>
 		</div>
@@ -324,7 +324,7 @@ const submitAvatar = async () => {
 						<p class="text-base font-semibold text-text mb-1.5">Quick Info</p>
 						<div class="flex items-center gap-3">
 							<div
-								class="w-12 h-12 rounded-sm bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
+								class="w-12 h-12 rounded-sm bg-blue-500/10 flex items-center justify-center shrink-0">
 								<v-icon name="bi-envelope" class="text-blue-500" scale="1.2" />
 							</div>
 							<div class="min-w-0">
@@ -334,7 +334,7 @@ const submitAvatar = async () => {
 						</div>
 						<div class="flex items-center gap-3">
 							<div
-								class="w-12 h-12 rounded-sm bg-green-50 dark:bg-green-500/10 flex items-center justify-center shrink-0">
+								class="w-12 h-12 rounded-sm bg-green-500/10 flex items-center justify-center shrink-0">
 								<v-icon name="bi-telephone" class="text-green-500" scale="1.2" />
 							</div>
 							<div class="min-w-0">
@@ -344,7 +344,7 @@ const submitAvatar = async () => {
 						</div>
 						<div class="flex items-center gap-3">
 							<div
-								class="w-12 h-12 rounded-sm bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center shrink-0">
+								class="w-12 h-12 rounded-sm bg-purple-500/10 flex items-center justify-center shrink-0">
 								<v-icon name="bi-geo-alt" class="text-purple-500" scale="1.2" />
 							</div>
 							<div class="min-w-0">
@@ -355,7 +355,7 @@ const submitAvatar = async () => {
 						</div>
 						<div class="flex items-start gap-3">
 							<div
-								class="w-12 h-12 rounded-sm bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
+								class="w-12 h-12 rounded-sm bg-amber-500/10 flex items-center justify-center shrink-0">
 								<v-icon name="bi-person" class="text-amber-500" scale="1.2" />
 							</div>
 							<div class="min-w-0">
@@ -391,7 +391,7 @@ const submitAvatar = async () => {
 									<input v-model="firstName" type="text" placeholder="John" class="input-field"
 										:class="{ 'border-red-400': errors.firstName }"
 										:disabled="!canUpdateProfile" @input="clearError('firstName')" />
-									<p v-if="errors.firstName" class="text-red-500 text-base mt-1">{{ errors.firstName }}</p>
+									<p v-if="errors.firstName" class="text-red-500 text-sm mt-1">{{ errors.firstName }}</p>
 								</div>
 								<div class="flex flex-col gap-1.5">
 									<label class="block text-base font-semibold text-text">
@@ -400,7 +400,7 @@ const submitAvatar = async () => {
 									<input v-model="lastName" type="text" placeholder="Doe" class="input-field"
 										:class="{ 'border-red-400': errors.lastName }"
 										:disabled="!canUpdateProfile" @input="clearError('lastName')" />
-									<p v-if="errors.lastName" class="text-red-500 text-base mt-1">{{ errors.lastName }}</p>
+									<p v-if="errors.lastName" class="text-red-500 text-sm mt-1">{{ errors.lastName }}</p>
 								</div>
 							</div>
 							<div class="flex flex-col gap-1.5">
@@ -415,7 +415,7 @@ const submitAvatar = async () => {
 										class="input-field pl-10" :disabled="!canUpdateProfile"
 										:class="{ 'border-red-400': errors.email }" @input="clearError('email')" />
 								</div>
-								<p v-if="errors.email" class="text-red-500 text-base mt-1">{{ errors.email }}</p>
+								<p v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</p>
 							</div>
 							<div class="flex flex-col gap-1.5">
 								<label class="block text-base font-semibold text-text">Job Title</label>
@@ -518,7 +518,7 @@ const submitAvatar = async () => {
 										<v-icon :name="showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'" scale="0.9" />
 									</button>
 								</div>
-								<p v-if="errors.confirmPassword" class="text-red-500 text-base mt-1">{{ errors.confirmPassword }}</p>
+								<p v-if="errors.confirmPassword" class="text-red-500 text-sm mt-1">{{ errors.confirmPassword }}</p>
 							</div>
 						</div>
 					</div>
