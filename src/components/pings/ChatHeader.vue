@@ -45,19 +45,18 @@ watch(() => store.activeConvId, () => {
     showMenu.value   = false
     searchMode.value = false
     muteState.value  = false
-    store.convSearchQuery = ''
+    store.setConvSearchQuery('')
 })
 
 function toggleSearch() {
     searchMode.value = !searchMode.value
-    if (!searchMode.value) store.convSearchQuery = ''
+    if (!searchMode.value) store.setConvSearchQuery('')
 }
 
 function closeMenu() { showMenu.value = false }
 
 function markRead() {
-    const c = store.conversations.find(c => c.id === store.activeConvId)
-    if (c) c.unread = 0
+    store.markConvRead(store.activeConvId)
     closeMenu()
 }
 
@@ -76,7 +75,7 @@ function toggleMute() {
             <!-- Back (mobile only) -->
             <button class="md:hidden w-8 h-8 rounded-lg flex items-center justify-center text-text/60
                            hover:bg-heading/8 transition-all duration-150 active:scale-95"
-                    @click="store.mobileSidebarOpen = true">
+                    @click="store.setMobileSidebarOpen(true)">
                 <v-icon name="bi-arrow-left" scale="0.9" />
             </button>
 
@@ -230,7 +229,8 @@ function toggleMute() {
                             class="absolute left-3 top-1/2 -translate-y-1/2 text-text/35 pointer-events-none"
                             scale="0.8" />
                     <input
-                        v-model="store.convSearchQuery"
+                        :value="store.convSearchQuery"
+                        @input="store.setConvSearchQuery($event.target.value)"
                         type="text"
                         placeholder="Search messages in this conversation…"
                         class="w-full pl-9 pr-3 py-2 rounded-xl text-[13px] bg-heading/6 border border-heading/10

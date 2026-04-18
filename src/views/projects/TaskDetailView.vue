@@ -133,6 +133,11 @@ const onRemoveSubtask = async ({ id }) => {
 	if (!res.success) errorToast(res.message)
 }
 
+const onReorderSubtasks = async (orderedIds) => {
+	const res = await taskStore.reorderSubtasks(projectId.value, taskId.value, orderedIds)
+	if (!res.success) errorToast(res.message)
+}
+
 // ── Labels ───────────────────────────────────────────
 // Sidebar emits `create-label` when the user types a brand-new label name.
 // Create it in the project palette, then sync into the task's label_ids.
@@ -394,7 +399,8 @@ onUnmounted(() => {
 					:saving="saving"
 					@add="onAddSubtask"
 					@toggle="onToggleSubtask"
-					@remove="onRemoveSubtask" />
+					@remove="onRemoveSubtask"
+					@reorder="onReorderSubtasks" />
 
 				<TaskCommentsActivityCard
 					:activity="[]"

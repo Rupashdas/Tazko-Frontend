@@ -45,8 +45,7 @@ export const useTaskCommentStore = defineStore('taskComments', {
 					`/api/projects/${projectId}/tasks/${taskId}/comments/${commentId}`,
 					{ body }
 				)
-				const idx = this.comments.findIndex(c => c.id === commentId)
-				if (idx !== -1) this.comments[idx] = data.data
+				this.comments = this.comments.map(c => c.id === commentId ? data.data : c)
 				return { success: true }
 			} catch (err) {
 				return {
@@ -71,27 +70,41 @@ export const useTaskCommentStore = defineStore('taskComments', {
 			}
 		},
 
-		async toggleLike(projectId, taskId, commentId) {
-			const comment = this.comments.find(c => c.id === commentId)
-			if (!comment) return
+		_patchComment(commentId, patch) {
+			const idx = this.comments.findIndex(c => c.id === commentId)
+			if (idx === -1) return
+			this.comments = [
+				...this.comments.slice(0, idx),
+				{ ...this.comments[idx], ...patch },
+				...this.comments.slice(idx + 1),
+			]
+		},
 
-			const wasLiked = comment.liked_by_me
-			comment.liked_by_me = !wasLiked
-			comment.likes_count = wasLiked
-				? Math.max(0, (comment.likes_count ?? 0) - 1)
-				: (comment.likes_count ?? 0) + 1
+		async toggleLike(projectId, taskId, commentId) {
+			const original = this.comments.find(c => c.id === commentId)
+			if (!original) return
+
+			const wasLiked = original.liked_by_me
+			const originalCount = original.likes_count ?? 0
+
+			this._patchComment(commentId, {
+				liked_by_me: !wasLiked,
+				likes_count: wasLiked ? Math.max(0, originalCount - 1) : originalCount + 1,
+			})
 
 			try {
 				const { data } = await axios.post(
 					`/api/projects/${projectId}/tasks/${taskId}/comments/${commentId}/like`
 				)
-				comment.liked_by_me = data.liked
-				comment.likes_count = data.likes_count
+				this._patchComment(commentId, {
+					liked_by_me: data.liked,
+					likes_count: data.likes_count,
+				})
 			} catch {
-				comment.liked_by_me = wasLiked
-				comment.likes_count = wasLiked
-					? (comment.likes_count ?? 0) + 1
-					: Math.max(0, (comment.likes_count ?? 0) - 1)
+				this._patchComment(commentId, {
+					liked_by_me: wasLiked,
+					likes_count: originalCount,
+				})
 			}
 		},
 

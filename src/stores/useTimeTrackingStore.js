@@ -187,8 +187,7 @@ export const useTimeTrackingStore = defineStore('time-tracking', () => {
 	}
 
 	function updateEntry(id, updates) {
-		const idx = entries.value.findIndex(e => e.id === id)
-		if (idx !== -1) entries.value[idx] = { ...entries.value[idx], ...updates }
+		entries.value = entries.value.map(e => e.id === id ? { ...e, ...updates } : e)
 	}
 
 	function deleteEntry(id) {

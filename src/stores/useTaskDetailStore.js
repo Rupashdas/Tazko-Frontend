@@ -224,6 +224,41 @@ export const useTaskDetailStore = defineStore('taskDetail', {
 			}
 		},
 
+		/**
+		 * POST /subtasks/reorder
+		 *
+		 * orderedIds is the array of subtask ids in their new order.
+		 * Optimistic: reshuffles `task.subtasks` immediately (and updates
+		 * sort_order on each). On failure, restores the snapshot.
+		 */
+		async reorderSubtasks(projectId, taskId, orderedIds) {
+			if (!this.task?.subtasks) return { success: false }
+
+			const snapshot = clone(this.task.subtasks)
+			const byId = Object.fromEntries(this.task.subtasks.map(s => [s.id, s]))
+
+			// Optimistic re-order
+			this.task.subtasks = orderedIds
+				.map((id, i) => byId[id] ? { ...byId[id], sort_order: i + 1 } : null)
+				.filter(Boolean)
+
+			try {
+				await axios.post(
+					`/api/projects/${projectId}/tasks/${taskId}/subtasks/reorder`,
+					{
+						subtasks: orderedIds.map((id, i) => ({ id, sort_order: i + 1 })),
+					}
+				)
+				return { success: true }
+			} catch (err) {
+				this.task.subtasks = snapshot
+				return {
+					success: false,
+					message: err.response?.data?.message ?? 'Failed to reorder subtasks.',
+				}
+			}
+		},
+
 		async deleteSubtask(projectId, taskId, subtaskId) {
 			if (!this.task?.subtasks) return { success: false }
 

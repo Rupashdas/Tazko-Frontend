@@ -509,7 +509,11 @@ const handleDelete = async () => {
 								title="More actions">
 								<v-icon name="bi-three-dots-vertical" scale="0.9" />
 							</button>
-							<Transition name="fade-drop">
+							<Transition
+								enter-active-class="transition-all duration-150 ease-in-out"
+								leave-active-class="transition-all duration-150 ease-in-out"
+								enter-from-class="opacity-0 -translate-y-1.5"
+								leave-to-class="opacity-0 -translate-y-1.5">
 								<div v-if="moreMenuOpen"
 									class="absolute right-0 top-full mt-1 w-52 bg-panel rounded-sm border border-heading/10 shadow-xl z-30 overflow-hidden">
 									<button v-if="canUpdate" @click="openEditProject()"
@@ -714,31 +718,6 @@ const handleDelete = async () => {
 </template>
 
 <style scoped>
-.modal-enter-active,
-.modal-leave-active {
-	transition: all 0.2s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-	opacity: 0;
-}
-
-.modal-enter-from .relative,
-.modal-leave-to .relative {
-	transform: scale(0.97);
-}
-
-.fade-drop-enter-active,
-.fade-drop-leave-active {
-	transition: all 0.15s ease;
-}
-.fade-drop-enter-from,
-.fade-drop-leave-to {
-	opacity: 0;
-	transform: translateY(-6px);
-}
-
 /* Rich content — saved HTML from RichTextEditor */
 :deep(.project-rich-content) {
 	font-size: 0.875rem;

@@ -187,8 +187,7 @@ export const useChatStore = defineStore('chat', () => {
         mobileSidebarOpen.value  = false
         replyingTo.value         = null
         convSearchQuery.value    = ''
-        const conv = conversations.value.find(c => c.id === id)
-        if (conv) conv.unread = 0
+        _replaceConv(id, c => ({ ...c, unread: 0 }))
     }
 
     function setReplyTo(msg) {
@@ -204,6 +203,28 @@ export const useChatStore = defineStore('chat', () => {
     }
 
     function clearReplyTo() { replyingTo.value = null }
+
+    function _replaceMessage(convId, messageId, updater) {
+        const list = messages.value[convId]
+        if (!list) return
+        const idx = list.findIndex(m => m.id === messageId)
+        if (idx === -1) return
+        messages.value[convId] = [
+            ...list.slice(0, idx),
+            updater(list[idx]),
+            ...list.slice(idx + 1),
+        ]
+    }
+
+    function _replaceConv(convId, updater) {
+        const idx = conversations.value.findIndex(c => c.id === convId)
+        if (idx === -1) return
+        conversations.value = [
+            ...conversations.value.slice(0, idx),
+            updater(conversations.value[idx]),
+            ...conversations.value.slice(idx + 1),
+        ]
+    }
 
     function sendMessage(content, type = 'text', extra = {}) {
         const convId = activeConvId.value
@@ -222,11 +243,15 @@ export const useChatStore = defineStore('chat', () => {
             ...extra,
         }
         replyingTo.value = null
-        if (!messages.value[convId]) messages.value[convId] = []
-        messages.value[convId].push(msg)
+        messages.value = {
+            ...messages.value,
+            [convId]: [...(messages.value[convId] ?? []), msg],
+        }
 
-        const conv = conversations.value.find(c => c.id === convId)
-        if (conv) conv.lastMessage = { text: content, senderId: CURRENT_USER_ID, time: now }
+        _replaceConv(convId, c => ({
+            ...c,
+            lastMessage: { text: content, senderId: CURRENT_USER_ID, time: now },
+        }))
 
         _scheduleReply(convId)
     }
@@ -234,11 +259,7 @@ export const useChatStore = defineStore('chat', () => {
     function sendThreadReply(content) {
         if (!activeThread.value) return
         const { messageId, conversationId } = activeThread.value
-        const msgs   = messages.value[conversationId]
-        const parent = msgs?.find(m => m.id === messageId)
-        if (!parent) return
-        if (!parent.threads) parent.threads = []
-        parent.threads.push({
+        const reply = {
             id:        `t-${Date.now()}`,
             senderId:  CURRENT_USER_ID,
             type:      'text',
@@ -247,30 +268,49 @@ export const useChatStore = defineStore('chat', () => {
             date:      'Today',
             reactions: [],
             readBy:    [CURRENT_USER_ID],
-        })
+        }
+        _replaceMessage(conversationId, messageId, m => ({
+            ...m,
+            threads: [...(m.threads ?? []), reply],
+        }))
     }
 
     function toggleReaction(messageId, emoji, convId = activeConvId.value) {
-        const msg = (messages.value[convId] ?? []).find(m => m.id === messageId)
-        if (!msg) return
-        const existing = msg.reactions.find(r => r.emoji === emoji)
-        if (existing) {
-            if (existing.userIds.includes(CURRENT_USER_ID)) {
-                existing.userIds = existing.userIds.filter(id => id !== CURRENT_USER_ID)
-                if (!existing.userIds.length) msg.reactions = msg.reactions.filter(r => r.emoji !== emoji)
+        _replaceMessage(convId, messageId, m => {
+            const existing = m.reactions.find(r => r.emoji === emoji)
+            let reactions
+            if (existing) {
+                if (existing.userIds.includes(CURRENT_USER_ID)) {
+                    const userIds = existing.userIds.filter(id => id !== CURRENT_USER_ID)
+                    reactions = userIds.length
+                        ? m.reactions.map(r => r.emoji === emoji ? { ...r, userIds } : r)
+                        : m.reactions.filter(r => r.emoji !== emoji)
+                } else {
+                    reactions = m.reactions.map(r =>
+                        r.emoji === emoji ? { ...r, userIds: [...r.userIds, CURRENT_USER_ID] } : r
+                    )
+                }
             } else {
-                existing.userIds.push(CURRENT_USER_ID)
+                reactions = [...m.reactions, { emoji, userIds: [CURRENT_USER_ID] }]
             }
-        } else {
-            msg.reactions.push({ emoji, userIds: [CURRENT_USER_ID] })
-        }
+            return { ...m, reactions }
+        })
     }
 
     function deleteMessage(messageId) {
-        const msgs = messages.value[activeConvId.value]
-        if (!msgs) return
-        const msg = msgs.find(m => m.id === messageId)
-        if (msg) { msg.deleted = true; msg.content = 'This message was deleted.' }
+        _replaceMessage(activeConvId.value, messageId, m => ({
+            ...m,
+            deleted: true,
+            content: 'This message was deleted.',
+        }))
+    }
+
+    function setConvSearchQuery(query) { convSearchQuery.value = query }
+    function setMobileSidebarOpen(open) { mobileSidebarOpen.value = open }
+    function setSearchQuery(query) { searchQuery.value = query }
+
+    function markConvRead(convId) {
+        _replaceConv(convId, c => ({ ...c, unread: 0 }))
     }
 
     function openThread(messageId) {
@@ -330,16 +370,19 @@ export const useChatStore = defineStore('chat', () => {
             const replies = ['Got it, thanks!', 'Makes sense! 👍', 'On it!', 'Sure thing!', 'Sounds good!', "I'll look into it.", 'Perfect, thanks!', 'Will do! 🙌']
             const content = replies[Math.floor(Math.random() * replies.length)]
             const now     = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            if (!messages.value[convId]) messages.value[convId] = []
-            messages.value[convId].push({
+            const newMsg = {
                 id: `auto-${Date.now()}`, senderId: responderId, type: 'text', content,
                 time: now, date: 'Today', reactions: [], readBy: [responderId], threads: [],
-            })
-            const c = conversations.value.find(x => x.id === convId)
-            if (c) {
-                c.lastMessage = { text: content, senderId: responderId, time: now }
-                if (convId !== activeConvId.value) c.unread = (c.unread || 0) + 1
             }
+            messages.value = {
+                ...messages.value,
+                [convId]: [...(messages.value[convId] ?? []), newMsg],
+            }
+            _replaceConv(convId, c => ({
+                ...c,
+                lastMessage: { text: content, senderId: responderId, time: now },
+                unread: convId !== activeConvId.value ? (c.unread || 0) + 1 : c.unread,
+            }))
         }, 2000 + Math.random() * 1500)
     }
 
@@ -362,6 +405,7 @@ export const useChatStore = defineStore('chat', () => {
         loadOlderMessages,
         setReplyTo, clearReplyTo, replyingTo,
         convSearchQuery,
+        setConvSearchQuery, setMobileSidebarOpen, setSearchQuery, markConvRead,
         CURRENT_USER_ID,
     }
 })

@@ -14,20 +14,14 @@ export function useRolePermissions() {
 	 * Toggle a single capability inside a module.
 	 */
 	function togglePermission(module, capId) {
-		const list = roleStore.selectedPermissions[module]
-		const idx = list.indexOf(capId)
-		idx > -1 ? list.splice(idx, 1) : list.push(capId)
+		roleStore.togglePermission(module, capId)
 	}
 
 	/**
 	 * Select all / deselect all capabilities in a module.
 	 */
 	function toggleSelectAll(module) {
-		const allIds = roleStore.capabilities[module].map(c => c.id)
-		const current = roleStore.selectedPermissions[module]
-
-		roleStore.selectedPermissions[module] =
-			current.length === allIds.length ? [] : [...allIds]
+		roleStore.toggleSelectAll(module)
 	}
 
 	/**

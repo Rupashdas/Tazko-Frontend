@@ -38,7 +38,8 @@ function is(key) { return collapsed.value.has(key) }
                         class="absolute left-2.5 top-1/2 -translate-y-1/2 text-text/35 pointer-events-none"
                         scale="0.8" />
                 <input
-                    v-model="store.searchQuery"
+                    :value="store.searchQuery"
+                    @input="store.setSearchQuery($event.target.value)"
                     type="text"
                     placeholder="Search…"
                     class="w-full pl-8 pr-3 py-[7px] rounded-lg text-[13px] bg-heading/5 border border-heading/8

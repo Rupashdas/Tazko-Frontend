@@ -55,10 +55,14 @@ export const useRoleStore = defineStore('roles', {
 
 				// Set capabilities
 				this.capabilities = capRes.data ?? {}
+				const collapsedNext = { ...this.collapsedModules }
+				const permsNext     = { ...this.selectedPermissions }
 				Object.keys(this.capabilities).forEach(module => {
-					if (!(module in this.collapsedModules)) this.collapsedModules[module] = false
-					if (!this.selectedPermissions[module]) this.selectedPermissions[module] = []
+					if (!(module in collapsedNext)) collapsedNext[module] = false
+					if (!permsNext[module]) permsNext[module] = []
 				})
+				this.collapsedModules    = collapsedNext
+				this.selectedPermissions = permsNext
 
 				// Set roles
 				this.roles = roleRes.data.data ?? []
@@ -74,25 +78,47 @@ export const useRoleStore = defineStore('roles', {
 			}
 		},
 
+		togglePermission(module, capId) {
+			const list = this.selectedPermissions[module] ?? []
+			const idx = list.indexOf(capId)
+			this.selectedPermissions = {
+				...this.selectedPermissions,
+				[module]: idx > -1
+					? list.filter(id => id !== capId)
+					: [...list, capId],
+			}
+		},
+
+		toggleSelectAll(module) {
+			const allIds = (this.capabilities[module] ?? []).map(c => c.id)
+			const current = this.selectedPermissions[module] ?? []
+			this.selectedPermissions = {
+				...this.selectedPermissions,
+				[module]: current.length === allIds.length ? [] : [...allIds],
+			}
+		},
+
 		selectRole(role) {
 			if (!role || !this.capabilities) return
 			this.selectedRole = role
 
-			// Reset permissions
-			Object.keys(this.capabilities).forEach(module => {
-				this.selectedPermissions[module] = []
-			})
+			const next = Object.fromEntries(
+				Object.keys(this.capabilities).map(module => [module, []])
+			)
 
-			if (!role.capabilities) return
-			role.capabilities.forEach(roleCap => {
-				const entry = Object.entries(this.capabilities).find(
-					([, caps]) => caps.some(c => c.id === roleCap.id)
-				)
-				if (entry) {
-					const [module] = entry
-					this.selectedPermissions[module].push(roleCap.id)
-				}
-			})
+			if (role.capabilities) {
+				role.capabilities.forEach(roleCap => {
+					const entry = Object.entries(this.capabilities).find(
+						([, caps]) => caps.some(c => c.id === roleCap.id)
+					)
+					if (entry) {
+						const [module] = entry
+						next[module] = [...next[module], roleCap.id]
+					}
+				})
+			}
+
+			this.selectedPermissions = next
 		},
 
 		async createRole({ name, label }) {
@@ -136,10 +162,16 @@ export const useRoleStore = defineStore('roles', {
 
 				const allCaps = Object.values(this.capabilities).flat()
 				const updatedCaps = allCaps.filter(c => capabilityIds.includes(c.id))
-				this.selectedRole.capabilities = updatedCaps
+				this.selectedRole = { ...this.selectedRole, capabilities: updatedCaps }
 
 				const idx = this.roles.findIndex(r => r.id === this.selectedRole.id)
-				if (idx > -1) this.roles[idx].capabilities = updatedCaps
+				if (idx > -1) {
+					this.roles = [
+						...this.roles.slice(0, idx),
+						{ ...this.roles[idx], capabilities: updatedCaps },
+						...this.roles.slice(idx + 1),
+					]
+				}
 
 				return { success: true }
 			} catch (err) {

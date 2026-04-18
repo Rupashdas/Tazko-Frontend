@@ -344,7 +344,6 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 
 				<draggable v-model="listItems" item-key="id" handle=".row-handle" :animation="150"
 					ghost-class="list-row-ghost" drag-class="list-row-dragging" chosen-class="list-row-chosen"
-					:force-fallback="true"
 					@start="onDragStart" @end="onDragEnd" @change="onListChange"
 					class="divide-y divide-heading/[0.04]">
 					<template #item="{ element: task }">
@@ -469,23 +468,24 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 }
 
 /* ── LIST ROW — GHOST ──────────────────────────────── */
-:deep(.list-row-ghost) {
-	opacity: 1 !important;
-	background: var(--color-accent, #6c63ff) !important;
-	opacity: 0.06 !important;
-	border-radius: 4px !important;
+.list-row-ghost {
+	background: rgba(99, 102, 241, 0.07) !important;
+	border-left: 3px solid rgba(99, 102, 241, 0.40) !important;
+	border-top: none !important;
+	border-right: none !important;
+	border-bottom: none !important;
+	border-radius: 0 !important;
 	box-shadow: none !important;
 	outline: none !important;
 }
 
-:deep(.list-row-ghost) * {
+.list-row-ghost * {
 	opacity: 0 !important;
 }
 
 /* ── LIST ROW — CHOSEN ─────────────────────────────── */
 :deep(.list-row-chosen) {
 	cursor: grabbing !important;
-	background: var(--color-panel) !important;
 	z-index: 10;
 }
 
