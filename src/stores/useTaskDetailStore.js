@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from '@/axios'
+import { useProjectStore } from '@/stores/useProjectStore'
 
 const memberColors = ['bg-accent', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500']
 
@@ -108,6 +109,8 @@ export const useTaskDetailStore = defineStore('taskDetail', {
 				)
 				// Reconcile with server truth (keeps extras like updated_at in sync).
 				this.task = normalizeTask(data.data)
+				// Keep the board/list view in the projectStore in sync.
+				useProjectStore()._replaceTask(data.data)
 				return { success: true }
 			} catch (err) {
 				this.task = snapshot
@@ -127,6 +130,9 @@ export const useTaskDetailStore = defineStore('taskDetail', {
 			try {
 				await axios.delete(`/api/projects/${projectId}/tasks/${taskId}`)
 				this.task = null
+				// Remove from the board/list view too.
+				const projectStore = useProjectStore()
+				projectStore.tasks = projectStore.tasks.filter(t => t.id !== taskId)
 				return { success: true }
 			} catch (err) {
 				return {

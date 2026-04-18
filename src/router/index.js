@@ -14,14 +14,14 @@ import PreferencesView from '@/views/user/PreferencesView.vue';
 import SystemSettingsView from '@/views/admin/SystemSettingsView.vue';
 import RolesView from '@/views/admin/RolesView.vue';
 import UsersView from '@/views/admin/UsersView.vue';
-import UnauthorizedView from '@/views/errors/Unauthorizedview.vue';
+import UnauthorizedView from '@/views/errors/UnauthorizedView.vue';
 
 import HomeView from '@/views/HomeView.vue';
 import MyStuffView from '@/views/MyStuffView.vue'
 import PingsView from '@/views/PingsView.vue';
 import ProjectsView from '@/views/projects/ProjectsView.vue';
 import ArchivedProjectsView from '@/views/projects/ArchivedProjectsView.vue';
-import ProjectDetailView from '@/views/projects/Projectdetailview.vue'
+import ProjectDetailView from '@/views/projects/ProjectDetailView.vue'
 import TaskDetailView from '@/views/projects/TaskDetailView.vue';
 import TimeTrackingView from '@/views/time-tracking/TimeTrackingView.vue';
 

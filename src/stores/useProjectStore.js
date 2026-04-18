@@ -64,14 +64,28 @@ export const useProjectStore = defineStore('projects', {
 		async updateTask(projectId, taskId, payload) {
 			try {
 				const { data } = await axios.patch(`/api/projects/${projectId}/tasks/${taskId}`, payload)
-				const idx = this.tasks.findIndex(t => t.id === taskId)
-				if (idx !== -1) this.tasks[idx] = { ...data.data, due: data.data.due_date ?? null }
+				this._replaceTask(data.data)
 				return { success: true }
 			} catch (err) {
 				return {
 					success: false,
 					message: err.response?.data?.message ?? 'Failed to update task.',
 				}
+			}
+		},
+
+		/**
+		 * Merge an updated task (from any source, e.g. taskDetailStore) into
+		 * the board's tasks array so the kanban view stays in sync with the
+		 * detail view. Safe to call even if the task isn't currently in the
+		 * array (e.g. different project open).
+		 */
+		_replaceTask(raw) {
+			if (!raw?.id) return
+			const normalized = { ...raw, due: raw.due_date ?? null }
+			const idx = this.tasks.findIndex(t => t.id === raw.id)
+			if (idx !== -1) {
+				this.tasks.splice(idx, 1, normalized)
 			}
 		},
 

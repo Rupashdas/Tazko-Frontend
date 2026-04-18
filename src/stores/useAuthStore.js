@@ -80,10 +80,10 @@ export const useAuthStore = defineStore('auth', {
             }
         },
 
-        async signup(name, email, password) {
+        async signup(name, email, password, password_confirmation) {
             try {
                 await axios.get('/sanctum/csrf-cookie')
-                const { data } = await axios.post('/api/register', { name, email, password })
+                const { data } = await axios.post('/api/register', { name, email, password, password_confirmation: password_confirmation ?? password })
 
                 if (data.status === 'success') {
                     this.user = data.user ?? await this.fetchUser()

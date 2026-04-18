@@ -1,13 +1,13 @@
 <script setup>
 import { RouterView, useRoute } from 'vue-router'
 import { computed } from 'vue'
-import HeaderCompontent from '@/components/HeaderCompontent.vue'
+import HeaderComponent from '@/components/HeaderComponent.vue'
 const route = useRoute()
 const routeKey = computed(() => route.matched[0]?.path)
 </script>
 
 <template>
-	<HeaderCompontent />
+	<HeaderComponent />
 	<main class="container">
 		<router-view v-slot="{ Component }">
 			<transition name="slide-up" mode="out-in">
