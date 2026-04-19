@@ -5,6 +5,8 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import { useTaskDetailStore } from '@/stores/useTaskDetailStore'
 import { useTaskCommentStore } from '@/stores/useTaskCommentStore'
 import { useToast } from '@/utils/toast'
+import { paletteColor } from '@/utils/paletteColor'
+import axios from '@/axios'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 import { addIcons } from 'oh-vue-icons'
 import { BiChevronRight } from 'oh-vue-icons/icons'
@@ -47,8 +49,6 @@ const canDeleteComment = computed(() => auth.hasCapability('comments.delete'))
 const canReactComment  = computed(() => auth.hasCapability('comments.react'))
 
 // ── Avatar helpers (shared with sidebar members) ──────
-const memberColors = ['bg-accent', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500']
-
 const getInitials = (name) => {
 	if (!name) return '?'
 	const parts = name.trim().split(/\s+/)
@@ -63,12 +63,26 @@ const saving  = computed(() => taskStore.saving)
 const error   = computed(() => taskStore.error)
 
 const members = computed(() =>
-	(task.value?.project?.members ?? []).map((m, i) => ({
+	(task.value?.project?.members ?? []).map((m) => ({
 		...m,
 		initials: getInitials(m.name),
-		color: memberColors[i % memberColors.length],
+		color: paletteColor(m.palette),
 	}))
 )
+
+// ── Workspace users (for assignee auto-add) ───────────
+const allUsers = ref([])
+
+const workspaceOnlyUsers = computed(() => {
+	const memberIds = new Set(members.value.map(m => m.id))
+	return allUsers.value
+		.filter(u => !memberIds.has(u.id))
+		.map(u => ({
+			...u,
+			initials: getInitials(u.name),
+			color: paletteColor(u.palette),
+		}))
+})
 
 // ── Bootstrap ─────────────────────────────────────────
 const init = async () => {
@@ -79,7 +93,15 @@ const init = async () => {
 	if (canUpdate.value) taskStore.fetchLabels(projectId.value)
 }
 
-onMounted(init)
+onMounted(async () => {
+	const [, usersRes] = await Promise.allSettled([
+		init(),
+		axios.get('/api/users', { params: { per_page: 500 } }),
+	])
+	if (usersRes.status === 'fulfilled') {
+		allUsers.value = usersRes.value.data.data ?? []
+	}
+})
 
 // ── Save orchestration ───────────────────────────────
 // Build the optimistic `localPatch` that mirrors the API `payload`.
@@ -91,8 +113,10 @@ const buildLocalPatch = (payload) => {
 	const patch = { ...payload }
 
 	if ('assignee_ids' in patch) {
+		// Include workspace users so optimistic update shows newly added members
+		const allKnownUsers = [...members.value, ...workspaceOnlyUsers.value]
 		patch.assignees = patch.assignee_ids
-			.map(id => members.value.find(m => m.id === id))
+			.map(id => allKnownUsers.find(u => u.id === id))
 			.filter(Boolean)
 		delete patch.assignee_ids
 	}
@@ -418,6 +442,7 @@ onUnmounted(() => {
 			<TaskSidebar
 				:task="task"
 				:members="members"
+				:workspace-users="workspaceOnlyUsers"
 				:status-options="statusOptions"
 				:priority-options="priorityOptions"
 				:status-config="statusConfig"
@@ -443,5 +468,6 @@ onUnmounted(() => {
 			:loading="deleting"
 			@close="showDeleteModal = false"
 			@confirm="confirmDelete" />
+
 	</div>
 </template>

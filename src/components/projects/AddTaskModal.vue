@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { addIcons } from 'oh-vue-icons'
 import { BiX, BiPlus, BiArrowRepeat } from 'oh-vue-icons/icons'
 import AppSelect from '@/components/ui/AppSelect.vue'
@@ -11,6 +11,7 @@ addIcons(BiX, BiPlus, BiArrowRepeat)
 const props = defineProps({
 	show: { type: Boolean, default: false },
 	members: { type: Array, default: () => [] },
+	workspaceUsers: { type: Array, default: () => [] },
 	columnStatuses: { type: Array, default: () => ['Todo', 'In Progress', 'Review', 'Done'] },
 	defaultStatus: { type: String, default: 'Todo' },
 	saving: { type: Boolean, default: false },
@@ -25,6 +26,24 @@ const assignees = ref([])
 const due = ref('')
 const status = ref('Todo')
 const description = ref('')
+
+const assigneeOptions = computed(() => [
+	...props.members.map(m => ({
+		label: m.name,
+		value: m.id,
+		color: m.color,
+		initials: m.initials,
+		group: 'Project Members',
+	})),
+	...props.workspaceUsers.map(u => ({
+		label: u.name,
+		value: u.id,
+		color: u.color,
+		initials: u.initials,
+		group: 'Add from Workspace',
+		isNonMember: true,
+	})),
+])
 
 const reset = () => {
 	title.value = ''
@@ -45,6 +64,7 @@ watch(() => props.defaultStatus, (val) => {
 
 const handleSave = () => {
 	if (!title.value.trim()) return
+	const _newMembers = props.workspaceUsers.filter(u => assignees.value.includes(u.id))
 	emit('save', {
 		title:        title.value.trim(),
 		description:  description.value || '',
@@ -52,6 +72,7 @@ const handleSave = () => {
 		priority:     priority.value,
 		assignee_ids: assignees.value,
 		due_date:     due.value || null,
+		_newMembers,
 	})
 }
 
@@ -103,8 +124,9 @@ const handleClose = () => emit('close')
 							<label class="block text-base font-semibold text-text mb-1.5">Assignees</label>
 							<AppSelect
 								v-model="assignees"
-								:options="members.map(m => ({ label: m.name, value: m.id, color: m.color, initials: m.initials }))"
+								:options="assigneeOptions"
 								placeholder="Select assignees…"
+								:searchable="true"
 								:multiple="true" />
 						</div>
 						<div>

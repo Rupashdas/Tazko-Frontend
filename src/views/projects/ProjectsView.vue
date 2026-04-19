@@ -15,6 +15,7 @@ import ProjectsSkeletons  from '@/components/projects/ProjectsSkeletons.vue'
 import { useProjectStore } from '@/stores/useProjectStore'
 import { useAuthStore }    from '@/stores/useAuthStore'
 import { useToast }        from '@/utils/toast'
+import { paletteColor }    from '@/utils/paletteColor'
 
 addIcons(BiPlusCircle, BiArchive, MdFolderspecialOutlined)
 
@@ -90,13 +91,8 @@ const projectColors = [
 	'bg-sky-500', 'bg-fuchsia-500', 'bg-indigo-500', 'bg-teal-500',
 	'bg-orange-500', 'bg-pink-500',
 ]
-const memberColors = [
-	'bg-accent', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500',
-	'bg-sky-500', 'bg-rose-500', 'bg-fuchsia-500', 'bg-teal-500',
-]
 const toInitials = (name) =>
 	(name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
-const memberColor = (id) => memberColors[id % memberColors.length]
 
 const statusConfig = {
 	'Planning':    { cls: 'bg-slate-400/15 text-slate-500',     dot: 'bg-slate-400' },
@@ -136,7 +132,7 @@ const decoratedProjects = computed(() =>
 			members: (p.members ?? []).map(m => ({
 				...m,
 				initials: toInitials(m.name),
-				color:    memberColor(m.id),
+				color:    paletteColor(m.palette),
 			})),
 		},
 		idx,

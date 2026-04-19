@@ -65,6 +65,9 @@ export const useProjectStore = defineStore('projects', {
 			try {
 				const { data } = await axios.patch(`/api/projects/${projectId}/tasks/${taskId}`, payload)
 				this._replaceTask(data.data)
+				if (data.data.project?.members) {
+					this._mergeProjectMembers(projectId, data.data.project.members)
+				}
 				return { success: true }
 			} catch (err) {
 				return {
@@ -107,6 +110,9 @@ export const useProjectStore = defineStore('projects', {
 				const { data } = await axios.post(`/api/projects/${projectId}/tasks`, payload)
 				const task = { ...data.data, due: data.data.due_date ?? null }
 				this.tasks.push(task)
+				if (data.data.project?.members) {
+					this._mergeProjectMembers(projectId, data.data.project.members)
+				}
 				return { success: true, task }
 			} catch (err) {
 				return {
@@ -350,6 +356,15 @@ export const useProjectStore = defineStore('projects', {
 					message: err.response?.data?.message ?? 'Failed to delete project.',
 				}
 			}
+		},
+
+		/**
+		 * Merge a fresh member list (from a task API response) into currentProject.members.
+		 * Does nothing if currentProject is null or the project ID doesn't match.
+		 */
+		_mergeProjectMembers(projectId, members) {
+			if (!this.currentProject || this.currentProject.id !== projectId || !Array.isArray(members)) return
+			this.currentProject.members = members
 		},
 
 		async fetchNextPage() {

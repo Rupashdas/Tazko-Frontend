@@ -5,6 +5,8 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import { useProjectStore } from '@/stores/useProjectStore'
 import { useCommentStore } from '@/stores/useCommentStore'
 import { useToast } from '@/utils/toast'
+import { paletteColor } from '@/utils/paletteColor'
+import axios from '@/axios'
 import { addIcons } from 'oh-vue-icons'
 import {
 	BiX, BiKanban, BiBarChart, BiFileEarmark, BiActivity, BiChat,
@@ -48,8 +50,6 @@ const canDeleteComment  = computed(() => auth.hasCapability('comments.delete'))
 const canReactComment   = computed(() => auth.hasCapability('comments.react'))
 
 // ── Project data (from store) ──────────────────────────
-const memberColors = ['bg-accent', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500']
-
 const getInitials = (name) => {
 	if (!name) return '?'
 	const parts = name.trim().split(/\s+/)
@@ -64,12 +64,27 @@ const project = computed(() => {
 		...p,
 		startDate: p.start_date,
 		endDate: p.end_date,
-		members: (p.members ?? []).map((m, i) => ({
+		members: (p.members ?? []).map((m) => ({
 			...m,
 			initials: getInitials(m.name),
-			color: memberColors[i % memberColors.length],
+			color: paletteColor(m.palette),
 		})),
 	}
+})
+
+// ── Workspace users (for assignee auto-add feature) ──────
+const allUsers = ref([])
+
+const workspaceOnlyUsers = computed(() => {
+	if (!project.value?.members) return []
+	const memberIds = new Set(project.value.members.map(m => m.id))
+	return allUsers.value
+		.filter(u => !memberIds.has(u.id))
+		.map(u => ({
+			...u,
+			initials: getInitials(u.name),
+			color: paletteColor(u.palette),
+		}))
 })
 
 // ── Live progress — recalculates as tasks change status ──
@@ -141,11 +156,15 @@ const openAddTaskModal = (status = 'Todo') => {
 
 const addingTask = ref(false)
 const handleAddTaskSave = async (data) => {
+	const { _newMembers, ...payload } = data
 	addingTask.value = true
-	const result = await store.createTask(project.value.id, data)
+	const result = await store.createTask(project.value.id, payload)
 	addingTask.value = false
 	if (result.success) {
 		showAddTask.value = false
+		if (_newMembers?.length) {
+			_newMembers.forEach(m => successToast(`${m.name} added to project and assigned`))
+		}
 	} else {
 		errorToast(result.message)
 	}
@@ -224,10 +243,14 @@ const closeMoreMenu = () => { moreMenuOpen.value = false }
 // the component is actually in the DOM.
 onMounted(async () => {
 	document.addEventListener('click', closeMoreMenu)
-	await Promise.all([
+	const [, , usersRes] = await Promise.allSettled([
 		store.fetchProject(route.params.id),
 		store.fetchTasks(route.params.id),
+		axios.get('/api/users', { params: { per_page: 500 } }),
 	])
+	if (usersRes.status === 'fulfilled') {
+		allUsers.value = usersRes.value.data.data ?? []
+	}
 	syncTabFromQuery()
 })
 onBeforeUnmount(() => {
@@ -392,6 +415,7 @@ const handleDelete = async () => {
 		<AddTaskModal
 			:show="showAddTask"
 			:members="project?.members ?? []"
+			:workspace-users="workspaceOnlyUsers"
 			:default-status="addTaskDefaultStatus"
 			:project-id="project?.id"
 			:saving="addingTask"

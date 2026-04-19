@@ -18,6 +18,9 @@ const props = defineProps({
 	inactiveValue: { default: null },
 	disabled: { type: Boolean, default: false },
 	disabledValues: { type: Array, default: () => [] },
+	// When true, the trigger always shows the placeholder (not chips).
+	// Useful when the parent renders the selected items separately.
+	hideValue: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -36,17 +39,34 @@ const normalized = computed(() =>
 				value: opt[props.optionValue],
 				color: opt.color,
 				initials: opt.initials,
+				avatar: opt.avatar ?? null,
+				group: opt.group ?? null,
+				isNonMember: opt.isNonMember ?? false,
 			}
 	)
 )
 
-const filtered = computed(() =>
-	!search.value
-		? normalized.value
-		: normalized.value.filter(o =>
-			o.label.toLowerCase().includes(search.value.toLowerCase())
-		)
-)
+const filtered = computed(() => {
+	if (!search.value) return normalized.value
+	return normalized.value.filter(o =>
+		o.label.toLowerCase().includes(search.value.toLowerCase())
+	)
+})
+
+// Flat list for rendering: group headers are separate entries with their own
+// stable unique keys. This guarantees each keyed slot maps to exactly ONE <li>,
+// preventing Vue's VDOM patcher from losing DOM nodes when options update
+// concurrently (e.g. mid-Transition after a remote search response).
+const displayList = computed(() => {
+	const list = []
+	filtered.value.forEach((opt, idx) => {
+		if (opt.group && (idx === 0 || filtered.value[idx - 1].group !== opt.group)) {
+			list.push({ _type: 'group', _key: `g__${opt.group}`, label: opt.group })
+		}
+		list.push({ _type: 'option', _key: `o__${String(opt.value)}`, ...opt })
+	})
+	return list
+})
 
 const selectedArr = computed(() =>
 	props.multiple ? (Array.isArray(props.modelValue) ? props.modelValue : []) : []
@@ -136,26 +156,26 @@ const textCls = computed(() =>
 			class="w-full flex items-center gap-2 rounded-sm border transition-colors focus:outline-none focus:border-accent text-left leading-tight min-w-0"
 			:class="[triggerPadding, triggerBg, open ? 'border-accent' : '', disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']">
 
-			<!-- Multi: chips -->
-			<template v-if="multiple && selectedAvatars.length">
+			<!-- Multi: chips (hidden when hideValue is true) -->
+			<template v-if="multiple && selectedAvatars.length && !hideValue">
 				<div class="flex flex-wrap gap-1 flex-1 min-w-0 py-0.5">
 					<span
 						v-for="opt in selectedAvatars" :key="opt.value"
 						class="inline-flex items-center gap-1 pl-1 pr-2 py-1 rounded-sm bg-accent/10 text-accent text-sm font-semibold leading-none">
 						<span
-							v-if="opt.color && opt.initials"
-							:class="[opt.color, 'w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0']">
-							{{ opt.initials }}
+							:class="[opt.color ?? 'bg-accent', 'w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0 overflow-hidden']">
+							<img v-if="opt.avatar" :src="opt.avatar" class="w-full h-full object-cover" :alt="opt.label" />
+							<span v-else>{{ opt.initials }}</span>
 						</span>
 						{{ opt.label }}
 					</span>
 				</div>
 			</template>
 
-			<!-- Single or empty -->
+			<!-- Single, empty, or hideValue -->
 			<template v-else>
-				<span class="flex-1 truncate text-base" :class="displayLabel ? textCls : 'text-text'">
-					{{ displayLabel || placeholder }}
+				<span class="flex-1 truncate text-base" :class="displayLabel && !hideValue ? textCls : 'text-text'">
+					{{ (!hideValue && displayLabel) || placeholder }}
 				</span>
 			</template>
 
@@ -188,31 +208,53 @@ const textCls = computed(() =>
 						class="w-full px-3 py-1.5 rounded-sm border border-heading/8 bg-heading/3 text-sm text-heading placeholder:text-text focus:outline-none focus:border-accent/40 transition-colors" />
 				</div>
 
-				<!-- Options -->
-				<ul v-scrollbar class="max-h-56 overflow-y-auto">
-					<li v-if="!filtered.length">
+				<!-- Options (no v-scrollbar — OverlayScrollbars rewraps children inside
+				     .os-viewport>.os-content, breaking Vue's insertBefore anchors) -->
+				<ul class="max-h-56 overflow-y-auto">
+					<li v-if="!displayList.length">
 						<span class="block px-3 py-2 text-sm text-text">No options</span>
 					</li>
-					<li v-for="opt in filtered" :key="opt.value">
+					<li
+						v-for="item in displayList"
+						:key="item._key">
+
+						<!-- Group header: rendered as a styled div inside the <li> -->
+						<div
+							v-if="item._type === 'group'"
+							class="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-text select-none border-t border-heading/8">
+							{{ item.label }}
+						</div>
+
+						<!-- Option -->
 						<button
+							v-else
 							type="button"
-							@click="toggle(opt.value)"
+							@click="toggle(item.value)"
 							class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left transition-colors"
 							:class="[
-								disabledValues.includes(opt.value)
+								disabledValues.includes(item.value)
 									? 'opacity-50 cursor-default'
-									: isSelected(opt.value) ? 'text-accent bg-accent/5 hover:bg-accent/5' : 'text-heading hover:bg-heading/5'
+									: isSelected(item.value) ? 'text-accent bg-accent/5 hover:bg-accent/5' : 'text-heading hover:bg-heading/5'
 							]">
 
+							<!-- Avatar / initials -->
 							<span
-								v-if="opt.color && opt.initials"
-								:class="[opt.color, 'w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0']">
-								{{ opt.initials }}
+								v-if="item.color || item.initials || item.avatar"
+								:class="[item.color ?? 'bg-accent', 'w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0 overflow-hidden']">
+								<img v-if="item.avatar" :src="item.avatar" class="w-full h-full object-cover" :alt="item.label" />
+								<span v-else>{{ item.initials }}</span>
 							</span>
 
-							<span class="flex-1 font-medium">{{ opt.label }}</span>
+							<span class="flex-1 font-medium">{{ item.label }}</span>
 
-							<v-icon v-if="isSelected(opt.value) || disabledValues.includes(opt.value)" name="bi-check2" class="shrink-0" :class="disabledValues.includes(opt.value) ? 'text-text' : 'text-accent'" scale="0.85" />
+							<!-- Non-member badge -->
+							<span
+								v-if="item.isNonMember && !isSelected(item.value)"
+								class="text-[10px] font-bold text-accent/70 bg-accent/10 px-1.5 py-0.5 rounded-full leading-none">
+								+
+							</span>
+
+							<v-icon v-if="isSelected(item.value) || disabledValues.includes(item.value)" name="bi-check2" class="shrink-0" :class="disabledValues.includes(item.value) ? 'text-text' : 'text-accent'" scale="0.85" />
 						</button>
 					</li>
 				</ul>

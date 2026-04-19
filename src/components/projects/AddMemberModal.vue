@@ -4,6 +4,7 @@ import { addIcons } from 'oh-vue-icons'
 import { BiX, BiPersonPlus, BiArrowLeft, BiArrowRight, BiArrowRepeat } from 'oh-vue-icons/icons'
 import axios from '@/axios'
 import AppSelect from '@/components/ui/AppSelect.vue'
+import { paletteColor } from '@/utils/paletteColor'
 
 addIcons(BiX, BiPersonPlus, BiArrowLeft, BiArrowRight, BiArrowRepeat)
 
@@ -16,16 +17,12 @@ const props = defineProps({
 const emit = defineEmits(['close', 'add'])
 
 // ── Helpers ──────────────────────────────────────────────
-const memberColors = ['bg-accent', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500']
-
 const getInitials = (name) => {
 	if (!name) return '?'
 	const parts = name.trim().split(/\s+/)
 	if (parts.length === 1) return parts[0][0].toUpperCase()
 	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
-
-const colorFor = (index) => memberColors[index % memberColors.length]
 
 // ── State ─────────────────────────────────────────────────
 const step = ref(1)
@@ -40,7 +37,7 @@ const fetchUsers = async () => {
 	loading.value = true
 	fetchError.value = false
 	try {
-		const { data } = await axios.get('/api/users')
+		const { data } = await axios.get('/api/users', { params: { per_page: 500 } })
 		users.value = data.data ?? []
 	} catch {
 		fetchError.value = true
@@ -63,11 +60,11 @@ const existingIds = computed(() => props.existingMembers.map(m => m.id))
 
 // All users as AppSelect options; existing members are disabledValues (shown checked, non-interactive)
 const userOptions = computed(() =>
-	users.value.map((u, i) => ({
+	users.value.map(u => ({
 		label:    u.name,
 		value:    u.id,
 		initials: getInitials(u.name),
-		color:    colorFor(i),
+		color:    paletteColor(u.palette),
 	}))
 )
 
@@ -86,12 +83,12 @@ const goBack = () => { step.value = 1 }
 // ── Emit ──────────────────────────────────────────────────
 const handleAdd = () => {
 	if (!selected.value.length) return
-	emit('add', selected.value.map((u, i) => ({
+	emit('add', selected.value.map(u => ({
 		id:       u.id,
 		name:     u.name,
 		role:     roles.value[u.id] ?? '',
 		initials: getInitials(u.name),
-		color:    colorFor(i),
+		color:    paletteColor(u.palette),
 	})))
 }
 
@@ -173,7 +170,7 @@ const handleClose = () => emit('close')
 							<div class="divide-y divide-heading/5">
 								<div v-for="(person, i) in selected" :key="person.id"
 									class="flex items-center gap-3 px-5 py-3">
-									<div :class="[!person.avatar && colorFor(i), 'w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm overflow-hidden']">
+									<div :class="[!person.avatar && paletteColor(person.palette), 'w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm overflow-hidden']">
 										<img v-if="person.avatar" :src="person.avatar" class="w-full h-full object-cover" :alt="person.name" />
 										<span v-else>{{ getInitials(person.name) }}</span>
 									</div>

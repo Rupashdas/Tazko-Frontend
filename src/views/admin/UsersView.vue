@@ -4,6 +4,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/useUserStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useToast } from '@/utils/toast'
+import { paletteColor } from '@/utils/paletteColor'
 
 import { addIcons } from 'oh-vue-icons'
 import {
@@ -69,16 +70,6 @@ const filteredUsers = computed(() => {
 const isOwnAccount = (userId) => authStore.user?.id === userId
 const isSuperAdminUser = (user) => user.roles?.some(r => r.name === 'super-admin')
 const getInitials = (name) => name?.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase() || '?'
-
-const avatarColors = [
-	{ bg: 'bg-violet-500/20', text: 'text-violet-600 dark:text-violet-400' },
-	{ bg: 'bg-sky-500/20', text: 'text-sky-600 dark:text-sky-400' },
-	{ bg: 'bg-emerald-500/20', text: 'text-emerald-600 dark:text-emerald-400' },
-	{ bg: 'bg-amber-500/20', text: 'text-amber-600 dark:text-amber-400' },
-	{ bg: 'bg-rose-500/20', text: 'text-rose-600 dark:text-rose-400' },
-	{ bg: 'bg-indigo-500/20', text: 'text-indigo-600 dark:text-indigo-400' },
-]
-const getAvatar = (id) => avatarColors[id % avatarColors.length]
 const getPrimaryRole = (user) => user.roles?.[0] ?? null
 
 const getRoleBadge = (roleName) => {
@@ -301,8 +292,8 @@ const handleCancel = async () => {
 									<img v-if="user.avatar" :src="user.avatar" alt="Avatar"
 										class="w-10 h-10 rounded-full object-cover shrink-0" />
 									<div v-else
-										class="w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shrink-0"
-										:class="[getAvatar(user.id).bg, getAvatar(user.id).text]">
+										class="w-10 h-10 rounded-full flex items-center justify-center text-white text-base font-bold shrink-0"
+										:class="paletteColor(user.palette)">
 										{{ getInitials(user.name) }}
 									</div>
 									<div class="min-w-0">
@@ -377,8 +368,8 @@ const handleCancel = async () => {
 					<img v-if="user.avatar" :src="user.avatar" alt="Avatar"
 						class="w-10 h-10 rounded-full object-cover shrink-0" />
 					<div v-else
-						class="w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shrink-0"
-						:class="[getAvatar(user.id).bg, getAvatar(user.id).text]">
+						class="w-10 h-10 rounded-full flex items-center justify-center text-white text-base font-bold shrink-0"
+						:class="paletteColor(user.palette)">
 						{{ getInitials(user.name) }}
 					</div>
 					<div class="flex-1 min-w-0">
@@ -484,8 +475,8 @@ const handleCancel = async () => {
 									<img v-if="inv.invited_by.avatar" :src="inv.invited_by.avatar" alt="Avatar"
 										class="w-7 h-7 rounded-full object-cover shrink-0" />
 									<div v-else
-										class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-										:class="[getAvatar(inv.id).bg, getAvatar(inv.id).text]">
+										class="w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+										:class="paletteColor(inv.invited_by.palette)">
 										{{ getInitials(inv.invited_by.name) }}
 									</div>
 									<span class="text-base text-heading font-medium truncate">{{ inv.invited_by.name
@@ -566,8 +557,8 @@ const handleCancel = async () => {
 
 						<div class="px-6 py-5 border-b border-heading/8 flex items-start justify-between gap-3">
 							<div class="flex items-center gap-3 min-w-0">
-								<div class="w-12 h-12 rounded-sm flex items-center justify-center text-base font-bold shrink-0"
-									:class="[getAvatar(selectedUser.id).bg, getAvatar(selectedUser.id).text]">
+								<div class="w-12 h-12 rounded-sm flex items-center justify-center text-white text-base font-bold shrink-0"
+									:class="paletteColor(selectedUser.palette)">
 									{{ getInitials(selectedUser.name) }}
 								</div>
 								<div class="min-w-0">

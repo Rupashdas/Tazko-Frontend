@@ -2,6 +2,7 @@ export const PALETTES = {
 
     // 1. Soft lavender-white + electric violet — cosmic & modern
     aurora: {
+        avatarColor: 'bg-violet-500',   // #6c63ff → violet-500 closest
         light: {
             body: '#f0f4ff',
             heading: '#1a1f4e',
@@ -20,6 +21,7 @@ export const PALETTES = {
 
     // 2. Deep espresso + vivid ember orange — bold & warm
     ember: {
+        avatarColor: 'bg-orange-500',   // #e85d26 → orange-500 close
         light: {
             body: '#fdf6ee',
             heading: '#2d1a0e',
@@ -38,6 +40,7 @@ export const PALETTES = {
 
     // 3. Mint-white + vibrant emerald — fresh botanical
     verdant: {
+        avatarColor: 'bg-emerald-500',  // #1db954 → emerald-500 close
         light: {
             body: '#eef7f1',
             heading: '#0f2d1f',
@@ -56,6 +59,7 @@ export const PALETTES = {
 
     // 4. Blush cream + electric rose — elegant & striking
     sakura: {
+        avatarColor: 'bg-rose-500',     // #e8196e → rose-500 close
         light: {
             body: '#fef0f4',
             heading: '#2e0a1f',
@@ -74,6 +78,7 @@ export const PALETTES = {
 
     // 5. Clean off-white + deep electric violet — premium minimal
     obsidian: {
+        avatarColor: 'bg-violet-600',   // #7c3aed = violet-600 ✓ exact
         light: {
             body: '#f5f5f7',
             heading: '#111111',
@@ -92,6 +97,7 @@ export const PALETTES = {
 
     // 6. Pale sky-blue + deep ocean navy + electric blue — crisp & trustworthy
     pacific: {
+        avatarColor: 'bg-blue-500',     // #0070f3 → blue-500 close
         light: {
             body: '#eaf4fd',
             heading: '#0a2540',
@@ -110,6 +116,7 @@ export const PALETTES = {
 
     // 7. Soft buttercream + golden yellow — bright & cheerful
     honey: {
+        avatarColor: 'bg-amber-400',    // #fbbf24 = amber-400 ✓ exact
         light: {
             body: '#fffbea',
             heading: '#422006',
@@ -128,6 +135,7 @@ export const PALETTES = {
 
     // 8. Vibrant turquoise + coral reef — tropical & energetic
     arctic: {
+        avatarColor: 'bg-orange-500',   // #f97316 = orange-500 ✓ exact
         light: {
             body: '#f0fdfa',
             heading: '#134e4a',
@@ -146,6 +154,7 @@ export const PALETTES = {
 
     // 9. Royal purple + magenta burst — creative & bold
     wine: {
+        avatarColor: 'bg-fuchsia-600',  // #c026d3 = fuchsia-600 ✓ exact
         light: {
             body: '#faf5ff',
             heading: '#3b0764',
@@ -164,6 +173,7 @@ export const PALETTES = {
 
     // 10. Charcoal + bright tangerine — modern contrast
     slate: {
+        avatarColor: 'bg-orange-500',   // #f97316 = orange-500 ✓ exact
         light: {
             body: '#f8fafc',
             heading: '#1e293b',
@@ -182,6 +192,7 @@ export const PALETTES = {
 
     // 11. Olive branch + terracotta — mediterranean warmth
     sage: {
+        avatarColor: 'bg-orange-700',   // #c2410c = orange-700 ✓ exact
         light: {
             body: '#f7f7f0',
             heading: '#3d342b',
@@ -200,6 +211,7 @@ export const PALETTES = {
 
     // 12. Teal depth + peach glow — fresh & inviting
     midnight: {
+        avatarColor: 'bg-rose-400',     // #fb7185 = rose-400 ✓ exact
         light: {
             body: '#f0fdf4',
             heading: '#14532d',
@@ -218,6 +230,7 @@ export const PALETTES = {
 
     // 13. Dusty rose + muted mauve — soft & grayed out
     mist: {
+        avatarColor: 'bg-violet-400',   // #a78bfa = violet-400 ✓ exact
         light: {
             body: '#f5f3f4',
             heading: '#44404c',
@@ -236,6 +249,7 @@ export const PALETTES = {
 
     // 14. Pure black + crisp white — timeless minimal
     monochrome: {
+        avatarColor: 'bg-slate-500',    // #000000 → slate-500 keeps text legible
         light: {
             body: '#ffffff',
             heading: '#000000',
@@ -254,6 +268,7 @@ export const PALETTES = {
 
     // 15. Warm sand + denim blue — relaxed coastal
     driftwood: {
+        avatarColor: 'bg-blue-500',     // #3182ce → blue-500 close
         light: {
             body: '#f9f6f0',
             heading: '#2d3748',

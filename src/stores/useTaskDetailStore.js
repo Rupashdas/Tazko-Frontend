@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from '@/axios'
 import { useProjectStore } from '@/stores/useProjectStore'
-
-const memberColors = ['bg-accent', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500']
+import { paletteColor } from '@/utils/paletteColor'
 
 const getInitials = (name) => {
 	if (!name) return '?'
@@ -23,10 +22,10 @@ const normalizeTask = (raw) => ({
 	...raw,
 	project_id: raw.project?.id ?? null,
 	due: raw.due_date ?? null,
-	assignees: (raw.assignees ?? []).map((a, i) => ({
+	assignees: (raw.assignees ?? []).map(a => ({
 		...a,
 		initials: getInitials(a.name),
-		color: memberColors[i % memberColors.length],
+		color: paletteColor(a.palette),
 	})),
 	subtasks: (raw.subtasks ?? []).map(s => ({
 		...s,
