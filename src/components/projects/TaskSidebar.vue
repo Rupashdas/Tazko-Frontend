@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { addIcons } from 'oh-vue-icons'
+import { paletteColor } from '@/utils/paletteColor'
 import {
 	BiCalendar3, BiClock, BiCheck2, BiX,
 } from 'oh-vue-icons/icons'
@@ -31,11 +32,6 @@ const props = defineProps({
 const emit = defineEmits(['save', 'create-label'])
 
 // ── Avatar helpers ─────────────────────────────────────
-const memberColors = ['bg-accent', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500']
-
-const getUserColor = (userId) =>
-	userId ? memberColors[userId % memberColors.length] : 'bg-accent'
-
 const getUserInitials = (name) => {
 	if (!name) return '?'
 	const parts = name.trim().split(/\s+/)
@@ -68,7 +64,7 @@ const assigneeOptions = computed(() => [
 	...props.members.map(m => ({
 		label: m.name,
 		value: m.id,
-		color: m.color ?? getUserColor(m.id),
+		color: m.color ?? paletteColor(m.palette),
 		initials: m.initials ?? getUserInitials(m.name),
 		avatar: m.avatar ?? null,
 		group: 'Project Members',
@@ -76,7 +72,7 @@ const assigneeOptions = computed(() => [
 	...props.workspaceUsers.map(u => ({
 		label: u.name,
 		value: u.id,
-		color: u.color ?? getUserColor(u.id),
+		color: u.color ?? paletteColor(u.palette),
 		initials: u.initials ?? getUserInitials(u.name),
 		avatar: u.avatar ?? null,
 		group: 'Add from Workspace',
@@ -207,7 +203,7 @@ onMounted(() => {
 					class="flex items-center gap-2.5 group">
 
 					<!-- Avatar with thumbnail support -->
-					<div :class="[getUserColor(a.id), 'w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm overflow-hidden']">
+					<div :class="[a.color ?? paletteColor(a.palette), 'w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm overflow-hidden']">
 						<img v-if="a.avatar" :src="a.avatar" class="w-full h-full object-cover" :alt="a.name" />
 						<span v-else>{{ getUserInitials(a.name) }}</span>
 					</div>

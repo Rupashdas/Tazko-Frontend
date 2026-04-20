@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import { useCommentStore } from '@/stores/useCommentStore'
 import { useToast } from '@/utils/toast'
 import { sanitize } from '@/utils/sanitize'
+import { paletteColor } from '@/utils/paletteColor'
 import RichTextEditor from '@/components/shared/RichTextEditor.vue'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 import { addIcons } from 'oh-vue-icons'
@@ -35,13 +36,6 @@ const getInitials = (name) => {
 	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-const memberColors = ['bg-accent', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500']
-
-const colorForUser = (userId) => {
-	const idx = (userId ?? 0) % memberColors.length
-	return memberColors[idx]
-}
-
 const formatTime = (dateStr) => {
 	if (!dateStr) return ''
 	const d = new Date(dateStr)
@@ -52,7 +46,7 @@ const formatTime = (dateStr) => {
 // ── Current user info ──────────────────────────────────
 const currentUser = computed(() => auth.user)
 const currentUserInitials = computed(() => getInitials(currentUser.value?.name))
-const currentUserColor = computed(() => colorForUser(currentUser.value?.id))
+const currentUserColor = computed(() => paletteColor(currentUser.value?.palette))
 
 // Is this comment owned by the current user?
 const isOwnComment = (comment) => comment.user?.id === currentUser.value?.id
@@ -175,7 +169,7 @@ const toggleLike = (commentId) => {
 						<img :src="comment.user.avatar" :alt="comment.user.name" class="w-full h-full object-cover" />
 					</div>
 					<div v-else
-						:class="[colorForUser(comment.user?.id), 'w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm']">
+						:class="[paletteColor(comment.user?.palette), 'w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm']">
 						{{ getInitials(comment.user?.name) }}
 					</div>
 
