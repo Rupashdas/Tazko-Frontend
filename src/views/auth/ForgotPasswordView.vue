@@ -4,7 +4,7 @@ import { addIcons } from "oh-vue-icons";
 import {
     MdAlternateemailOutlined,
     BiArrowLeft, BiKey, BiInfoCircleFill,
-    BiSend, BiArrowRepeat, BiEnvelopeCheck,
+    BiEnvelope, BiArrowRepeat, BiEnvelopeCheck,
 } from "oh-vue-icons/icons";
 import axios from '@/axios'
 import { useToast } from '@/utils/toast'
@@ -13,7 +13,7 @@ import { validators } from '@/utils/validators'
 addIcons(
     MdAlternateemailOutlined,
     BiArrowLeft, BiKey, BiInfoCircleFill,
-    BiSend, BiArrowRepeat, BiEnvelopeCheck,
+    BiEnvelope, BiArrowRepeat, BiEnvelopeCheck,
 );
 
 const { errorToast } = useToast()
@@ -97,6 +97,7 @@ const resetForm = () => {
 
             <div class="flex flex-col gap-3">
                 <button @click="resetForm" class="tazko-btn w-full">
+                    <v-icon name="bi-envelope" scale="1" />
                     Try a different email
                 </button>
                 <router-link :to="{ name: 'login' }"
@@ -156,8 +157,8 @@ const resetForm = () => {
                     class="tazko-btn w-full"
                     :class="loading ? 'opacity-70 cursor-not-allowed' : ''">
                     <span v-if="!loading" class="flex items-center justify-center gap-2">
+                        <v-icon name="bi-envelope" scale="1" />
                         Send Reset Link
-                        <v-icon name="bi-send" scale="1" />
                     </span>
                     <span v-else class="flex items-center justify-center gap-2">
                         <v-icon name="bi-arrow-repeat" class="animate-spin" scale="1" />

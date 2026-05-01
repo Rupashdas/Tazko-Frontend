@@ -515,7 +515,6 @@ function getModuleIcon(module) {
 						</p>
 						<div class="flex gap-3">
 							<button @click="showDeleteConfirm = false" class="flex-1 tazko-btn-cancel">
-								<v-icon name="bi-x" scale="1" />
 								Cancel
 							</button>
 							<button @click="handleDelete" :disabled="roleStore.loading.delete"
@@ -579,7 +578,6 @@ function getModuleIcon(module) {
 
 							<div class="px-6 py-4 border-t border-heading/10 flex justify-end gap-3">
 								<button @click="closeModal" class="flex-1 tazko-btn-cancel">
-									<v-icon name="bi-x" scale="1" />
 									Cancel
 								</button>
 								<button type="submit" :disabled="roleStore.loading.create"

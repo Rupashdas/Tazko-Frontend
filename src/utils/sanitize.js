@@ -24,11 +24,12 @@ export function sanitize(html) {
         ],
         ALLOWED_ATTR: [
             'href', 'target', 'rel', 'class', 'colspan', 'rowspan',
-            // Mention chip inline styling + avatar image.
-            'style',
             // Media attributes for file attachments.
             'src', 'alt', 'controls',
             // Mention chip attributes (explicit — see ALLOW_DATA_ATTR below).
+            // Color/avatar styling is applied via CSS classes that read
+            // data-color / data-palette, not inline `style` (which would be
+            // a CSS-injection vector and was removed deliberately).
             'data-mention', 'data-user-id', 'data-name', 'data-avatar',
             'data-initials', 'data-color',
             // File attachment attributes.

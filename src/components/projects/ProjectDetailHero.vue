@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { addIcons } from 'oh-vue-icons'
 import {
@@ -7,6 +7,7 @@ import {
 	BiCalendar3, BiClock, BiPersonPlus, BiX, MdFolderspecialOutlined,
 } from 'oh-vue-icons/icons'
 import { sanitize } from '@/utils/sanitize'
+import RichTextEditor from '@/components/shared/RichTextEditor.vue'
 
 addIcons(
 	BiChevronRight, BiPlus, BiThreeDotsVertical, BiPencil, BiArchive, BiTrash,
@@ -31,7 +32,56 @@ const emit = defineEmits([
 	'edit', 'archive', 'delete',
 	'add-member', 'remove-member',
 	'set-active-tab',
+	'inline-save',
 ])
+
+// ── Inline editing ──────────────────────────────────────
+const editingTitle = ref(false)
+const titleDraft = ref(props.project.name)
+const titleInputRef = ref(null)
+
+const editingDesc = ref(false)
+const descDraft = ref(props.project.description ?? '')
+
+watch(() => props.project.name, (v) => { if (!editingTitle.value) titleDraft.value = v })
+watch(() => props.project.description, (v) => { if (!editingDesc.value) descDraft.value = v ?? '' })
+
+async function startEditTitle() {
+	if (!props.canUpdate) return
+	titleDraft.value = props.project.name
+	editingTitle.value = true
+	await nextTick()
+	titleInputRef.value?.focus()
+	titleInputRef.value?.select()
+}
+
+function commitTitle() {
+	const name = titleDraft.value?.trim()
+	editingTitle.value = false
+	if (!name || name === props.project.name) return
+	emit('inline-save', { name })
+}
+
+function cancelTitle() {
+	editingTitle.value = false
+	titleDraft.value = props.project.name
+}
+
+function startEditDesc() {
+	if (!props.canUpdate) return
+	descDraft.value = props.project.description ?? ''
+	editingDesc.value = true
+}
+
+function commitDesc() {
+	editingDesc.value = false
+	emit('inline-save', { description: descDraft.value })
+}
+
+function cancelDesc() {
+	editingDesc.value = false
+	descDraft.value = props.project.description ?? ''
+}
 
 const router = useRouter()
 
@@ -84,7 +134,22 @@ const hasDescription = computed(() => {
 					</div>
 					<div class="min-w-0 flex-1">
 						<div class="flex items-start gap-2.5 flex-wrap mb-2">
-							<h1 class="page-title">{{ project.name }}</h1>
+							<input
+								v-if="editingTitle"
+								ref="titleInputRef"
+								v-model="titleDraft"
+								type="text"
+								class="page-title bg-transparent border-0 border-b-2 border-accent outline-none min-w-0 flex-1"
+								@blur="commitTitle"
+								@keydown.enter.prevent="commitTitle"
+								@keydown.escape.prevent="cancelTitle"
+							/>
+							<h1
+								v-else
+								class="page-title transition-colors"
+								:class="canUpdate ? 'cursor-text hover:text-accent' : ''"
+								@click="startEditTitle"
+							>{{ project.name }}</h1>
 							<span :class="[statusConfig[project.status]?.cls, 'inline-flex items-center gap-1.5 text-sm px-2.5 py-1 rounded-full font-bold border border-current/10']">
 								<span :class="[statusConfig[project.status]?.dot, 'w-1.5 h-1.5 rounded-full']" />
 								{{ project.status }}
@@ -135,11 +200,47 @@ const hasDescription = computed(() => {
 
 			<!-- Description -->
 			<div class="rounded-sm mb-4">
-				<div v-if="hasDescription"
-					class="project-rich-content px-2 py-1 -ml-2" v-html="sanitize(project.description)" />
-				<p v-else class="text-sm text-text italic opacity-60 px-2 py-1 -ml-2">
-					No description yet.
-				</p>
+				<template v-if="!editingDesc">
+					<!-- View mode: rendered HTML keeps links/files/embeds
+					     interactive. Editing is opened via the hover-revealed
+					     pencil button (or by clicking the empty placeholder). -->
+					<div
+						v-if="hasDescription"
+						class="group/desc relative project-rich-content px-2 py-1 -ml-2 rounded-sm transition-colors hover:bg-heading/4">
+						<div v-html="sanitize(project.description)" />
+						<button
+							v-if="canUpdate"
+							type="button"
+							@click="startEditDesc"
+							class="absolute top-1 right-1 inline-flex items-center gap-1 px-2 py-1 rounded-sm text-xs font-semibold text-text bg-panel/90 border border-heading/10 opacity-0 group-hover/desc:opacity-100 hover:text-accent hover:border-accent/40 transition-all"
+							title="Edit description">
+							<v-icon name="bi-pencil" scale="0.7" />
+							Edit
+						</button>
+					</div>
+					<p
+						v-else
+						class="text-sm px-2 py-1 -ml-2 rounded-sm transition-colors"
+						:class="canUpdate ? 'text-text/50 italic cursor-text hover:bg-heading/4' : 'text-text italic opacity-60'"
+						@click="canUpdate && startEditDesc()"
+					>{{ canUpdate ? 'Click to add a description…' : 'No description yet.' }}</p>
+				</template>
+				<template v-else>
+					<RichTextEditor
+						v-model="descDraft"
+						:project-id="project.id"
+						:show-toolbar="true"
+						min-height="80px"
+						:autofocus="true"
+					/>
+					<div class="flex items-center justify-end gap-2 mt-2">
+						<button type="button" class="tazko-btn-cancel-sm" @click="cancelDesc">Cancel</button>
+						<button type="button" class="tazko-btn-sm" @click="commitDesc">
+							<v-icon name="bi-check2" scale="0.8" />
+							Save
+						</button>
+					</div>
+				</template>
 			</div>
 
 			<!-- Progress + meta strip -->

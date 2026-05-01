@@ -496,7 +496,6 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 						</p>
 						<div class="flex gap-3">
 							<button @click="showUnarchiveConfirm = false" :disabled="restoring" class="flex-1 tazko-btn-cancel">
-								<v-icon name="bi-x" scale="1" />
 								Cancel
 							</button>
 							<button @click="handleUnarchive" :disabled="restoring" class="flex-1 tazko-btn">
@@ -525,7 +524,6 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 						</p>
 						<div class="flex gap-3">
 							<button @click="showDeleteConfirm = false" :disabled="deleting" class="flex-1 tazko-btn-cancel">
-								<v-icon name="bi-x" scale="1" />
 								Cancel
 							</button>
 							<button @click="handleDelete" :disabled="deleting" class="flex-1 tazko-btn-danger">

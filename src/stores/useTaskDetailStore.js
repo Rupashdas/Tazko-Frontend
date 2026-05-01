@@ -10,8 +10,11 @@ const getInitials = (name) => {
 	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-// Deep clone helper for snapshots (simple JSON-safe data only).
-const clone = (v) => JSON.parse(JSON.stringify(v))
+// Deep clone helper for snapshots. structuredClone handles Date objects,
+// undefined values, and circular refs correctly — JSON.parse(JSON.stringify)
+// silently dropped or corrupted these and could leave a half-restored task
+// state on rollback.
+const clone = (v) => structuredClone(v)
 
 // Normalize the API task payload to match the shape child components expect:
 //   due_date  → due

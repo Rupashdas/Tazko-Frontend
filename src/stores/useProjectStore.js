@@ -57,7 +57,10 @@ export const useProjectStore = defineStore('projects', {
 				})
 				return { success: true }
 			} catch (err) {
-				return { success: false }
+				return {
+					success: false,
+					message: err.response?.data?.message ?? 'Failed to reorder tasks.',
+				}
 			}
 		},
 
@@ -84,12 +87,17 @@ export const useProjectStore = defineStore('projects', {
 		 * array (e.g. different project open).
 		 */
 		_replaceTask(raw) {
-			if (!raw?.id) return
+			if (!raw?.id) return false
 			const normalized = { ...raw, due: raw.due_date ?? null }
 			const idx = this.tasks.findIndex(t => t.id === raw.id)
 			if (idx !== -1) {
 				this.tasks.splice(idx, 1, normalized)
+				return true
 			}
+			// Returning false lets callers decide whether to refetch — e.g.
+			// the kanban board may need a full reload if the task came from
+			// a different project than the one currently open.
+			return false
 		},
 
 		async deleteTask(projectId, taskId) {
@@ -141,6 +149,9 @@ export const useProjectStore = defineStore('projects', {
 			this.loadingProject = true
 			this.projectError = null
 			this.currentProject = null
+			// Clear stale tasks immediately so the kanban board doesn't flash
+			// a previous project's tasks while the new project loads.
+			this.tasks = []
 			try {
 				const { data } = await axios.get(`/api/projects/${id}`)
 				this.currentProject = data.data
@@ -191,6 +202,16 @@ export const useProjectStore = defineStore('projects', {
 
 		async updateProject(projectId, payload) {
 			this.saving = true
+
+			// structuredClone handles edge cases (Date objects, undefined,
+			// nested arrays of nulls) that the JSON round-trip silently
+			// corrupts. Falls back to null when there's nothing to snapshot.
+			const snapshot = this.currentProject?.id === projectId
+				? structuredClone(this.currentProject)
+				: null
+
+			if (snapshot) Object.assign(this.currentProject, payload)
+
 			try {
 				const { data } = await axios.put(`/api/projects/${projectId}`, payload)
 				const idx = this.projects.findIndex(p => p.id === projectId)
@@ -198,6 +219,9 @@ export const useProjectStore = defineStore('projects', {
 				if (this.currentProject?.id === projectId) this.currentProject = data.data
 				return { success: true, message: data.message, project: data.data }
 			} catch (err) {
+				if (snapshot && this.currentProject?.id === projectId) {
+					this.currentProject = snapshot
+				}
 				return {
 					success: false,
 					message: err.response?.data?.message ?? 'Failed to update project.',

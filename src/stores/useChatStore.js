@@ -323,14 +323,23 @@ export const useChatStore = defineStore('chat', () => {
 
     function closeThread() { activeThread.value = null }
 
+    let _callTimer = null
     function startCall(type) {
+        if (_callTimer) clearTimeout(_callTimer)
         callState.value = { type, conversationId: activeConvId.value, status: 'calling' }
-        setTimeout(() => {
+        _callTimer = setTimeout(() => {
             if (callState.value) callState.value.status = 'connected'
+            _callTimer = null
         }, 3000)
     }
 
-    function endCall() { callState.value = null }
+    function endCall() {
+        if (_callTimer) {
+            clearTimeout(_callTimer)
+            _callTimer = null
+        }
+        callState.value = null
+    }
 
     function loadOlderMessages() {
         const convId = activeConvId.value
@@ -386,6 +395,23 @@ export const useChatStore = defineStore('chat', () => {
         }, 2000 + Math.random() * 1500)
     }
 
+    /**
+     * Clear any in-flight simulated reply / call timers. Call this from the
+     * onUnmounted hook of the component that opens the chat (PingsView) so
+     * the setTimeout callback doesn't fire after the user has navigated
+     * away and mutate state of an irrelevant conversation.
+     */
+    function cleanup() {
+        if (_replyTimer) {
+            clearTimeout(_replyTimer)
+            _replyTimer = null
+        }
+        if (_callTimer) {
+            clearTimeout(_callTimer)
+            _callTimer = null
+        }
+    }
+
     return {
         // state
         users, conversations, messages, activeConvId, activeThread, callState,
@@ -406,6 +432,7 @@ export const useChatStore = defineStore('chat', () => {
         setReplyTo, clearReplyTo, replyingTo,
         convSearchQuery,
         setConvSearchQuery, setMobileSidebarOpen, setSearchQuery, markConvRead,
+        cleanup,
         CURRENT_USER_ID,
     }
 })

@@ -18,6 +18,16 @@ export default defineComponent({
 		})
 
 		function deleteFile() {
+			// Use the NodeView-provided deleteNode() callback rather than
+			// computing range ourselves. ProseMirror resolves it against the
+			// LIVE doc at dispatch time, so deleting the 2nd of N sibling
+			// atoms removes exactly that node — not whatever happens to be at
+			// a stale cached position.
+			if (typeof props.deleteNode === 'function') {
+				props.deleteNode()
+				return
+			}
+			// Fallback for older TipTap versions
 			const pos = props.getPos()
 			if (typeof pos === 'number') {
 				props.editor.chain().deleteRange({ from: pos, to: pos + props.node.nodeSize }).run()

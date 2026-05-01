@@ -1,13 +1,13 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { addIcons } from "oh-vue-icons";
-import { MdAlternateemailOutlined, RiLockPasswordLine, RiEyeLine, RiEyeOffLine, BiArrowRepeat, BiSlashCircle } from "oh-vue-icons/icons";
+import { MdAlternateemailOutlined, RiLockPasswordLine, RiEyeLine, RiEyeOffLine, BiArrowRepeat, BiSlashCircle, BiBoxArrowInRight } from "oh-vue-icons/icons";
 import { validators } from '@/utils/validators'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useRouter, useRoute } from 'vue-router'
 import { useToast } from '@/utils/toast'
 
-addIcons(MdAlternateemailOutlined, RiLockPasswordLine, RiEyeLine, RiEyeOffLine, BiArrowRepeat, BiSlashCircle);
+addIcons(MdAlternateemailOutlined, RiLockPasswordLine, RiEyeLine, RiEyeOffLine, BiArrowRepeat, BiSlashCircle, BiBoxArrowInRight);
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -180,6 +180,7 @@ const handleLogin = async () => {
                 :class="loading ? 'opacity-75 cursor-not-allowed' : ''">
                 <span class="relative z-10 flex items-center justify-center gap-2">
                     <v-icon v-if="loading" name="bi-arrow-repeat" class="w-4 h-4 animate-spin" scale="1" />
+                    <v-icon v-else name="bi-box-arrow-in-right" scale="1" />
                     {{ loading ? 'Signing in…' : 'Sign in' }}
                 </span>
             </button>

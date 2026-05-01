@@ -43,7 +43,7 @@ export const useRoleStore = defineStore('roles', {
 		| INIT (Parallel fetch, unified loader)
 		──────────────────────*/
 		async init() {
-			if (this.loaded) return
+			if (this.loaded) return { success: true }
 
 			this.loading.page = true
 
@@ -69,6 +69,7 @@ export const useRoleStore = defineStore('roles', {
 				if (this.roles.length) this.selectRole(this.roles[0])
 
 				this.loaded = true
+				return { success: true }
 			} catch (err) {
 				console.error('[RoleStore] init:', err)
 				const message = err.response?.data?.message || 'Failed to load roles.'

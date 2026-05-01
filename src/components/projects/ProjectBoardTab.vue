@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import draggable from 'vuedraggable'
 import AppSelect from '@/components/ui/AppSelect.vue'
+import { paletteColor } from '@/utils/paletteColor'
 import { addIcons } from 'oh-vue-icons'
 import {
 	BiListTask, BiKanban, BiGripVertical, BiPlus, BiSearch, BiX,
@@ -17,7 +18,6 @@ addIcons(
 
 const props = defineProps({
 	tasks: { type: Array, required: true },
-	members: { type: Array, required: true },
 })
 
 const emit = defineEmits(['open-task', 'add-task-click', 'tasks-reordered', 'delete-task'])
@@ -37,10 +37,6 @@ const priorityConfig = {
 	'Medium': { cls: 'bg-amber-500/10 text-amber-600', dot: 'bg-amber-400' },
 	'Low': { cls: 'bg-slate-400/10 text-slate-500 dark:text-slate-400', dot: 'bg-slate-400' },
 }
-
-const memberColorMap = computed(() =>
-	Object.fromEntries(props.members.map(m => [m.id, m.color]))
-)
 
 const getInitials = (name) => {
 	if (!name) return '?'
@@ -62,11 +58,17 @@ const onDragStart = () => { isDragging.value = true }
 const onDragEnd = () => { isDragging.value = false; dragOverColumn.value = null }
 const onDragEnterColumn = (s) => { if (isDragging.value) dragOverColumn.value = s }
 
-const matchesFilter = (t) => {
+// ── Filter helpers ─────────────────────────────────────
+// matchesSearchPriority: used for board columns (status handled by grouping)
+const matchesSearchPriority = (t) => {
 	const s = !searchQuery.value || t.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-	const f = statusFilter.value === 'All' || t.status === statusFilter.value
 	const p = priorityFilter.value === 'All' || t.priority === priorityFilter.value
-	return s && f && p
+	return s && p
+}
+// matchesFilter: full filter used for list view
+const matchesFilter = (t) => {
+	const f = statusFilter.value === 'All' || t.status === statusFilter.value
+	return matchesSearchPriority(t) && f
 }
 const filteredTasks = computed(() => props.tasks.filter(matchesFilter))
 
@@ -80,13 +82,24 @@ const overdueCount = computed(() => {
 })
 
 // ── Board columns ──────────────────────────────────────
-// Must be a ref (not computed) — vuedraggable mutates the array directly
-const buildColumns = () => Object.fromEntries(columnStatuses.map(s => [s, props.tasks.filter(t => t.status === s)]))
-const boardColumns = ref(buildColumns())
+// Must be a ref (not computed) — vuedraggable mutates the array directly.
+// Applies search + priority filters so board cards update when filters change.
+// Status filter is handled separately via visibleColumnStatuses (hides columns).
+const buildBoardColumns = () => Object.fromEntries(
+	columnStatuses.map(s => [s, props.tasks.filter(t => t.status === s && matchesSearchPriority(t))])
+)
+const boardColumns = ref(buildBoardColumns())
 
-// Rebuild when tasks are replaced (fetchTasks) or count changes (add/delete)
-watch(() => props.tasks, () => { boardColumns.value = buildColumns() })
-watch(() => props.tasks.length, () => { boardColumns.value = buildColumns() })
+// Rebuild when tasks change OR when search/priority filter changes
+watch(
+	[() => props.tasks, () => props.tasks.length, searchQuery, priorityFilter],
+	() => { boardColumns.value = buildBoardColumns() }
+)
+
+// In board view, the status filter shows/hides entire columns
+const visibleColumnStatuses = computed(() =>
+	statusFilter.value === 'All' ? columnStatuses : columnStatuses.filter(s => s === statusFilter.value)
+)
 
 const onBoardChange = (targetStatus, event) => {
 	if (event.added) {
@@ -212,7 +225,7 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 		<div v-if="viewMode === 'board'"
 			:class="['board-container grid grid-cols-4 gap-4', isDragging ? 'is-dragging-global' : '']">
 
-			<div v-for="status in columnStatuses" :key="status" :class="[
+			<div v-for="status in visibleColumnStatuses" :key="status" :class="[
 				'board-column flex flex-col rounded-sm border transition-all duration-200',
 				dragOverColumn === status && isDragging ? 'column-drop-active border-accent/20' : 'border-heading/5',
 			]"
@@ -287,7 +300,7 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 											<div class="flex items-center">
 												<div
 													v-for="(a, ai) in task.assignees.slice(0, 3)" :key="a.id"
-													:class="[!a.avatar && (memberColorMap[a.id] || 'bg-accent'), 'w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ring-2 ring-panel overflow-hidden', ai > 0 ? '-ml-1.5' : '']"
+													:class="[!a.avatar && paletteColor(a.palette), 'w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ring-2 ring-panel overflow-hidden', ai > 0 ? '-ml-1.5' : '']"
 													:title="a.name">
 													<img v-if="a.avatar" :src="a.avatar" class="w-full h-full object-cover" :alt="a.name" />
 													<span v-else>{{ getInitials(a.name) }}</span>
@@ -379,7 +392,7 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 								<div class="flex items-center">
 									<div
 										v-for="(a, ai) in task.assignees.slice(0, 2)" :key="a.id"
-										:class="[!a.avatar && (memberColorMap[a.id] || 'bg-accent'), 'w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0 ring-2 ring-panel overflow-hidden', ai > 0 ? '-ml-1' : '']"
+										:class="[!a.avatar && paletteColor(a.palette), 'w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0 ring-2 ring-panel overflow-hidden', ai > 0 ? '-ml-1' : '']"
 										:title="a.name">
 										<img v-if="a.avatar" :src="a.avatar" class="w-full h-full object-cover" :alt="a.name" />
 										<span v-else>{{ getInitials(a.name) }}</span>

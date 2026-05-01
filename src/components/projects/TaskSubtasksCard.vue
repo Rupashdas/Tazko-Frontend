@@ -3,10 +3,10 @@ import { ref, computed, watch } from 'vue'
 import draggable from 'vuedraggable'
 import { addIcons } from 'oh-vue-icons'
 import {
-	BiPlusCircle, BiPlus, BiCheck2, BiX, BiXCircle, BiGripVertical,
+	BiPlusCircle, BiPlus, BiCheck2, BiXCircle, BiGripVertical,
 } from 'oh-vue-icons/icons'
 
-addIcons(BiPlusCircle, BiPlus, BiCheck2, BiX, BiXCircle, BiGripVertical)
+addIcons(BiPlusCircle, BiPlus, BiCheck2, BiXCircle, BiGripVertical)
 
 const props = defineProps({
 	subtasks: { type: Array, required: true },
@@ -160,7 +160,6 @@ const onDragChange = (event) => {
 				Add
 			</button>
 			<button @click="showSubtaskInput = false" class="tazko-btn-cancel">
-				<v-icon name="bi-x" scale="1" />
 				Cancel
 			</button>
 		</div>

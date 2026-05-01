@@ -230,7 +230,6 @@ const handleClose = () => {
 
 					<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0">
 						<button @click="handleClose" :disabled="saving" class="flex-1 tazko-btn-cancel">
-							<v-icon name="bi-x" scale="1" />
 							Cancel
 						</button>
 						<button @click="handleSave" :disabled="saving" class="flex-1 tazko-btn">

@@ -1,8 +1,8 @@
 <script setup>
 import { addIcons } from 'oh-vue-icons'
-import { BiX, BiArrowRepeat } from 'oh-vue-icons/icons'
+import { BiArrowRepeat } from 'oh-vue-icons/icons'
 
-addIcons(BiX, BiArrowRepeat)
+addIcons(BiArrowRepeat)
 
 defineProps({
 	show:            { type: Boolean, default: false },
@@ -33,7 +33,6 @@ const emit = defineEmits(['close', 'confirm'])
 					<p class="text-base text-text mb-6">{{ message }}</p>
 					<div class="flex gap-3">
 						<button @click="emit('close')" :disabled="loading" class="flex-1 tazko-btn-cancel">
-							<v-icon name="bi-x" scale="1" />
 							Cancel
 						</button>
 						<button @click="emit('confirm')" :disabled="loading"

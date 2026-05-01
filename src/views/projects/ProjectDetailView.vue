@@ -231,6 +231,22 @@ const handleEditProjectSave = async (data) => {
 	}
 }
 
+// ── Inline save (title / description from hero) ───────
+const handleInlineSave = async (data) => {
+	const payload = {
+		name:        data.name        ?? project.value.name,
+		description: data.description ?? project.value.description,
+		goal:        project.value.goal,
+		color:       project.value.color,
+		priority:    project.value.priority,
+		status:      project.value.status,
+		start_date:  project.value.startDate,
+		end_date:    project.value.endDate,
+	}
+	const result = await store.updateProject(project.value.id, payload)
+	if (!result.success) errorToast(result.message)
+}
+
 // ── More menu (three dots) ────────────────────────────
 const moreMenuOpen = ref(false)
 const toggleMoreMenu = (e) => {
@@ -362,7 +378,8 @@ const handleDelete = async () => {
 				@delete="requestDelete"
 				@add-member="openAddMember"
 				@remove-member="handleRemoveMember"
-				@set-active-tab="setActiveTab" />
+				@set-active-tab="setActiveTab"
+				@inline-save="handleInlineSave" />
 
 			<!-- TAB CONTENT PANEL -->
 			<div class="bg-panel border border-heading/8 rounded-sm">
@@ -370,7 +387,6 @@ const handleDelete = async () => {
 				<ProjectBoardTab
 					v-show="activeTab === 'board'"
 					:tasks="store.tasks"
-					:members="project.members"
 					@open-task="openTask"
 					@add-task-click="openAddTaskModal"
 					@tasks-reordered="handleTasksReordered"

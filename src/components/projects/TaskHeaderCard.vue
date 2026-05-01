@@ -55,13 +55,15 @@ const startEditDesc = () => {
 	descDraft.value = props.task.description
 }
 
-const saveDesc = () => {
+const saveDesc = async () => {
+	await descEditorRef.value?.flushDraft?.()
 	if (descEditorRef.value) {
 		const next = descEditorRef.value.getHTML()
 		if (next !== props.task.description) {
 			emit('save', { description: next })
 		}
 	}
+	await descEditorRef.value?.clearDraft?.()
 	editingDesc.value = false
 }
 </script>
@@ -97,39 +99,53 @@ const saveDesc = () => {
 				@click="startEditTitle">
 				<h1 class="text-xl font-bold text-heading leading-snug">{{ task.title }}</h1>
 			</div>
-			<div v-else class="flex items-start gap-2">
-				<input v-model="titleDraft"
-					class="flex-1 text-xl font-bold text-heading bg-transparent border-0 border-b-2 border-accent/50 focus:outline-none focus:border-accent pb-0.5 leading-snug"
-					@keydown.enter="saveTitle" @keydown.esc="editingTitle = false" autofocus />
-				<button @click="saveTitle" :disabled="saving" class="mt-1 tazko-btn disabled:opacity-60">
-					<v-icon name="bi-check2" scale="1" />
-					Save
-				</button>
-			</div>
+			<input v-else v-model="titleDraft"
+				class="w-full text-xl font-bold text-heading bg-transparent border-0 border-b-2 border-accent focus:outline-none pb-0.5 leading-snug"
+				@blur="saveTitle" @keydown.enter="saveTitle" @keydown.esc="editingTitle = false" autofocus />
 		</div>
 
 		<!-- Editable description -->
 		<div>
 			<p class="text-sm font-semibold uppercase tracking-wide text-text mb-2">Description</p>
 
-			<div v-if="!editingDesc" @click="startEditDesc"
-				:class="['group rounded-sm bg-heading/[0.025] border border-transparent px-4 py-3 transition-all',
-					canUpdate ? 'cursor-pointer hover:bg-heading/[0.045] hover:border-heading/8' : 'cursor-default']">
+			<!-- View mode — links/files/embeds in the rendered HTML stay
+			     fully clickable. Editing is opened by the explicit pencil
+			     button (revealed on hover) or by clicking the empty-state
+			     placeholder. -->
+			<div v-if="!editingDesc"
+				class="group/desc relative rounded-sm bg-heading/[0.025] border border-transparent px-4 py-3 transition-all hover:bg-heading/[0.035] hover:border-heading/8">
 				<div v-if="task.description && task.description !== '<p></p>'"
 					class="text-base text-text leading-relaxed prose-sm" v-html="sanitize(task.description)" />
-				<p v-else class="text-base text-text italic">
+				<p v-else
+					:class="['text-base italic m-0', canUpdate ? 'text-text cursor-text' : 'text-text']"
+					@click="canUpdate && startEditDesc()">
 					{{ canUpdate ? 'Click to add a description…' : 'No description.' }}
 				</p>
+
+				<button
+					v-if="canUpdate && task.description && task.description !== '<p></p>'"
+					type="button"
+					@click="startEditDesc"
+					class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 rounded-sm text-xs font-semibold text-text bg-panel/90 border border-heading/10 opacity-0 group-hover/desc:opacity-100 hover:text-accent hover:border-accent/40 transition-all"
+					title="Edit description">
+					<v-icon name="bi-pencil" scale="0.7" />
+					Edit
+				</button>
 			</div>
 
 			<div v-else class="space-y-2">
 				<rich-text-editor ref="descEditorRef" v-model="descDraft" placeholder="Describe this task…"
 					:show-toolbar="true" min-height="120px"
 					:autofocus="true" :enable-mention="true" :users="members"
-					:project-id="task.project_id" />
-				<div class="flex items-center gap-2">
-					<button type="button" :disabled="saving" class="inline-flex items-center px-3 py-1.5 rounded-sm bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors disabled:opacity-60" @click="saveDesc">Save</button>
-					<button type="button" class="inline-flex items-center px-3 py-1.5 rounded-sm border border-heading/10 text-text text-sm font-semibold hover:bg-heading/5 transition-colors" @click="editingDesc = false">Cancel</button>
+					:project-id="task.project_id"
+					:draft-context-key="`task:${task.id}:description`" />
+				<div class="flex items-center justify-end gap-2 mt-2">
+					<button type="button" class="tazko-btn-cancel-sm" @click="editingDesc = false">Cancel</button>
+					<button type="button" :disabled="saving" class="tazko-btn-sm" @click="saveDesc">
+						<v-icon v-if="saving" name="bi-arrow-repeat" scale="0.8" class="animate-spin" />
+						<v-icon v-else name="bi-check2" scale="0.8" />
+						{{ saving ? 'Saving…' : 'Save' }}
+					</button>
 				</div>
 			</div>
 		</div>

@@ -71,6 +71,8 @@ export const useAuthStore = defineStore('auth', {
                     this.authChecked = true
                     return { success: true, message: data.message }
                 }
+                // Non-success response with 2xx status — surface to caller.
+                return { success: false, message: data.message ?? 'Login failed.' }
             } catch (err) {
                 return {
                     success: false,
@@ -90,6 +92,7 @@ export const useAuthStore = defineStore('auth', {
                     this.authChecked = true
                     return { success: true, message: data.message }
                 }
+                return { success: false, message: data.message ?? 'Signup failed.' }
             } catch (err) {
                 return {
                     success: false,
@@ -128,7 +131,16 @@ export const useAuthStore = defineStore('auth', {
                 const { data } = await axios.get('/api/user')
                 this.user = data.user
                 return this.user
-            } catch {
+            } catch (err) {
+                // 401 = expired/invalid session: clear local state so the
+                // router redirects to /login. Other failures (network,
+                // 5xx) leave authChecked true but user null so the user
+                // is treated as logged out for this navigation only.
+                if (err?.response?.status === 401) {
+                    this.user = null
+                    const preferencesStore = usePreferencesStore()
+                    preferencesStore.$reset()
+                }
                 this.user = null
                 return null
             } finally {
@@ -143,6 +155,7 @@ export const useAuthStore = defineStore('auth', {
                     this.user = data.user
                     return { success: true, message: data.message || 'Profile updated' }
                 }
+                return { success: false, message: data.message ?? 'Profile update failed.' }
             } catch (err) {
                 return {
                     success: false,

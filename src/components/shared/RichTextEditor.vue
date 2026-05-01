@@ -17,6 +17,7 @@ import EditorToolbar from './EditorToolbar.vue'
 import MentionView from './MentionView.vue'
 import { uploadAttachment, streamUrl } from '@/services/attachmentService'
 import { useToast } from '@/utils/toast'
+import { useDraftPersistence } from '@/composables/useDraftPersistence'
 
 // ── Placeholder ─────────────────────────────────────────────
 function buildPlaceholderExtension(placeholderText) {
@@ -300,6 +301,13 @@ const props = defineProps({
 	// button). When null, picking a file shows an error toast and no-ops —
 	// this covers the "create new project" flow where no id exists yet.
 	projectId: { type: [Number, String], default: null },
+
+	// Per-user draft auto-save key. When provided, the editor's content is
+	// debounced-saved to /api/drafts/{key} and restored on mount. When null
+	// (default), the editor behaves identically to before — no draft I/O.
+	// Format: "task:{id}:comment:new", "comment:{id}:edit", "task:{id}:description",
+	//         "project:{id}:task:new", "project:{id}:comment:new"
+	draftContextKey: { type: String, default: null },
 })
 
 const emit = defineEmits(['update:modelValue', 'focus', 'blur'])
@@ -552,15 +560,25 @@ const attachedFiles = computed(() => {
 	return files
 })
 
-function removeAttachment(pos, nodeSize) {
+function removeAttachment(targetSrc) {
 	if (!editor.value) return
-	const node = editor.value.state.doc.nodeAt(pos)
-	const src = node?.attrs?.src
-	const tempId = node?.attrs?.tempId
-	editor.value.chain().focus().deleteRange({ from: pos, to: pos + nodeSize }).run()
-	if (src) revokeTrackedObjectUrl(src)
-	// If an upload was still in flight, cancel it so the server-side reaper
-	// has one less orphan row to deal with.
+	// Re-traverse the doc at call time so we always get the current position,
+	// not a position that may have shifted since the panel last rendered.
+	let foundPos = null
+	let foundSize = null
+	let tempId = null
+	editor.value.state.doc.descendants((node, pos) => {
+		if (foundPos !== null) return false
+		if (node.type.name === 'fileAttachment' && node.attrs.src === targetSrc) {
+			foundPos = pos
+			foundSize = node.nodeSize
+			tempId = node.attrs.tempId
+			return false
+		}
+	})
+	if (foundPos === null) return
+	editor.value.chain().deleteRange({ from: foundPos, to: foundPos + foundSize }).run()
+	revokeTrackedObjectUrl(targetSrc)
 	if (tempId && pendingUploads.has(tempId)) {
 		pendingUploads.get(tempId).abort()
 		pendingUploads.delete(tempId)
@@ -692,6 +710,28 @@ watch(() => props.modelValue, (val) => {
 	if (val !== editor.value.getHTML()) editor.value.commands.setContent(val || '', false)
 })
 
+// ── Draft persistence (Basecamp-style per-user auto-save) ───
+// Inert when draftContextKey is null — the composable does no I/O.
+const draftKeyRef = computed(() => props.draftContextKey || null)
+const editorRef   = computed(() => editor.value)
+const {
+	draftRestored,
+	restoredAt,
+	flush: flushDraft,
+	clearDraft,
+	discard: discardDraft,
+} = useDraftPersistence(draftKeyRef, editorRef)
+
+function formatRelative(iso) {
+	if (!iso) return ''
+	const then = new Date(iso).getTime()
+	const diffSec = Math.max(0, Math.floor((Date.now() - then) / 1000))
+	if (diffSec < 60)    return 'just now'
+	if (diffSec < 3600)  return `${Math.floor(diffSec / 60)} min ago`
+	if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} hr ago`
+	return `${Math.floor(diffSec / 86400)} day(s) ago`
+}
+
 // ── Public API ──────────────────────────────────────────────
 function getHTML() { return editor.value?.getHTML() ?? '' }
 function getText() { return editor.value?.getText() ?? '' }
@@ -699,7 +739,7 @@ function clear() { editor.value?.commands.clearContent() }
 function focus() { editor.value?.commands.focus() }
 function isEmpty() { return editor.value?.isEmpty ?? true }
 
-defineExpose({ getHTML, getText, clear, focus, isEmpty })
+defineExpose({ getHTML, getText, clear, focus, isEmpty, flushDraft, clearDraft, discardDraft })
 </script>
 
 <template>
@@ -709,6 +749,21 @@ defineExpose({ getHTML, getText, clear, focus, isEmpty })
 			'border-accent': isFocused,
 		}"
 	>
+		<!-- Draft restored banner -->
+		<div
+			v-if="draftRestored"
+			class="flex items-center justify-between gap-2.5 px-3.5 py-[5px] bg-amber-500/10 border-b border-amber-500/25 text-[0.75rem] text-amber-900"
+		>
+			<span>
+				Draft restored<span v-if="restoredAt"> from {{ formatRelative(restoredAt) }}</span>.
+			</span>
+			<button
+				type="button"
+				class="border-0 bg-transparent cursor-pointer text-[0.72rem] font-bold text-amber-900 underline p-0"
+				@click="discardDraft"
+			>Discard</button>
+		</div>
+
 		<!-- Toolbar -->
 		<EditorToolbar
 			v-if="showToolbar && editor"
@@ -747,7 +802,7 @@ defineExpose({ getHTML, getText, clear, focus, isEmpty })
 			</button>
 
 			<div v-if="showAttachments" class="px-2.5 pb-2 flex flex-col gap-1">
-				<div v-for="(file, i) in attachedFiles" :key="i"
+				<div v-for="file in attachedFiles" :key="file.tempId || (file.attachmentId != null ? 'att-' + file.attachmentId : file.src)"
 					class="flex items-center gap-2.5 px-2 py-1.5 rounded-[6px] bg-heading/[0.03] border border-heading/6"
 					:class="{ 'opacity-60': file.uploading }">
 					<div class="w-9 h-9 rounded-[4px] overflow-hidden bg-heading/6 flex items-center justify-center shrink-0 relative">
@@ -772,7 +827,7 @@ defineExpose({ getHTML, getText, clear, focus, isEmpty })
 					<button type="button"
 						class="w-[22px] h-[22px] rounded-full border-0 bg-red-500/10 text-red-500 cursor-pointer flex items-center justify-center p-0 shrink-0 transition-colors duration-[120ms] hover:bg-red-500 hover:text-white"
 						title="Remove"
-						@click="removeAttachment(file.pos, file.nodeSize)">
+						@click="removeAttachment(file.src)">
 						<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
 							<path d="M4.646 4.646a.5.5 0 01.708 0L8 7.293l2.646-2.647a.5.5 0 01.708.708L8.707 8l2.647 2.646a.5.5 0 01-.708.708L8 8.707l-2.646 2.647a.5.5 0 01-.708-.708L7.293 8 4.646 5.354a.5.5 0 010-.708z"/>
 						</svg>

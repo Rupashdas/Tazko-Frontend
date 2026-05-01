@@ -26,6 +26,7 @@ const assignees = ref([])
 const due = ref('')
 const status = ref('Todo')
 const description = ref('')
+const taskEditorRef = ref(null)
 
 const assigneeOptions = computed(() => [
 	...props.members.map(m => ({
@@ -62,8 +63,9 @@ watch(() => props.defaultStatus, (val) => {
 	if (props.show) status.value = val
 })
 
-const handleSave = () => {
+const handleSave = async () => {
 	if (!title.value.trim()) return
+	await taskEditorRef.value?.flushDraft?.()
 	const _newMembers = props.workspaceUsers.filter(u => assignees.value.includes(u.id))
 	emit('save', {
 		title:        title.value.trim(),
@@ -74,6 +76,9 @@ const handleSave = () => {
 		due_date:     due.value || null,
 		_newMembers,
 	})
+	// Optimistic clear: if save fails on the server, the parent reopens the
+	// modal which calls reset() — user retypes. Same UX as before drafts.
+	await taskEditorRef.value?.clearDraft?.()
 }
 
 const handleClose = () => emit('close')
@@ -138,13 +143,12 @@ const handleClose = () => emit('close')
 						</div>
 						<div>
 							<label class="block text-base font-semibold text-text mb-1.5">Description</label>
-							<RichTextEditor v-model="description" placeholder="Describe the task…" min-height="120px" :enable-mention="true" :users="members" :project-id="projectId" />
+							<RichTextEditor ref="taskEditorRef" v-model="description" placeholder="Describe the task…" min-height="120px" :enable-mention="true" :users="members" :project-id="projectId" :draft-context-key="`project:${projectId}:task:new`" />
 						</div>
 					</div></div>
 
 					<div class="px-6 py-3 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01]">
 						<button @click="handleClose" class="flex-1 tazko-btn-cancel">
-							<v-icon name="bi-x" scale="1" />
 							Cancel
 						</button>
 						<button @click="handleSave" :disabled="saving" class="flex-1 tazko-btn disabled:opacity-60 disabled:cursor-not-allowed">

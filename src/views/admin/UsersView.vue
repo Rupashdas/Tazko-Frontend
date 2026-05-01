@@ -617,7 +617,6 @@ const handleCancel = async () => {
 									</div>
 									<div class="flex gap-2">
 										<button @click="editMode = false" class="flex-1 tazko-btn-cancel">
-											<v-icon name="bi-x" scale="1" />
 											Cancel
 										</button>
 										<button @click="handleUpdateUser" :disabled="userStore.loading.save" class="flex-1 tazko-btn">
@@ -748,7 +747,6 @@ const handleCancel = async () => {
 						</div>
 						<div class="px-6 py-4 border-t border-heading/10 flex justify-end gap-3">
 							<button @click="closeInviteModal" class="flex-1 tazko-btn-cancel">
-								<v-icon name="bi-x" scale="1" />
 								Cancel
 							</button>
 							<button @click="handleInvite" :disabled="userStore.loading.invite" class="flex-1 tazko-btn">
@@ -779,7 +777,6 @@ const handleCancel = async () => {
 						</p>
 						<div class="flex gap-3">
 							<button @click="showDeleteConfirm = false" class="flex-1 tazko-btn-cancel">
-								<v-icon name="bi-x" scale="1" />
 								Cancel
 							</button>
 							<button @click="handleDelete" :disabled="userStore.loading.delete" class="flex-1 tazko-btn-danger">
@@ -805,7 +802,6 @@ const handleCancel = async () => {
 						<p class="text-base text-text mb-5">The user won't be able to join unless re-invited.</p>
 						<div class="flex gap-3">
 							<button @click="showCancelConfirm = false" class="flex-1 tazko-btn-cancel">
-								<v-icon name="bi-x" scale="1" />
 								Keep
 							</button>
 							<button @click="handleCancel" class="flex-1 tazko-btn-danger">

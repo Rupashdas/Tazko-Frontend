@@ -5,7 +5,7 @@ import { addIcons } from 'oh-vue-icons'
 import {
     RiLockPasswordLine, RiEyeLine, RiEyeOffLine,
     BiCheckCircle, BiLock, BiCheckCircleFill,
-    BiExclamationCircleFill, BiArrowRepeat,
+    BiExclamationCircleFill, BiArrowRepeat, BiCheck2,
 } from 'oh-vue-icons/icons'
 import axios from '@/axios'
 import { useToast } from '@/utils/toast'
@@ -14,7 +14,7 @@ import { validators } from '@/utils/validators'
 addIcons(
     RiLockPasswordLine, RiEyeLine, RiEyeOffLine,
     BiCheckCircle, BiLock, BiCheckCircleFill,
-    BiExclamationCircleFill, BiArrowRepeat,
+    BiExclamationCircleFill, BiArrowRepeat, BiCheck2,
 )
 
 const { errorToast } = useToast()
@@ -230,6 +230,7 @@ const submit = async () => {
                     class="tazko-btn w-full mt-1"
                     :class="loading ? 'opacity-70 cursor-not-allowed' : ''">
                     <span v-if="!loading" class="flex items-center justify-center gap-2">
+                        <v-icon name="bi-check2" scale="1" />
                         Reset Password →
                     </span>
                     <span v-else class="flex items-center justify-center gap-2">

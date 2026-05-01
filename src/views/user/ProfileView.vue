@@ -606,7 +606,6 @@ const submitAvatar = async () => {
 					<!-- Footer -->
 					<div class="px-6 py-4 border-t border-heading/8 flex justify-end gap-3">
 						<button type="button" class="flex-1 tazko-btn-cancel" @click="closeAvatarModal">
-							<v-icon name="bi-x" scale="1" />
 							Cancel
 						</button>
 						<button type="button" class="flex-1 tazko-btn gap-2" @click="submitAvatar"

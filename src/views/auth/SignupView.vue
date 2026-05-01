@@ -1,13 +1,13 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { addIcons } from "oh-vue-icons";
-import { MdAlternateemailOutlined, RiLockPasswordLine, CoUserPlus, RiEyeLine, RiEyeOffLine, BiArrowRight, BiExclamationCircleFill, BiArrowRepeat } from "oh-vue-icons/icons";
+import { MdAlternateemailOutlined, RiLockPasswordLine, CoUserPlus, RiEyeLine, RiEyeOffLine, BiPersonPlus, BiExclamationCircleFill, BiArrowRepeat } from "oh-vue-icons/icons";
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/utils/toast'
 import { validators } from '@/utils/validators'
 
-addIcons(MdAlternateemailOutlined, RiLockPasswordLine, CoUserPlus, RiEyeLine, RiEyeOffLine, BiArrowRight, BiExclamationCircleFill, BiArrowRepeat);
+addIcons(MdAlternateemailOutlined, RiLockPasswordLine, CoUserPlus, RiEyeLine, RiEyeOffLine, BiPersonPlus, BiExclamationCircleFill, BiArrowRepeat);
 
 const router = useRouter()
 const { errorToast } = useToast()
@@ -238,8 +238,8 @@ const handleSignup = async () => {
                 class="tazko-btn w-full"
                 :class="loading ? 'opacity-70 cursor-not-allowed' : ''">
                 <span v-if="!loading" class="flex items-center justify-center gap-2">
+                    <v-icon name="bi-person-plus" scale="1" />
                     Create Account
-                    <v-icon name="bi-arrow-right" scale="1" />
                 </span>
                 <span v-else class="flex items-center justify-center gap-2">
                     <v-icon name="bi-arrow-repeat" class="w-4 h-4 animate-spin" scale="1" />

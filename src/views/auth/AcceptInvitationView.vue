@@ -5,7 +5,7 @@ import { addIcons } from 'oh-vue-icons'
 import {
 	RiLockPasswordLine, RiEyeLine, RiEyeOffLine,
 	BiPersonPlus, BiCheckCircleFill, BiExclamationCircleFill,
-	BiArrowRepeat,
+	BiArrowRepeat, BiBoxArrowInRight,
 } from 'oh-vue-icons/icons'
 import axios from '@/axios'
 import { useToast } from '@/utils/toast'
@@ -14,7 +14,7 @@ import { validators } from '@/utils/validators'
 addIcons(
 	RiLockPasswordLine, RiEyeLine, RiEyeOffLine,
 	BiPersonPlus, BiCheckCircleFill, BiExclamationCircleFill,
-	BiArrowRepeat,
+	BiArrowRepeat, BiBoxArrowInRight,
 )
 
 const { errorToast } = useToast()
@@ -159,6 +159,7 @@ const submit = async () => {
 			</p>
 			<router-link :to="{ name: 'login' }"
 				class="tazko-btn inline-block px-6 py-3 rounded-sm text-base font-bold">
+				<v-icon name="bi-box-arrow-in-right" scale="1" />
 				Go to Login →
 			</router-link>
 		</div>
@@ -282,7 +283,10 @@ const submit = async () => {
 						<v-icon name="bi-arrow-repeat" class="animate-spin" scale="1" />
 						Creating account…
 					</span>
-					<span v-else>Create My Account →</span>
+					<span v-else class="flex items-center justify-center gap-2">
+						<v-icon name="bi-person-plus" scale="1" />
+						Create My Account →
+					</span>
 				</button>
 			</form>
 

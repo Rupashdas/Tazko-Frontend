@@ -22,35 +22,53 @@ export const useCommentStore = defineStore('comments', {
 			}
 		},
 
-		async createComment(projectId, body) {
-			this.saving = true
+		async createComment(projectId, body, currentUser) {
+			const tempId = `__tmp_${Date.now()}`
+			this.comments.push({
+				id: tempId,
+				body,
+				user: {
+					id:      currentUser.id,
+					name:    currentUser.name,
+					avatar:  currentUser.avatar ?? null,
+					palette: currentUser.palette ?? 'aurora',
+				},
+				created_at:  new Date().toISOString(),
+				is_edited:   false,
+				liked_by_me: false,
+				likes_count: 0,
+			})
+
 			try {
 				const { data } = await axios.post(`/api/projects/${projectId}/comments`, { body })
-				this.comments.push(data.data)
+				const idx = this.comments.findIndex(c => c.id === tempId)
+				if (idx !== -1) this.comments.splice(idx, 1, data.data)
 				return { success: true, comment: data.data }
 			} catch (err) {
+				this.comments = this.comments.filter(c => c.id !== tempId)
 				return {
 					success: false,
 					message: err.response?.data?.message ?? 'Failed to post comment.',
 				}
-			} finally {
-				this.saving = false
 			}
 		},
 
 		async updateComment(projectId, commentId, body) {
-			this.saving = true
+			const original = this.comments.find(c => c.id === commentId)
+			if (!original) return { success: false, message: 'Comment not found.' }
+
+			this._patchComment(commentId, { body, is_edited: true })
+
 			try {
 				const { data } = await axios.patch(`/api/projects/${projectId}/comments/${commentId}`, { body })
-				this.comments = this.comments.map(c => c.id === commentId ? data.data : c)
+				this._patchComment(commentId, data.data)
 				return { success: true }
 			} catch (err) {
+				this._patchComment(commentId, { body: original.body, is_edited: original.is_edited })
 				return {
 					success: false,
 					message: err.response?.data?.message ?? 'Failed to update comment.',
 				}
-			} finally {
-				this.saving = false
 			}
 		},
 

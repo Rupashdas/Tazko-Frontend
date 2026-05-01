@@ -135,15 +135,21 @@ router.beforeEach(async (to, from, next) => {
         try { await preferencesStore.loadPreferences() } catch (e) { console.error('Failed to load preferences', e) }
     }
 
-    const requiresAuth       = to.matched.some(r => r.meta.requiresAuth)
-    const guestOnly          = to.matched.some(r => r.meta.guestOnly)
-    const requiredCapability = to.matched.map(r => r.meta.requiresCapability).filter(Boolean).at(-1)
+    const requiresAuth         = to.matched.some(r => r.meta.requiresAuth)
+    const guestOnly            = to.matched.some(r => r.meta.guestOnly)
+    // Walk every matched route segment so a parent's capability is enforced
+    // even when a child route declares its own. Using .at(-1) here was a
+    // bug — a user with the child capability could bypass a parent gate.
+    const requiredCapabilities = to.matched
+        .map(r => r.meta.requiresCapability)
+        .filter(Boolean)
 
     if (requiresAuth && !auth.isLoggedIn) return next({ name: 'login' })
     if (guestOnly && auth.isLoggedIn)     return next({ name: 'home' })
 
-    if (requiredCapability && auth.isLoggedIn && !auth.hasCapability(requiredCapability)) {
-        return next({ name: 'unauthorized' })
+    if (requiredCapabilities.length && auth.isLoggedIn) {
+        const denied = requiredCapabilities.some(cap => !auth.hasCapability(cap))
+        if (denied) return next({ name: 'unauthorized' })
     }
 
     next()

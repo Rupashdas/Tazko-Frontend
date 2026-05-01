@@ -1,12 +1,12 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { addIcons } from 'oh-vue-icons'
-import { BiX, BiPersonPlus, BiArrowLeft, BiArrowRight, BiArrowRepeat } from 'oh-vue-icons/icons'
+import { BiX, BiPersonPlus, BiArrowRight, BiArrowRepeat } from 'oh-vue-icons/icons'
 import axios from '@/axios'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import { paletteColor } from '@/utils/paletteColor'
 
-addIcons(BiX, BiPersonPlus, BiArrowLeft, BiArrowRight, BiArrowRepeat)
+addIcons(BiX, BiPersonPlus, BiArrowRight, BiArrowRepeat)
 
 const props = defineProps({
 	show: { type: Boolean, default: false },
@@ -152,7 +152,6 @@ const handleClose = () => emit('close')
 						<!-- Step 1 Footer -->
 						<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0 rounded-b-sm">
 							<button @click="handleClose" class="flex-1 tazko-btn-cancel">
-								<v-icon name="bi-x" scale="1" />
 								Cancel
 							</button>
 							<button @click="goNext"
@@ -189,7 +188,6 @@ const handleClose = () => emit('close')
 						<!-- Step 2 Footer -->
 						<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0 rounded-b-sm">
 							<button @click="goBack" :disabled="saving" class="flex-1 tazko-btn-cancel">
-								<v-icon name="bi-arrow-left" scale="1" />
 								Back
 							</button>
 							<button @click="handleAdd"

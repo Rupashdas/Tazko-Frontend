@@ -9,11 +9,11 @@ import RichTextEditor from '@/components/shared/RichTextEditor.vue'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 import { addIcons } from 'oh-vue-icons'
 import {
-	BiPencil, BiHandThumbsUp, BiCheck2, BiX, BiChat,
+	BiPencil, BiHandThumbsUp, BiCheck2, BiChat,
 	BiTrash, BiArrowRepeat,
 } from 'oh-vue-icons/icons'
 
-addIcons(BiPencil, BiHandThumbsUp, BiCheck2, BiX, BiChat, BiTrash, BiArrowRepeat)
+addIcons(BiPencil, BiHandThumbsUp, BiCheck2, BiChat, BiTrash, BiArrowRepeat)
 
 const props = defineProps({
 	projectId: { type: [Number, String], required: true },
@@ -55,14 +55,17 @@ const commentEditorRef = ref(null)
 const commentEditorFocused = ref(false)
 
 const sendComment = async () => {
+	await commentEditorRef.value?.flushDraft?.()
 	const content = commentEditorRef.value?.getHTML() ?? ''
 	if (!content || content === '<p></p>') return
 
-	const result = await store.createComment(props.projectId, props.taskId, content)
+	commentEditorRef.value?.clear()
+	newComment.value = ''
+	commentEditorFocused.value = false
+
+	const result = await store.createComment(props.projectId, props.taskId, content, currentUser.value)
 	if (result.success) {
-		commentEditorRef.value?.clear()
-		newComment.value = ''
-		commentEditorFocused.value = false
+		await commentEditorRef.value?.clearDraft?.()
 	} else {
 		errorToast(result.message)
 	}
@@ -82,15 +85,19 @@ const saveEdit = async (comment) => {
 	const editor = Array.isArray(editingEditorRef.value)
 		? editingEditorRef.value[0]
 		: editingEditorRef.value
+	await editor?.flushDraft?.()
 	const body = editor?.getHTML ? editor.getHTML() : editingCommentText.value
 
 	if (!body || body === '<p></p>') return
 
+	editingCommentId.value = null
+
 	const result = await store.updateComment(props.projectId, props.taskId, comment.id, body)
 	if (result.success) {
-		editingCommentId.value = null
-		editingCommentText.value = ''
+		await editor?.clearDraft?.()
 	} else {
+		editingCommentId.value = comment.id
+		editingCommentText.value = body
 		errorToast(result.message)
 	}
 }
@@ -197,7 +204,7 @@ const toggleLike = (commentId) => {
 									<v-icon name="bi-trash" scale="0.7" />
 								</button>
 
-								<span v-if="canReact && (canDelete || (canEdit && isOwnComment(comment)))" class="text-text/30">|</span>
+								<span v-if="canReact && isOwnComment(comment) && (canDelete || canEdit)" class="text-text/30">|</span>
 
 								<button
 									v-if="canReact"
@@ -230,18 +237,18 @@ const toggleLike = (commentId) => {
 									:autofocus="true"
 									:enable-mention="true"
 									:users="members"
-									:project-id="projectId" />
+									:project-id="projectId"
+									:draft-context-key="`comment:${comment.id}:edit`" />
 								<div class="flex items-center gap-2 justify-end">
 									<button
 										@click="saveEdit(comment)"
 										:disabled="store.saving"
-										class="tazko-btn">
-										<v-icon v-if="store.saving" name="bi-arrow-repeat" scale="0.85" class="animate-spin" />
-										<v-icon v-else name="bi-check2" scale="0.85" />
+										class="tazko-btn-sm">
+										<v-icon v-if="store.saving" name="bi-arrow-repeat" scale="0.8" class="animate-spin" />
+										<v-icon v-else name="bi-check2" scale="0.8" />
 										Save
 									</button>
-									<button @click="cancelEdit" class="tazko-btn-cancel">
-										<v-icon name="bi-x" scale="0.85" />
+									<button @click="cancelEdit" class="tazko-btn-cancel-sm">
 										Cancel
 									</button>
 								</div>
@@ -279,20 +286,22 @@ const toggleLike = (commentId) => {
 						:enable-mention="true"
 						:users="members"
 						:project-id="projectId"
+						:draft-context-key="`task:${taskId}:comment:new`"
 						min-height="120px"
 						@focus="commentEditorFocused = true" />
 					<div v-if="commentEditorFocused" class="flex items-center gap-2 mt-2">
 						<button
 							type="button"
 							:disabled="store.saving"
-							class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors disabled:opacity-60"
+							class="tazko-btn-sm"
 							@click="sendComment">
 							<v-icon v-if="store.saving" name="bi-arrow-repeat" scale="0.8" class="animate-spin" />
+							<v-icon v-else name="bi-check2" scale="0.8" />
 							Post Comment
 						</button>
 						<button
 							type="button"
-							class="inline-flex items-center px-3 py-1.5 rounded-sm border border-heading/10 text-text text-sm font-semibold hover:bg-heading/5 transition-colors"
+							class="tazko-btn-cancel-sm"
 							@click="commentEditorFocused = false">
 							Cancel
 						</button>
