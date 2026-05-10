@@ -46,6 +46,7 @@ const saveTitle = () => {
 
 // ── Inline description edit ───────────────────────────
 const editingDesc = ref(false)
+const savingDesc  = ref(false)
 const descDraft = ref('')
 const descEditorRef = ref(null)
 
@@ -56,15 +57,21 @@ const startEditDesc = () => {
 }
 
 const saveDesc = async () => {
-	await descEditorRef.value?.flushDraft?.()
-	if (descEditorRef.value) {
+	if (savingDesc.value) return
+	savingDesc.value = true
+	try {
+		await descEditorRef.value?.flushDraft?.()
+		if (!descEditorRef.value) return
 		const next = descEditorRef.value.getHTML()
-		if (next !== props.task.description) {
+		const isEmpty = (v) => !v || v === '<p></p>'
+		if (!(isEmpty(next) && isEmpty(props.task.description)) && next !== props.task.description) {
 			emit('save', { description: next })
 		}
+		await descEditorRef.value?.clearDraft?.()
+		editingDesc.value = false
+	} finally {
+		savingDesc.value = false
 	}
-	await descEditorRef.value?.clearDraft?.()
-	editingDesc.value = false
 }
 </script>
 
@@ -141,10 +148,10 @@ const saveDesc = async () => {
 					:draft-context-key="`task:${task.id}:description`" />
 				<div class="flex items-center justify-end gap-2 mt-2">
 					<button type="button" class="tazko-btn-cancel-sm" @click="editingDesc = false">Cancel</button>
-					<button type="button" :disabled="saving" class="tazko-btn-sm" @click="saveDesc">
-						<v-icon v-if="saving" name="bi-arrow-repeat" scale="0.8" class="animate-spin" />
+					<button type="button" :disabled="savingDesc" class="tazko-btn-sm" @click="saveDesc">
+						<v-icon v-if="savingDesc" name="bi-arrow-repeat" scale="0.8" class="animate-spin" />
 						<v-icon v-else name="bi-check2" scale="0.8" />
-						{{ saving ? 'Saving…' : 'Save' }}
+						{{ savingDesc ? 'Saving…' : 'Save' }}
 					</button>
 				</div>
 			</div>
@@ -170,6 +177,7 @@ const saveDesc = async () => {
 :deep(.prose-sm ul) { list-style-type: disc !important; list-style-position: outside; padding-left: 1.4em; margin: 0.25em 0; }
 :deep(.prose-sm ol) { list-style-type: decimal !important; list-style-position: outside; padding-left: 1.4em; margin: 0.25em 0; }
 :deep(.prose-sm li) { margin: 0.1em 0; display: list-item !important; }
+:deep(.prose-sm img) { max-width: 480px; width: auto; max-height: 320px; height: auto; border-radius: 6px; }
 :deep(.prose-sm a) { color: var(--color-accent, #6366f1); text-decoration: underline; cursor: pointer; }
 :deep(.prose-sm pre) { background: rgba(var(--color-heading-rgb, 17,17,17),0.06); border-radius: 6px; padding: 0.75em 1em; margin: 0.5em 0; overflow-x: auto; }
 :deep(.prose-sm blockquote) { border-left: 3px solid var(--color-accent, #6366f1); padding-left: 0.85em; margin: 0.35em 0; opacity: 0.7; }

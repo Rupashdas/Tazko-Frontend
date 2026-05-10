@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { toRaw } from 'vue'
 import axios from '@/axios'
 
 export const useProjectStore = defineStore('projects', {
@@ -50,7 +51,7 @@ export const useProjectStore = defineStore('projects', {
 		async reorderTasks(projectId, taskOrders) {
 			// taskOrders: [{id, sort_order}]
 			try {
-				await axios.post(`/api/projects/${projectId}/tasks/reorder`, { tasks: taskOrders })
+				await axios.post(`/api/projects/${projectId}/tasks/reorder`, { tasks: taskOrders }, { meta: { silent: true } })
 				taskOrders.forEach(({ id, sort_order }) => {
 					const task = this.tasks.find(t => t.id === id)
 					if (task) task.sort_order = sort_order
@@ -71,6 +72,7 @@ export const useProjectStore = defineStore('projects', {
 				if (data.data.project?.members) {
 					this._mergeProjectMembers(projectId, data.data.project.members)
 				}
+				this._updateProjectInList(projectId)
 				return { success: true }
 			} catch (err) {
 				return {
@@ -104,6 +106,7 @@ export const useProjectStore = defineStore('projects', {
 			try {
 				await axios.delete(`/api/projects/${projectId}/tasks/${taskId}`)
 				this.tasks = this.tasks.filter(t => t.id !== taskId)
+				this._updateProjectInList(projectId)
 				return { success: true }
 			} catch (err) {
 				return {
@@ -121,6 +124,7 @@ export const useProjectStore = defineStore('projects', {
 				if (data.data.project?.members) {
 					this._mergeProjectMembers(projectId, data.data.project.members)
 				}
+				this._updateProjectInList(projectId)
 				return { success: true, task }
 			} catch (err) {
 				return {
@@ -207,7 +211,7 @@ export const useProjectStore = defineStore('projects', {
 			// nested arrays of nulls) that the JSON round-trip silently
 			// corrupts. Falls back to null when there's nothing to snapshot.
 			const snapshot = this.currentProject?.id === projectId
-				? structuredClone(this.currentProject)
+				? structuredClone(toRaw(this.currentProject))
 				: null
 
 			if (snapshot) Object.assign(this.currentProject, payload)
@@ -389,6 +393,22 @@ export const useProjectStore = defineStore('projects', {
 		_mergeProjectMembers(projectId, members) {
 			if (!this.currentProject || this.currentProject.id !== projectId || !Array.isArray(members)) return
 			this.currentProject.members = members
+		},
+
+		/**
+		 * Refetch and update a project in the projects list with fresh task counts and progress.
+		 * Called after task operations (create/update/delete) to keep listing page in sync.
+		 */
+		async _updateProjectInList(projectId) {
+			try {
+				const { data } = await axios.get(`/api/projects/${projectId}`)
+				const idx = this.projects.findIndex(p => p.id === projectId)
+				if (idx !== -1) {
+					this.projects[idx] = data.data
+				}
+			} catch (err) {
+				console.error('[ProjectStore] _updateProjectInList:', err)
+			}
 		},
 
 		async fetchNextPage() {

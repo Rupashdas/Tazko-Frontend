@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { toRaw } from 'vue'
 import axios from '@/axios'
 import { useProjectStore } from '@/stores/useProjectStore'
 import { paletteColor } from '@/utils/paletteColor'
@@ -14,7 +15,7 @@ const getInitials = (name) => {
 // undefined values, and circular refs correctly — JSON.parse(JSON.stringify)
 // silently dropped or corrupted these and could leave a half-restored task
 // state on rollback.
-const clone = (v) => structuredClone(v)
+const clone = (v) => structuredClone(toRaw(v))
 
 // Normalize the API task payload to match the shape child components expect:
 //   due_date  → due
@@ -216,7 +217,8 @@ export const useTaskDetailStore = defineStore('taskDetail', {
 			try {
 				const { data } = await axios.patch(
 					`/api/projects/${projectId}/tasks/${taskId}/subtasks/${subtaskId}`,
-					payload
+					payload,
+					{ meta: { silent: true } }
 				)
 				// Reconcile
 				this.task.subtasks = this.task.subtasks.map((s, i) =>
@@ -255,7 +257,8 @@ export const useTaskDetailStore = defineStore('taskDetail', {
 					`/api/projects/${projectId}/tasks/${taskId}/subtasks/reorder`,
 					{
 						subtasks: orderedIds.map((id, i) => ({ id, sort_order: i + 1 })),
-					}
+					},
+					{ meta: { silent: true } }
 				)
 				return { success: true }
 			} catch (err) {

@@ -1,9 +1,21 @@
 import axios from 'axios'
+import { begin as progressBegin, end as progressEnd } from '@/utils/nprogress'
 
 axios.defaults.baseURL = 'http://localhost:8000'
 axios.defaults.headers.common['Accept'] = 'application/json'
 axios.defaults.withCredentials = true
 axios.defaults.withXSRFToken = true
+
+axios.interceptors.request.use(
+    (config) => {
+        if (!config?.meta?.silent) {
+            config.__nprogress = true
+            progressBegin()
+        }
+        return config
+    },
+    (error) => Promise.reject(error)
+)
 
 /**
  * Global response interceptor.
@@ -20,8 +32,12 @@ axios.defaults.withXSRFToken = true
  * before Pinia is fully initialised.
  */
 axios.interceptors.response.use(
-	(response) => response,
+	(response) => {
+		if (response.config?.__nprogress) progressEnd()
+		return response
+	},
 	async (error) => {
+		if (error.config?.__nprogress) progressEnd()
 		const data = error.response?.data
 
 		if (

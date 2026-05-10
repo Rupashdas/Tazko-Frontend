@@ -505,6 +505,7 @@ const handleDelete = async () => {
 :deep(.project-rich-content h1) { font-size: 1.7em; font-weight: 700; color: var(--color-heading, #111); margin: 0.6em 0 0.3em; }
 :deep(.project-rich-content strong) { font-weight: 700; }
 :deep(.project-rich-content code) { font-family: 'Fira Code', monospace; font-size: 0.82em; background: rgba(99, 102, 241, 0.1); padding: 0.15em 0.4em; border-radius: 5px; color: #6366f1; }
+:deep(.project-rich-content img) { max-width: 480px; width: auto; max-height: 320px; height: auto; border-radius: 6px; }
 :deep(.project-rich-content a) { color: var(--color-accent, #6366f1); text-decoration: underline; }
 
 :deep([data-file-attachment]) {

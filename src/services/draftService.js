@@ -14,20 +14,23 @@ import axios from '@/axios'
 
 const url = (key) => `/api/drafts/${encodeURIComponent(key)}`
 
+// Drafts are background autosave — never show the global progress bar.
+const SILENT = { meta: { silent: true } }
+
 export async function fetchDraft(contextKey, { signal } = {}) {
 	try {
-		const { data } = await axios.get(url(contextKey), { signal })
-		return data // { content, attachment_ids, updated_at }
+		const { data } = await axios.get(url(contextKey), { ...SILENT, signal })
+		return data || null // 204 No Content (no draft yet) → empty body → null
 	} catch (e) {
-		if (e?.response?.status === 404) return null
+		if (e?.response?.status === 404) return null // backward-compat safety
 		throw e
 	}
 }
 
 export async function saveDraft(contextKey, content, { signal } = {}) {
-	await axios.put(url(contextKey), { content }, { signal })
+	await axios.put(url(contextKey), { content }, { ...SILENT, signal })
 }
 
 export async function deleteDraft(contextKey, { signal } = {}) {
-	await axios.delete(url(contextKey), { signal })
+	await axios.delete(url(contextKey), { ...SILENT, signal })
 }

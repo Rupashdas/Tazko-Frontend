@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { begin as progressBegin, end as progressEnd } from '@/utils/nprogress'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { usePreferencesStore } from '@/stores/usePreferencesStore'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -15,6 +16,7 @@ import SystemSettingsView from '@/views/admin/SystemSettingsView.vue';
 import RolesView from '@/views/admin/RolesView.vue';
 import UsersView from '@/views/admin/UsersView.vue';
 import UnauthorizedView from '@/views/errors/UnauthorizedView.vue';
+import NotFoundView from '@/views/errors/NotFoundView.vue';
 
 import HomeView from '@/views/HomeView.vue';
 import MyStuffView from '@/views/MyStuffView.vue'
@@ -110,6 +112,11 @@ const routes = [
             { path: 'accept-invitation', name: 'accept-invitation', component: AcceptInvitationView },
         ]
     },
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'not-found',
+        component: NotFoundView,
+    },
 ]
 
 const router = createRouter({
@@ -118,6 +125,11 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
+    const isRouteChange = to.path !== from.path
+    if (isRouteChange) {
+        progressBegin()
+        to.meta.__progressActive = true
+    }
     const auth = useAuthStore()
     const preferencesStore = usePreferencesStore()
 
@@ -154,5 +166,16 @@ router.beforeEach(async (to, from, next) => {
 
     next()
 })
+
+router.afterEach((to) => {
+    if (to.meta.__progressActive) {
+        delete to.meta.__progressActive
+        // The grace-period inside progressEnd() bridges Vue's <transition
+        // mode="out-in"> swap (~200ms), so any axios call kicked off in the
+        // newly-mounted view extends the same bar.
+        progressEnd()
+    }
+})
+router.onError(() => progressEnd())
 
 export default router
