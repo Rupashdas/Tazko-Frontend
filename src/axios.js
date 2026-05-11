@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { begin as progressBegin, end as progressEnd } from '@/utils/nprogress'
 
 axios.defaults.baseURL = 'http://localhost:8000'
 axios.defaults.headers.common['Accept'] = 'application/json'
@@ -10,7 +9,6 @@ axios.interceptors.request.use(
     (config) => {
         if (!config?.meta?.silent) {
             config.__nprogress = true
-            progressBegin()
         }
         return config
     },
@@ -33,11 +31,11 @@ axios.interceptors.request.use(
  */
 axios.interceptors.response.use(
 	(response) => {
-		if (response.config?.__nprogress) progressEnd()
+		// progressEnd is now handled by router.afterEach
 		return response
 	},
 	async (error) => {
-		if (error.config?.__nprogress) progressEnd()
+		// progressEnd is now handled by router.onError
 		const data = error.response?.data
 
 		if (

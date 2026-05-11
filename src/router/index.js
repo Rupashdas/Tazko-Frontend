@@ -126,10 +126,6 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
     const isRouteChange = to.path !== from.path
-    if (isRouteChange) {
-        progressBegin()
-        to.meta.__progressActive = true
-    }
     const auth = useAuthStore()
     const preferencesStore = usePreferencesStore()
 
@@ -162,6 +158,11 @@ router.beforeEach(async (to, from, next) => {
     if (requiredCapabilities.length && auth.isLoggedIn) {
         const denied = requiredCapabilities.some(cap => !auth.hasCapability(cap))
         if (denied) return next({ name: 'unauthorized' })
+    }
+
+    if (isRouteChange) {
+        progressBegin()
+        to.meta.__progressActive = true
     }
 
     next()
