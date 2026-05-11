@@ -1,18 +1,18 @@
 import axios from 'axios'
 
-axios.defaults.baseURL = 'http://localhost:8000'
+axios.defaults.baseURL = import.meta.env.VITE_API_URL
 axios.defaults.headers.common['Accept'] = 'application/json'
 axios.defaults.withCredentials = true
 axios.defaults.withXSRFToken = true
 
 axios.interceptors.request.use(
-    (config) => {
-        if (!config?.meta?.silent) {
-            config.__nprogress = true
-        }
-        return config
-    },
-    (error) => Promise.reject(error)
+	(config) => {
+		if (!config?.meta?.silent) {
+			config.__nprogress = true
+		}
+		return config
+	},
+	(error) => Promise.reject(error)
 )
 
 /**
