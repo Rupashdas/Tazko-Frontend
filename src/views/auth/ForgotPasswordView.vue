@@ -2,18 +2,18 @@
 import { ref } from 'vue'
 import { addIcons } from "oh-vue-icons";
 import {
-    MdAlternateemailOutlined,
+    BiEnvelope,
     BiArrowLeft, BiKey, BiInfoCircleFill,
-    BiEnvelope, BiArrowRepeat, BiEnvelopeCheck,
+    BiArrowRepeat, BiEnvelopeCheck,
 } from "oh-vue-icons/icons";
 import axios from '@/axios'
 import { useToast } from '@/utils/toast'
 import { validators } from '@/utils/validators'
 
 addIcons(
-    MdAlternateemailOutlined,
+    BiEnvelope,
     BiArrowLeft, BiKey, BiInfoCircleFill,
-    BiEnvelope, BiArrowRepeat, BiEnvelopeCheck,
+    BiArrowRepeat, BiEnvelopeCheck,
 );
 
 const { errorToast } = useToast()
@@ -131,9 +131,7 @@ const resetForm = () => {
             <form @submit.prevent="submit" class="flex flex-col gap-5">
 
                 <div class="flex flex-col gap-1.5">
-                    <label class="block text-base font-semibold text-text">
-                        Email address <span class="text-red-400">*</span>
-                    </label>
+                    <label class="form-label">Email address <span class="text-red-400">*</span></label>
                     <div class="group relative flex items-center">
                         <span
                             class="absolute left-3.5 text-text group-focus-within:text-accent transition-colors pointer-events-none z-10">
@@ -143,7 +141,7 @@ const resetForm = () => {
                             class="input-field has-icon" :class="{ 'border-red-400': errors.email }"
                             @input="clearError('email')" />
                     </div>
-                    <p v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</p>
+<p v-if="errors.email" class="form-error">{{ errors.email }}</p>
                 </div>
 
                 <div class="flex items-start gap-2.5 p-3.5 rounded-sm bg-accent/5 border border-accent/15">

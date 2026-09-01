@@ -1,9 +1,9 @@
 <script setup>
-import { ref, reactive, provide, computed, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, onBeforeUnmount, watch } from 'vue'
 import { useEditor, EditorContent, VueNodeViewRenderer } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import { Extension, Node as TipTapNode } from '@tiptap/core'
-import { Plugin, PluginKey, Selection } from '@tiptap/pm/state'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import TextAlign from '@tiptap/extension-text-align'
 import { TextStyle } from '@tiptap/extension-text-style'
@@ -14,12 +14,9 @@ import { detectFileType } from './FileAttachmentPlugin'
 import FileAttachmentView from './FileAttachmentView.vue'
 import { MediaEmbed, urlToEmbedInfo } from './MediaEmbedPlugin'
 import EditorToolbar from './EditorToolbar.vue'
-import LinkDialog from './LinkDialog.vue'
 import MentionView from './MentionView.vue'
-import InlineImageView from './InlineImageView.vue'
 import { uploadAttachment, streamUrl } from '@/services/attachmentService'
 import { useToast } from '@/utils/toast'
-import { useDraftPersistence } from '@/composables/useDraftPersistence'
 
 // ── Placeholder ─────────────────────────────────────────────
 function buildPlaceholderExtension(placeholderText) {
@@ -150,8 +147,6 @@ const FileAttachment = TipTapNode.create({
 			mimeType: { default: '' },
 			fileSize: { default: 0 },
 			align: { default: 'left' },
-			width: { default: null },
-			alt: { default: '' },
 
 			// Real backend attachment id, populated after upload completes.
 			// The HTML emitted for storage includes this as `data-attachment-id`
@@ -173,7 +168,6 @@ const FileAttachment = TipTapNode.create({
 			{
 				tag: 'div[data-file-attachment]',
 				getAttrs(el) {
-					const w = parseInt(el.getAttribute('data-file-width') || '0', 10)
 					return {
 						src: el.getAttribute('data-file-src') || '',
 						fileName: el.getAttribute('data-file-name') || 'attachment',
@@ -181,8 +175,6 @@ const FileAttachment = TipTapNode.create({
 						mimeType: el.getAttribute('data-file-mime') || '',
 						fileSize: parseInt(el.getAttribute('data-file-size') || '0', 10),
 						align: el.getAttribute('data-file-align') || 'left',
-						width: w > 0 ? w : null,
-						alt: el.getAttribute('data-file-alt') || '',
 						attachmentId: (() => {
 							const raw = el.getAttribute('data-attachment-id')
 							return raw && /^\d+$/.test(raw) ? parseInt(raw, 10) : null
@@ -197,7 +189,6 @@ const FileAttachment = TipTapNode.create({
 		]
 	},
 	renderHTML({ node }) {
-		const align = node.attrs.align || 'left'
 		const attrs = {
 			'data-file-attachment': '',
 			'data-file-name': node.attrs.fileName,
@@ -205,27 +196,19 @@ const FileAttachment = TipTapNode.create({
 			'data-file-src': node.attrs.src,
 			'data-file-mime': node.attrs.mimeType,
 			'data-file-size': String(node.attrs.fileSize),
-			'data-file-align': align,
-			class: 'file-attachment-wrapper file-attachment-align-' + align,
+			'data-file-align': node.attrs.align,
 		}
 		// Only stamp the real attachment id — never the tempId or upload
 		// state. Saved HTML stays clean and backend-parseable.
 		if (node.attrs.attachmentId) {
 			attrs['data-attachment-id'] = String(node.attrs.attachmentId)
 		}
-		if (node.attrs.width) {
-			attrs['data-file-width'] = String(node.attrs.width)
-		}
-		if (node.attrs.alt) {
-			attrs['data-file-alt'] = node.attrs.alt
-		}
 		const type = node.attrs.fileType || 'file'
 		const src = node.attrs.src || ''
 		const name = node.attrs.fileName || 'attachment'
 		const size = node.attrs.fileSize ? formatFileSize(node.attrs.fileSize) : ''
-		const widthStyle = node.attrs.width ? `width:${node.attrs.width}px` : null
 		if (type === 'image') {
-			return ['div', attrs, ['img', { src, alt: node.attrs.alt || name, class: 'file-attachment-img', ...(widthStyle ? { style: widthStyle } : {}) }]]
+			return ['div', attrs, ['img', { src, alt: name, class: 'max-w-full rounded-[6px]' }]]
 		}
 		if (type === 'video') {
 			return ['div', attrs, ['video', { src, controls: '', class: 'max-w-full rounded-[6px]' }]]
@@ -241,70 +224,6 @@ const FileAttachment = TipTapNode.create({
 	},
 	addNodeView() {
 		return VueNodeViewRenderer(FileAttachmentView)
-	},
-})
-
-// ── InlineImage node (images inline with text) ────────────
-const InlineImage = TipTapNode.create({
-	name: 'inlineImage',
-	group: 'inline',
-	inline: true,
-	atom: true,
-	addAttributes() {
-		return {
-			src: { default: '' },
-			alt: { default: '' },
-			width: { default: null },
-			attachmentId: { default: null },
-			tempId: { default: null },
-			uploading: { default: false },
-			uploadError: { default: null },
-		}
-	},
-	parseHTML() {
-		return [
-			{
-				tag: 'img[data-inline-image]',
-				getAttrs(el) {
-					const w = el.getAttribute('width') || el.style?.width
-					const widthNum = w ? parseInt(String(w).replace(/px$/, ''), 10) : null
-					return {
-						src: el.getAttribute('src') || '',
-						alt: el.getAttribute('alt') || '',
-						width: Number.isFinite(widthNum) && widthNum > 0 ? widthNum : null,
-						attachmentId: (() => {
-							const raw = el.getAttribute('data-attachment-id')
-							return raw && /^\d+$/.test(raw) ? parseInt(raw, 10) : null
-						})(),
-						tempId: null,
-						uploading: false,
-						uploadError: null,
-					}
-				},
-			},
-		]
-	},
-	renderHTML({ node }) {
-		const attrs = {
-			src: node.attrs.src,
-			alt: node.attrs.alt || 'image',
-			'data-inline-image': '',
-			class: 'inline-image',
-		}
-		if (node.attrs.attachmentId) {
-			attrs['data-attachment-id'] = String(node.attrs.attachmentId)
-		}
-		if (node.attrs.width) {
-			// Stamp both `width` (HTML attribute, parses cleanly) and `style`
-			// (so the saved HTML renders the right size before any JS runs in
-			// read-only contexts like the print view).
-			attrs.width = String(node.attrs.width)
-			attrs.style = `width:${node.attrs.width}px`
-		}
-		return ['img', attrs]
-	},
-	addNodeView() {
-		return VueNodeViewRenderer(InlineImageView)
 	},
 })
 
@@ -381,13 +300,6 @@ const props = defineProps({
 	// button). When null, picking a file shows an error toast and no-ops —
 	// this covers the "create new project" flow where no id exists yet.
 	projectId: { type: [Number, String], default: null },
-
-	// Per-user draft auto-save key. When provided, the editor's content is
-	// debounced-saved to /api/drafts/{key} and restored on mount. When null
-	// (default), the editor behaves identically to before — no draft I/O.
-	// Format: "task:{id}:comment:new", "comment:{id}:edit", "task:{id}:description",
-	//         "project:{id}:task:new", "project:{id}:comment:new"
-	draftContextKey: { type: String, default: null },
 })
 
 const emit = defineEmits(['update:modelValue', 'focus', 'blur'])
@@ -396,47 +308,6 @@ const emit = defineEmits(['update:modelValue', 'focus', 'blur'])
 const isFocused = ref(false)
 const pasteAsPlainText = ref(false)
 const showAttachments = ref(false)
-
-// ── Drag-over overlay ───────────────────────────────────────
-// `dragDepth` counts dragenter minus dragleave. Browsers fire dragenter on
-// every child element the cursor crosses, so a single `isDragging` boolean
-// flicks on/off as the cursor moves between nested nodes. The depth counter
-// is the canonical fix — overlay shows iff depth > 0 AND the drag carries
-// files (we don't want it on internal text-drag).
-const dragDepth = ref(0)
-const dragHasFiles = ref(false)
-const showDropOverlay = computed(() => dragDepth.value > 0 && dragHasFiles.value && !!props.projectId)
-
-function dragHasFileTypes(dt) {
-	// `dataTransfer.types` is the only thing populated during dragenter/over
-	// (the actual `.files` list is empty until drop, for security). 'Files'
-	// appears in `types` whenever the OS payload includes real files.
-	if (!dt) return false
-	for (const t of dt.types || []) if (t === 'Files') return true
-	return false
-}
-
-function onWrapperDragEnter(event) {
-	if (!dragHasFileTypes(event.dataTransfer)) return
-	dragDepth.value++
-	dragHasFiles.value = true
-}
-function onWrapperDragLeave() {
-	if (dragDepth.value > 0) dragDepth.value--
-	if (dragDepth.value === 0) dragHasFiles.value = false
-}
-function onWrapperDragOver(event) {
-	if (dragHasFileTypes(event.dataTransfer)) {
-		// Required so the subsequent `drop` event actually fires; without
-		// preventDefault here the browser falls back to its default behavior
-		// (open the file in a new tab).
-		event.preventDefault()
-	}
-}
-function onWrapperDrop() {
-	dragDepth.value = 0
-	dragHasFiles.value = false
-}
 
 // ── Object URL tracking (for memory cleanup) ────────────────
 const createdObjectUrls = new Set()
@@ -454,55 +325,12 @@ function revokeTrackedObjectUrl(url) {
 
 // ── File upload ─────────────────────────────────────────────
 const fileInput = ref(null)
-const { errorToast, successToast } = useToast()
+const { errorToast } = useToast()
 
 // Every in-flight upload has an AbortController so we can cancel mid-flight
 // if the component unmounts. Keyed by tempId to avoid cross-wires when the
 // user picks several files in quick succession.
 const pendingUploads = new Map()
-// Blob preview URL per in-flight tempId. Tracked here (not just on the node)
-// so we can revoke it even if the node has already been removed from the
-// doc — e.g. user clicked the inline X, hit Backspace, or the parent
-// rewrote modelValue while we were uploading.
-const pendingBlobs = new Map()
-
-// Live upload progress (0–100) keyed by tempId. Lives outside the doc on
-// purpose: writing progress as a node attribute would dispatch a TipTap
-// transaction on every XHR progress event, firing onUpdate → modelValue
-// emit → draft save dozens of times per file. We provide() this reactive
-// Map down to InlineImageView / FileAttachmentView so they can render the
-// bar without churning the doc.
-const uploadProgress = reactive(new Map())
-provide('rteUploadProgress', uploadProgress)
-
-/**
- * Reconcile pendingUploads with the current doc. Any tempId we're tracking
- * that no longer has a matching node is a node the user deleted via the
- * inline X, keyboard, or a parent-driven setContent. For each of those:
- * abort the upload (so the server doesn't keep an orphan row) and revoke
- * the blob URL (so we don't leak memory). Cheap to run on every update.
- */
-function reconcilePendingUploads() {
-	if (!editor.value || pendingUploads.size === 0) return
-	const present = new Set()
-	editor.value.state.doc.descendants((node) => {
-		if ((node.type.name === 'fileAttachment' || node.type.name === 'inlineImage') && node.attrs.tempId) {
-			present.add(node.attrs.tempId)
-		}
-	})
-	for (const [tempId, controller] of pendingUploads) {
-		if (!present.has(tempId)) {
-			controller.abort()
-			pendingUploads.delete(tempId)
-			uploadProgress.delete(tempId)
-			const blob = pendingBlobs.get(tempId)
-			if (blob) {
-				revokeTrackedObjectUrl(blob)
-				pendingBlobs.delete(tempId)
-			}
-		}
-	}
-}
 
 function triggerFileUpload() { fileInput.value?.click() }
 
@@ -515,7 +343,7 @@ function findNodeByTempId(tempId) {
 	let found = null
 	editor.value.state.doc.descendants((node, pos) => {
 		if (found) return false
-		if ((node.type.name === 'fileAttachment' || node.type.name === 'inlineImage') && node.attrs.tempId === tempId) {
+		if (node.type.name === 'fileAttachment' && node.attrs.tempId === tempId) {
 			found = { node, pos }
 			return false
 		}
@@ -543,34 +371,15 @@ async function uploadOne(file, tempId) {
 	pendingUploads.set(tempId, controller)
 
 	try {
-		// Seed at 0 so the bar appears immediately (before the first XHR
-		// progress event fires — which can be 100ms+ on small files).
-		uploadProgress.set(tempId, 0)
 		const attachment = await uploadAttachment(
 			props.projectId,
 			file,
-			({ percent }) => {
-				// Cap at 99 during transit; only the success branch flips it
-				// to 100, which is also when the spinner/bar is removed. This
-				// avoids a stuck "100%" while we're still awaiting the response
-				// body and node swap.
-				uploadProgress.set(tempId, Math.min(99, percent))
-			},
+			null, // TODO: per-node progress UI — wire onProgress later if desired
 			controller.signal,
 		)
 
 		const target = findNodeByTempId(tempId)
-		if (!target) {
-			// User yanked the node mid-upload (inline X, keyboard, or parent
-			// setContent). Drop the blob URL so we don't leak it; the orphan
-			// row on the server will be cleaned up by the hourly reaper.
-			const blob = pendingBlobs.get(tempId)
-			if (blob) {
-				revokeTrackedObjectUrl(blob)
-				pendingBlobs.delete(tempId)
-			}
-			return
-		}
+		if (!target) return // user yanked the node mid-upload — nothing to do
 
 		// Swap blob preview for the real stream URL so the saved content
 		// survives a reload. Keep mimeType/fileType from the server in case
@@ -583,11 +392,9 @@ async function uploadOne(file, tempId) {
 					...target.node.attrs,
 					attachmentId: attachment.id,
 					src: streamUrl(attachment.id),
-					...(target.node.type.name === 'inlineImage' ? {} : {
-						mimeType: attachment.mime_type ?? target.node.attrs.mimeType,
-						fileType: attachment.file_type ?? target.node.attrs.fileType,
-						fileSize: attachment.size ?? target.node.attrs.fileSize,
-					}),
+					mimeType: attachment.mime_type ?? target.node.attrs.mimeType,
+					fileType: attachment.file_type ?? target.node.attrs.fileType,
+					fileSize: attachment.size ?? target.node.attrs.fileSize,
 					uploading: false,
 					uploadError: null,
 					tempId: null,
@@ -596,7 +403,6 @@ async function uploadOne(file, tempId) {
 			})
 			.run()
 		revokeTrackedObjectUrl(blobSrc)
-		pendingBlobs.delete(tempId)
 	} catch (err) {
 		// AbortController fires a different error on cancel — we just quit
 		// silently; the reaper will clean up any orphan row on the server.
@@ -605,24 +411,14 @@ async function uploadOne(file, tempId) {
 		const target = findNodeByTempId(tempId)
 		if (target) {
 			const blobSrc = target.node.attrs.src
-			const isInline = target.node.type.name === 'inlineImage'
-			if (isInline) {
-				// For inline nodes, delete the single character position
-				editor.value.chain().deleteRange({ from: target.pos, to: target.pos + 1 }).run()
-			} else {
-				editor.value
-					.chain()
-					.command(({ tr }) => {
-						tr.delete(target.pos, target.pos + target.node.nodeSize)
-						return true
-					})
-					.run()
-			}
+			editor.value
+				.chain()
+				.command(({ tr }) => {
+					tr.delete(target.pos, target.pos + target.node.nodeSize)
+					return true
+				})
+				.run()
 			revokeTrackedObjectUrl(blobSrc)
-		} else {
-			// Node was already removed; still revoke the tracked blob.
-			const blob = pendingBlobs.get(tempId)
-			if (blob) revokeTrackedObjectUrl(blob)
 		}
 		const msg = err?.response?.data?.errors?.file?.[0]
 			?? err?.response?.data?.message
@@ -630,151 +426,57 @@ async function uploadOne(file, tempId) {
 		errorToast(`${file.name}: ${msg}`, 'Upload failed')
 	} finally {
 		pendingUploads.delete(tempId)
-		pendingBlobs.delete(tempId)
-		uploadProgress.delete(tempId)
 	}
 }
 
-/**
- * Shared insert-and-upload pipeline. Used by:
- *   - the toolbar attach button (handleFileSelect)
- *   - drag-and-drop into the editor (editorProps.handleDrop)
- *   - paste image from clipboard (editorProps.handlePaste)
- *
- * Inserts optimistic nodes for every file in ONE transaction (so onUpdate
- * fires once, caret placement is predictable, and draft auto-save isn't
- * spammed) then kicks off parallel uploads keyed by tempId. Returns true
- * iff at least one file was queued — callers use this to decide whether to
- * preventDefault the originating event.
- */
-function ingestFiles(files) {
-	if (!files || files.length === 0 || !editor.value) return false
+async function handleFileSelect(event) {
+	const files = event.target.files
+	if (!files || files.length === 0 || !editor.value) return
 
 	// Guard the "no project context" case up front — covers the brand-new
 	// project form where the project id doesn't exist yet. Silent failure
 	// here would leave blobs in the doc that can never be persisted.
 	if (!props.projectId) {
 		errorToast('Save the project first before adding attachments.', 'Cannot upload')
-		return false
+		event.target.value = ''
+		return
 	}
 
+	// Insert all optimistic nodes in one transaction so caret placement is
+	// predictable and `onUpdate` fires once rather than N times.
 	const picked = Array.from(files).map(file => {
 		// Prefer the web-standard crypto.randomUUID() when available; fall
 		// back to a Math.random string for older browsers.
 		const tempId = (globalThis.crypto?.randomUUID?.() ?? ('tmp-' + Math.random().toString(36).slice(2) + Date.now()))
-		const blobUrl = createTrackedObjectUrl(file)
-		// Track blob by tempId so reconcilePendingUploads can revoke it even
-		// when the node was removed from the doc behind our back.
-		pendingBlobs.set(tempId, blobUrl)
-		return { file, tempId, blobUrl }
-	})
-
-	const content = picked.map(({ file, tempId, blobUrl }) => {
-		const isImage = detectFileType(file.type, file.name) === 'image'
 		return {
-			type: isImage ? 'inlineImage' : 'fileAttachment',
-			attrs: {
-				src: blobUrl,
-				...(isImage ? { alt: file.name } : { fileName: file.name }),
-				...(isImage ? {} : { fileType: detectFileType(file.type, file.name) }),
-				...(isImage ? {} : { mimeType: file.type }),
-				...(isImage ? {} : { fileSize: file.size }),
-				...(isImage ? {} : { align: 'left' }),
-				attachmentId: null,
-				tempId,
-				uploading: true,
-				uploadError: null,
-			}
+			file,
+			tempId,
+			blobUrl: createTrackedObjectUrl(file),
 		}
 	})
 
+	const content = picked.map(({ file, tempId, blobUrl }) => ({
+		type: 'fileAttachment',
+		attrs: {
+			src: blobUrl,
+			fileName: file.name,
+			fileType: detectFileType(file.type, file.name),
+			mimeType: file.type,
+			fileSize: file.size,
+			align: 'left',
+			attachmentId: null,
+			tempId,
+			uploading: true,
+			uploadError: null,
+		},
+	}))
+
 	editor.value.chain().focus().insertContent(content).run()
+	event.target.value = ''
 
 	// Fire uploads in parallel — order of completion doesn't matter because
 	// each one locates its own node via tempId.
 	for (const { file, tempId } of picked) uploadOne(file, tempId)
-	return true
-}
-
-async function handleFileSelect(event) {
-	ingestFiles(event.target.files)
-	event.target.value = ''
-}
-
-// ── Link bubble ─────────────────────────────────────────────
-// Floating popover anchored to the <a> the cursor is currently inside.
-// Visible whenever a link mark is active under the selection. Modeled on
-// Notion/Linear: open · copy · edit · unlink. The edit button reuses the
-// same LinkDialog component the toolbar uses, just driven by bubble state.
-const linkBubble = ref({ visible: false, x: 0, y: 0, href: '', target: null })
-const showLinkEditDialog = ref(false)
-const linkEditUrl = ref('')
-const linkEditNewTab = ref(false)
-
-function updateLinkBubble() {
-	const ed = editor.value
-	if (!ed || !ed.isActive('link')) {
-		linkBubble.value.visible = false
-		return
-	}
-	// Walk up from the cursor's DOM position to the nearest <a>. We can't
-	// just read the link mark's coords from ProseMirror because ranges may
-	// span line wraps — the rendered <a> rect is what the user sees.
-	const { from } = ed.state.selection
-	const domAt = ed.view.domAtPos(from)
-	let el = domAt?.node
-	if (el && el.nodeType === 3) el = el.parentElement
-	while (el && el.tagName !== 'A') el = el.parentElement
-	if (!el) {
-		linkBubble.value.visible = false
-		return
-	}
-	const rect = el.getBoundingClientRect()
-	const attrs = ed.getAttributes('link')
-	linkBubble.value = {
-		visible: true,
-		x: Math.max(8, Math.min(window.innerWidth - 320, rect.left)),
-		y: rect.bottom + 6,
-		href: attrs.href || '',
-		target: attrs.target || null,
-	}
-}
-
-function openLinkInNewTab() {
-	const href = linkBubble.value.href
-	if (!href) return
-	window.open(href, '_blank', 'noopener,noreferrer')
-}
-
-async function copyLinkUrl() {
-	const href = linkBubble.value.href
-	if (!href) return
-	try {
-		await navigator.clipboard.writeText(href)
-		successToast('Link copied', '')
-	} catch {
-		// clipboard API can fail under non-secure contexts; fall back silently.
-	}
-}
-
-function editLinkFromBubble() {
-	linkEditUrl.value = linkBubble.value.href
-	linkEditNewTab.value = linkBubble.value.target === '_blank'
-	showLinkEditDialog.value = true
-	linkBubble.value.visible = false
-}
-
-function removeLinkFromBubble() {
-	editor.value?.chain().focus().extendMarkRange('link').unsetLink().run()
-	linkBubble.value.visible = false
-}
-
-function onLinkBubbleEditInsert({ href, target }) {
-	editor.value?.chain().focus().extendMarkRange('link').setLink({ href, target: target ?? undefined }).run()
-}
-
-function onLinkBubbleEditRemove() {
-	editor.value?.chain().focus().extendMarkRange('link').unsetLink().run()
 }
 
 // ── @mention ────────────────────────────────────────────────
@@ -843,36 +545,25 @@ const attachedFiles = computed(() => {
 	if (!editor.value) return []
 	const files = []
 	editor.value.state.doc.descendants((node, pos) => {
-		if (node.type.name === 'fileAttachment' || node.type.name === 'inlineImage') {
+		if (node.type.name === 'fileAttachment') {
 			files.push({ ...node.attrs, pos, nodeSize: node.nodeSize })
 		}
 	})
 	return files
 })
 
-function removeAttachment(targetSrc) {
+function removeAttachment(pos, nodeSize) {
 	if (!editor.value) return
-	// Re-traverse the doc at call time so we always get the current position,
-	// not a position that may have shifted since the panel last rendered.
-	let foundPos = null
-	let foundSize = null
-	let tempId = null
-	editor.value.state.doc.descendants((node, pos) => {
-		if (foundPos !== null) return false
-		if ((node.type.name === 'fileAttachment' || node.type.name === 'inlineImage') && node.attrs.src === targetSrc) {
-			foundPos = pos
-			foundSize = node.nodeSize
-			tempId = node.attrs.tempId
-			return false
-		}
-	})
-	if (foundPos === null) return
-	editor.value.chain().deleteRange({ from: foundPos, to: foundPos + foundSize }).run()
-	revokeTrackedObjectUrl(targetSrc)
+	const node = editor.value.state.doc.nodeAt(pos)
+	const src = node?.attrs?.src
+	const tempId = node?.attrs?.tempId
+	editor.value.chain().focus().deleteRange({ from: pos, to: pos + nodeSize }).run()
+	if (src) revokeTrackedObjectUrl(src)
+	// If an upload was still in flight, cancel it so the server-side reaper
+	// has one less orphan row to deal with.
 	if (tempId && pendingUploads.has(tempId)) {
 		pendingUploads.get(tempId).abort()
 		pendingUploads.delete(tempId)
-		pendingBlobs.delete(tempId)
 	}
 }
 
@@ -905,7 +596,6 @@ const editor = useEditor({
 		Highlight.configure({ multicolor: true }),
 		CharacterCount,
 		FileAttachment,
-	InlineImage,
 		MediaEmbed,
 		Mention,
 	],
@@ -918,19 +608,6 @@ const editor = useEditor({
 				event.preventDefault()
 				const text = event.clipboardData?.getData('text/plain') ?? ''
 				if (text) view.dispatch(view.state.tr.insertText(text))
-				return true
-			}
-
-			// ── Files / images on the clipboard ─────────
-			// Covers screenshot tools (Win+Shift+S, macOS Cmd+Shift+4) and
-			// "copy image" from a browser. We prefer real File entries in
-			// `clipboardData.files` over `items` (broader cross-browser
-			// support and we already have the full file). Skip plain-text
-			// pastes — those still flow through the embed/text branches.
-			const cbFiles = Array.from(event.clipboardData?.files || [])
-			if (cbFiles.length > 0) {
-				event.preventDefault()
-				ingestFiles(cbFiles)
 				return true
 			}
 
@@ -950,32 +627,6 @@ const editor = useEditor({
 			}
 
 			return false
-		},
-
-		handleDrop(view, event) {
-			// Drag-and-drop from the OS file manager. We ignore drops that
-			// don't carry files (e.g. internal node drags inside the editor)
-			// — those need to fall through to TipTap's default handler so
-			// drag-to-reorder of attachment nodes keeps working.
-			const dt = event.dataTransfer
-			const dropFiles = Array.from(dt?.files || [])
-			if (dropFiles.length === 0) return false
-
-			event.preventDefault()
-
-			// Place caret at the drop point so the upload appears where the
-			// user actually let go, not at the prior selection.
-			const coords = { left: event.clientX, top: event.clientY }
-			const pos = view.posAtCoords(coords)
-			if (pos) {
-				const tr = view.state.tr.setSelection(
-					Selection.near(view.state.doc.resolve(pos.pos))
-				)
-				view.dispatch(tr)
-			}
-
-			ingestFiles(dropFiles)
-			return true
 		},
 
 		handleKeyDown(view, event) {
@@ -1005,17 +656,8 @@ const editor = useEditor({
 		},
 	},
 	onUpdate({ editor }) {
-		// If the user removed an attachment node (inline X button on the
-		// node, keyboard Backspace/Delete, range delete) while its upload
-		// was still in flight, abort the request and revoke the blob URL.
-		// Without this we'd leave orphan rows on the server and leak blobs.
-		reconcilePendingUploads()
 		emit('update:modelValue', editor.getHTML())
 		if (props.enableMention) handleMentionTrigger(editor)
-		updateLinkBubble()
-	},
-	onSelectionUpdate() {
-		updateLinkBubble()
 	},
 	onFocus() {
 		// Cancel any pending blur-driven mention close so re-focusing
@@ -1026,7 +668,6 @@ const editor = useEditor({
 	onBlur() {
 		isFocused.value = false
 		emit('blur')
-		linkBubble.value.visible = false
 		blurTimer = setTimeout(() => {
 			mentionState.value.active = false
 			blurTimer = null
@@ -1040,8 +681,6 @@ onBeforeUnmount(() => {
 	// from sessions the user walked away from mid-submit.
 	for (const [, controller] of pendingUploads) controller.abort()
 	pendingUploads.clear()
-	pendingBlobs.clear()
-	uploadProgress.clear()
 	// Revoke any blob URLs we created to avoid memory leaks
 	for (const url of createdObjectUrls) URL.revokeObjectURL(url)
 	createdObjectUrls.clear()
@@ -1050,40 +689,8 @@ onBeforeUnmount(() => {
 
 watch(() => props.modelValue, (val) => {
 	if (!editor.value) return
-	if (val !== editor.value.getHTML()) {
-		// setContent re-parses HTML through parseHTML, which strips tempId
-		// (transient client state). Any in-flight upload would then be
-		// unable to find its node by tempId and the blob URL src would be
-		// kept forever (broken on reload). Cancel them up front.
-		for (const [, controller] of pendingUploads) controller.abort()
-		pendingUploads.clear()
-		for (const blob of pendingBlobs.values()) revokeTrackedObjectUrl(blob)
-		pendingBlobs.clear()
-		editor.value.commands.setContent(val || '', false)
-	}
+	if (val !== editor.value.getHTML()) editor.value.commands.setContent(val || '', false)
 })
-
-// ── Draft persistence (Basecamp-style per-user auto-save) ───
-// Inert when draftContextKey is null — the composable does no I/O.
-const draftKeyRef = computed(() => props.draftContextKey || null)
-const editorRef   = computed(() => editor.value)
-const {
-	draftRestored,
-	restoredAt,
-	flush: flushDraft,
-	clearDraft,
-	discard: discardDraft,
-} = useDraftPersistence(draftKeyRef, editorRef)
-
-function formatRelative(iso) {
-	if (!iso) return ''
-	const then = new Date(iso).getTime()
-	const diffSec = Math.max(0, Math.floor((Date.now() - then) / 1000))
-	if (diffSec < 60)    return 'just now'
-	if (diffSec < 3600)  return `${Math.floor(diffSec / 60)} min ago`
-	if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} hr ago`
-	return `${Math.floor(diffSec / 86400)} day(s) ago`
-}
 
 // ── Public API ──────────────────────────────────────────────
 function getHTML() { return editor.value?.getHTML() ?? '' }
@@ -1092,46 +699,16 @@ function clear() { editor.value?.commands.clearContent() }
 function focus() { editor.value?.commands.focus() }
 function isEmpty() { return editor.value?.isEmpty ?? true }
 
-defineExpose({ getHTML, getText, clear, focus, isEmpty, flushDraft, clearDraft, discardDraft })
+defineExpose({ getHTML, getText, clear, focus, isEmpty })
 </script>
 
 <template>
 	<div
-		class="border border-heading/15 rounded-sm overflow-hidden flex flex-col relative"
+		class="border border-heading/15 rounded-sm overflow-hidden flex flex-col"
 		:class="{
 			'border-accent': isFocused,
-			'ring-2 ring-accent/30': showDropOverlay,
 		}"
-		@dragenter="onWrapperDragEnter"
-		@dragleave="onWrapperDragLeave"
-		@dragover="onWrapperDragOver"
-		@drop="onWrapperDrop"
 	>
-		<!-- Drop overlay shown while a file is being dragged from the OS over
-		     the editor. Inert (`pointer-events-none`) so it doesn't intercept
-		     the drop itself — TipTap's handleDrop fires on the editor element
-		     underneath and the overlay just reflects state. -->
-		<div v-if="showDropOverlay"
-			class="absolute inset-0 z-50 flex items-center justify-center bg-accent/10 backdrop-blur-[1px] pointer-events-none border-2 border-dashed border-accent rounded-sm">
-			<div class="px-4 py-2 rounded-md bg-accent text-white text-sm font-semibold shadow-lg">
-				Drop files to attach
-			</div>
-		</div>
-		<!-- Draft restored banner -->
-		<div
-			v-if="draftRestored"
-			class="flex items-center justify-between gap-2.5 px-3.5 py-[5px] bg-amber-500/10 border-b border-amber-500/25 text-[0.75rem] text-amber-900"
-		>
-			<span>
-				Draft restored<span v-if="restoredAt"> from {{ formatRelative(restoredAt) }}</span>.
-			</span>
-			<button
-				type="button"
-				class="border-0 bg-transparent cursor-pointer text-[0.72rem] font-bold text-amber-900 underline p-0"
-				@click="discardDraft"
-			>Discard</button>
-		</div>
-
 		<!-- Toolbar -->
 		<EditorToolbar
 			v-if="showToolbar && editor"
@@ -1170,7 +747,7 @@ defineExpose({ getHTML, getText, clear, focus, isEmpty, flushDraft, clearDraft, 
 			</button>
 
 			<div v-if="showAttachments" class="px-2.5 pb-2 flex flex-col gap-1">
-				<div v-for="file in attachedFiles" :key="file.tempId || (file.attachmentId != null ? 'att-' + file.attachmentId : file.src)"
+				<div v-for="(file, i) in attachedFiles" :key="i"
 					class="flex items-center gap-2.5 px-2 py-1.5 rounded-[6px] bg-heading/[0.03] border border-heading/6"
 					:class="{ 'opacity-60': file.uploading }">
 					<div class="w-9 h-9 rounded-[4px] overflow-hidden bg-heading/6 flex items-center justify-center shrink-0 relative">
@@ -1178,22 +755,24 @@ defineExpose({ getHTML, getText, clear, focus, isEmpty, flushDraft, clearDraft, 
 						<span v-else class="text-[1.2rem] leading-none">
 							{{ file.fileType === 'video' ? '🎬' : file.fileType === 'audio' ? '🎵' : file.fileType === 'pdf' ? '📄' : '📎' }}
 						</span>
-						<!-- Progress overlay while the file is uploading -->
-						<div v-if="file.uploading" class="absolute inset-x-0 bottom-0 h-1 bg-black/30">
-							<div class="h-full bg-white transition-[width] duration-150 ease-linear"
-								:style="{ width: (uploadProgress.get(file.tempId) ?? 0) + '%' }"></div>
+						<!-- Spinner overlay while the file is uploading -->
+						<div v-if="file.uploading" class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-[4px]">
+							<svg class="animate-spin w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
+								<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" />
+								<path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+							</svg>
 						</div>
 					</div>
 					<div class="flex-1 min-w-0 flex flex-col gap-0.5">
 						<span class="text-[0.78rem] font-semibold text-heading overflow-hidden text-ellipsis whitespace-nowrap">{{ file.fileName }}</span>
 						<span class="text-[0.68rem] text-text/45 uppercase tracking-[0.04em]">
-							{{ file.uploading ? `Uploading… ${uploadProgress.get(file.tempId) ?? 0}%` : file.fileType }}{{ file.fileSize ? ' · ' + formatFileSize(file.fileSize) : '' }}
+							{{ file.uploading ? 'Uploading…' : file.fileType }}{{ file.fileSize ? ' · ' + formatFileSize(file.fileSize) : '' }}
 						</span>
 					</div>
 					<button type="button"
 						class="w-[22px] h-[22px] rounded-full border-0 bg-red-500/10 text-red-500 cursor-pointer flex items-center justify-center p-0 shrink-0 transition-colors duration-[120ms] hover:bg-red-500 hover:text-white"
 						title="Remove"
-						@click="removeAttachment(file.src)">
+						@click="removeAttachment(file.pos, file.nodeSize)">
 						<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
 							<path d="M4.646 4.646a.5.5 0 01.708 0L8 7.293l2.646-2.647a.5.5 0 01.708.708L8.707 8l2.647 2.646a.5.5 0 01-.708.708L8 8.707l-2.646 2.647a.5.5 0 01-.708-.708L7.293 8 4.646 5.354a.5.5 0 010-.708z"/>
 						</svg>
@@ -1211,38 +790,6 @@ defineExpose({ getHTML, getText, clear, focus, isEmpty, flushDraft, clearDraft, 
 
 		<!-- Hidden file input -->
 		<input ref="fileInput" type="file" multiple :accept="accept" class="hidden" @change="handleFileSelect" />
-
-		<!-- Link edit bubble — appears when cursor is inside an <a>. -->
-		<Teleport to="body">
-			<Transition name="mention-fade">
-				<div v-if="linkBubble.visible"
-					class="fixed z-[9998] flex items-stretch gap-px bg-panel border border-heading/12 rounded-[6px] shadow-[0_8px_24px_rgba(0,0,0,0.14)] px-1.5 py-1 text-[0.78rem]"
-					:style="{ top: linkBubble.y + 'px', left: linkBubble.x + 'px', maxWidth: '320px' }"
-					@mousedown.prevent
-				>
-					<a :href="linkBubble.href" target="_blank" rel="noopener noreferrer"
-						class="px-1.5 py-1 text-accent underline truncate max-w-[180px]"
-						:title="linkBubble.href"
-						@mousedown.prevent
-						@click="openLinkInNewTab"
-					>{{ linkBubble.href }}</a>
-					<button type="button" class="px-2 py-1 rounded hover:bg-heading/8 text-text/70" title="Copy link" @click="copyLinkUrl">Copy</button>
-					<button type="button" class="px-2 py-1 rounded hover:bg-heading/8 text-text/70" title="Edit link" @click="editLinkFromBubble">Edit</button>
-					<button type="button" class="px-2 py-1 rounded hover:bg-red-500/10 text-red-500" title="Remove link" @click="removeLinkFromBubble">Unlink</button>
-				</div>
-			</Transition>
-		</Teleport>
-
-		<!-- Bubble's edit dialog — separate instance from the toolbar so it
-		     opens with the bubble's URL in scope. -->
-		<LinkDialog
-			v-model="showLinkEditDialog"
-			:initial-url="linkEditUrl"
-			:initial-new-tab="linkEditNewTab"
-			:has-link="true"
-			@insert="onLinkBubbleEditInsert"
-			@remove="onLinkBubbleEditRemove"
-		/>
 
 		<!-- @mention dropdown -->
 		<Teleport to="body">
@@ -1387,9 +934,4 @@ defineExpose({ getHTML, getText, clear, focus, isEmpty, flushDraft, clearDraft, 
 :deep(.file-info) { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 :deep(.file-name) { font-size: 0.78rem; font-weight: 600; color: var(--color-heading, #111); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 :deep(.file-size) { font-size: 0.68rem; color: color-mix(in srgb, var(--color-text, #333) 40%, transparent); }
-	:deep(.inline-image) { display: inline-block !important; max-width: 100%; height: auto; border-radius: 6px; vertical-align: middle; }
-	/* Only apply the height cap when no explicit width has been set via the
-	   resize handle. Once the user picks a width, the image is theirs to
-	   make as tall as it needs. */
-	:deep(.inline-image:not([style*="width"])) { max-height: 320px; }
 </style>

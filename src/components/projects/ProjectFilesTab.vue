@@ -206,7 +206,7 @@ function goToPage(p) {
 						<v-icon name="bi-files" scale="0.95" class="text-accent" />
 						<h3 class="text-base font-bold text-heading">Project Files</h3>
 						<span v-if="total > 0"
-							class="text-sm font-bold px-2 py-0.5 rounded-full tabular-nums bg-heading/5 text-text">
+							class="badge text-sm font-bold px-2 py-0.5 tabular-nums">
 							{{ total }}
 						</span>
 					</div>
@@ -220,7 +220,7 @@ function goToPage(p) {
 								v-model="searchQuery"
 								type="text"
 								placeholder="Search files…"
-								class="pl-8 pr-7 py-1.5 text-sm rounded-sm border border-heading/12 bg-transparent text-text placeholder-text/35 focus:outline-none focus:border-accent/50 w-48 transition-colors" />
+								class="pl-8 pr-7 py-1.5 text-sm rounded-md border border-heading/12 bg-transparent text-text placeholder-text/35 focus:outline-none focus:border-accent/50 w-48 transition-colors" />
 							<button v-if="searchQuery" type="button"
 								class="absolute right-2 top-1/2 -translate-y-1/2 text-text/40 hover:text-text transition-colors"
 								@click="searchQuery = ''">
@@ -229,7 +229,7 @@ function goToPage(p) {
 						</div>
 
 						<!-- View toggle -->
-						<div class="flex items-center border border-heading/12 rounded-sm overflow-hidden">
+						<div class="flex items-center border border-heading/12 rounded-md overflow-hidden">
 							<button type="button"
 								class="px-2 py-1.5 transition-colors"
 								:class="viewMode === 'grid' ? 'bg-accent/10 text-accent' : 'text-text/50 hover:text-heading hover:bg-heading/5'"
@@ -248,7 +248,7 @@ function goToPage(p) {
 
 						<!-- Reload -->
 						<button type="button"
-							class="p-1.5 rounded-sm text-text/50 hover:text-heading hover:bg-heading/5 transition-colors"
+							class="p-1.5 rounded-md text-text/50 hover:text-heading hover:bg-heading/5 transition-colors"
 							:disabled="loading"
 							title="Refresh"
 							@click="fetchFiles(page)">
@@ -261,7 +261,7 @@ function goToPage(p) {
 				<div class="flex items-center gap-2 flex-wrap">
 					<button v-for="f in typeFilters" :key="f.value"
 						type="button"
-						class="px-3 py-1 rounded-full text-xs font-semibold border transition-colors"
+						class="badge text-xs font-semibold border transition-colors"
 						:class="filterType === f.value
 							? 'bg-accent text-white border-accent'
 							: 'border-heading/12 text-text/60 hover:border-accent/40 hover:text-accent'"
@@ -275,13 +275,13 @@ function goToPage(p) {
 					class="grid gap-3"
 					:class="viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4' : 'grid-cols-1'">
 					<div v-for="i in 8" :key="i"
-						class="rounded-sm border border-heading/5 bg-heading/[0.03] animate-pulse"
+						class="rounded-md border border-heading/5 bg-heading/[0.03] animate-pulse"
 						:class="viewMode === 'grid' ? 'h-32' : 'h-14'" />
 				</div>
 
 				<!-- ── Empty state ─────────────────────────────────────────── -->
 				<div v-else-if="isEmpty" class="flex flex-col items-center justify-center py-16 text-center">
-					<div class="w-14 h-14 rounded-sm bg-heading/5 flex items-center justify-center mb-3">
+					<div class="w-14 h-14 rounded-md bg-heading/5 flex items-center justify-center mb-3">
 						<v-icon name="bi-file-earmark" class="text-text/40" scale="1.7" />
 					</div>
 					<p class="text-base font-semibold text-heading">
@@ -301,7 +301,7 @@ function goToPage(p) {
 				<div v-else-if="viewMode === 'grid'"
 					class="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
 					<div v-for="file in files" :key="file.id"
-						class="group flex flex-col rounded-sm border border-heading/8 bg-panel overflow-hidden hover:border-accent/30 hover:shadow-sm transition-all">
+						class="card group flex flex-col overflow-hidden hover:border-accent/30 hover:shadow-sm transition-all">
 
 						<!-- Thumbnail -->
 						<a :href="fileStreamUrl(file)" target="_blank" rel="noopener noreferrer"
@@ -351,12 +351,12 @@ function goToPage(p) {
 				</div>
 
 				<!-- ── List view ───────────────────────────────────────────── -->
-				<div v-else class="flex flex-col divide-y divide-heading/8 border border-heading/8 rounded-sm bg-panel">
+				<div v-else class="card divide-y divide-heading/8">
 					<div v-for="file in files" :key="file.id"
 						class="flex items-center gap-3 py-2.5 px-3 hover:bg-heading/[0.02] transition-colors group">
 
 						<!-- Icon / thumbnail -->
-						<div class="w-10 h-10 rounded-sm bg-heading/5 flex items-center justify-center shrink-0 overflow-hidden">
+						<div class="w-10 h-10 rounded-md bg-heading/5 flex items-center justify-center shrink-0 overflow-hidden">
 							<img v-if="file.file_type === 'image'"
 								:src="fileStreamUrl(file)"
 								:alt="file.name"
@@ -411,17 +411,17 @@ function goToPage(p) {
 						Page {{ page }} of {{ lastPage }} · {{ total }} file{{ total === 1 ? '' : 's' }}
 					</p>
 					<div class="flex items-center gap-1">
-						<button type="button"
-							class="inline-flex items-center gap-1 px-3 py-1.5 rounded-sm text-xs font-semibold border border-heading/12 text-text hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-							:disabled="page <= 1 || loading"
-							@click="goToPage(page - 1)">
+					<button type="button"
+						class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold border border-heading/12 text-text hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+						:disabled="page <= 1 || loading"
+						@click="goToPage(page - 1)">
 							<v-icon name="bi-chevron-left" scale="0.75" />
 							Prev
 						</button>
-						<button type="button"
-							class="inline-flex items-center gap-1 px-3 py-1.5 rounded-sm text-xs font-semibold border border-heading/12 text-text hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-							:disabled="page >= lastPage || loading"
-							@click="goToPage(page + 1)">
+					<button type="button"
+						class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold border border-heading/12 text-text hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+						:disabled="page >= lastPage || loading"
+						@click="goToPage(page + 1)">
 							Next
 							<v-icon name="bi-chevron-right" scale="0.75" />
 						</button>

@@ -15,7 +15,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="-mx-5">
+    <div class="card overflow-hidden shadow-sm shadow-heading/5">
         <ChatLayout />
     </div>
 </template>

@@ -76,24 +76,24 @@ const saveDesc = async () => {
 </script>
 
 <template>
-	<div class="bg-panel rounded-sm border border-heading/5 p-6">
+	<div class="card p-6">
 
 		<!-- Status + priority row -->
 		<div class="flex items-center gap-2 mb-4 flex-wrap">
 			<span
-				:class="[statusConfig[task.status]?.cls, 'inline-flex items-center gap-1.5 text-sm px-2.5 py-1 rounded-full font-semibold border']">
+				:class="[statusConfig[task.status]?.cls, 'badge inline-flex items-center gap-1.5']">
 				<span :class="[statusConfig[task.status]?.dot, 'w-1.5 h-1.5 rounded-full']" />
 				{{ task.status }}
 			</span>
 			<span
-				:class="[priorityConfig[task.priority]?.cls, 'text-sm px-2.5 py-1 rounded-full font-semibold border']">
+				:class="[priorityConfig[task.priority]?.cls, 'badge']">
 				{{ task.priority }} Priority
 			</span>
 			<div class="flex-1" />
 			<button
 				v-if="canDelete"
 				@click="emit('delete')"
-				class="p-1.5 rounded-sm text-text hover:text-red-500 hover:bg-red-500/8 transition-colors"
+				class="p-1.5 rounded-md text-text hover:text-red-500 hover:bg-red-500/8 transition-colors"
 				title="Delete task">
 				<v-icon name="bi-trash" scale="0.85" />
 			</button>
@@ -120,7 +120,7 @@ const saveDesc = async () => {
 			     button (revealed on hover) or by clicking the empty-state
 			     placeholder. -->
 			<div v-if="!editingDesc"
-				class="group/desc relative rounded-sm bg-heading/[0.025] border border-transparent px-4 py-3 transition-all hover:bg-heading/[0.035] hover:border-heading/8">
+				class="group/desc relative rounded-md bg-heading/[0.025] border border-transparent px-4 py-3 transition-all hover:bg-heading/[0.035] hover:border-heading/8">
 				<div v-if="task.description && task.description !== '<p></p>'"
 					class="text-base text-text leading-relaxed prose-sm" v-html="sanitize(task.description)" />
 				<p v-else
@@ -133,7 +133,7 @@ const saveDesc = async () => {
 					v-if="canUpdate && task.description && task.description !== '<p></p>'"
 					type="button"
 					@click="startEditDesc"
-					class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 rounded-sm text-xs font-semibold text-text bg-panel/90 border border-heading/10 opacity-0 group-hover/desc:opacity-100 hover:text-accent hover:border-accent/40 transition-all"
+					class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold text-text bg-panel/90 border border-heading/10 opacity-0 group-hover/desc:opacity-100 hover:text-accent hover:border-accent/40 transition-all"
 					title="Edit description">
 					<v-icon name="bi-pencil" scale="0.7" />
 					Edit

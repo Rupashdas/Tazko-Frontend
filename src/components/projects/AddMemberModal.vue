@@ -101,10 +101,10 @@ const handleClose = () => emit('close')
 			<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4"
 				@click.self="handleClose">
 				<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="handleClose"></div>
-				<div class="relative bg-panel rounded-sm shadow-2xl w-full max-w-md z-10 transition-all flex flex-col max-h-[80vh]">
+				<div class="relative bg-panel rounded-xl shadow-sm w-full max-w-md z-10 transition-all flex flex-col max-h-[80vh]">
 
 					<!-- Header -->
-					<div class="border-b border-heading/8 px-6 pt-6 pb-5 shrink-0 rounded-t-sm">
+					<div class="border-b border-heading/8 px-6 pt-6 pb-5 shrink-0 rounded-t-xl">
 						<div class="flex items-center justify-between">
 							<div>
 								<h2 class="section-title">
@@ -115,7 +115,7 @@ const handleClose = () => emit('close')
 								</p>
 							</div>
 							<button @click="handleClose"
-								class="w-7 h-7 rounded-sm flex items-center justify-center text-text hover:text-text hover:bg-heading/8 transition-all">
+								class="w-7 h-7 rounded-md flex items-center justify-center text-text hover:text-text hover:bg-heading/8 transition-all">
 								<v-icon name="bi-x" scale="1.3" />
 							</button>
 						</div>
@@ -150,7 +150,7 @@ const handleClose = () => emit('close')
 						</div>
 
 						<!-- Step 1 Footer -->
-						<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0 rounded-b-sm">
+						<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0 rounded-b-xl">
 							<button @click="handleClose" class="flex-1 tazko-btn-cancel">
 								Cancel
 							</button>
@@ -179,14 +179,14 @@ const handleClose = () => emit('close')
 											v-model="roles[person.id]"
 											type="text"
 											placeholder="e.g. Tech Lead"
-											class="w-full px-2.5 py-1.5 rounded-sm border border-heading/8 bg-heading/3 text-sm text-heading placeholder:text-text focus:outline-none focus:border-accent/40 transition-colors" />
+											class="w-full px-2.5 py-1.5 rounded-md border border-heading/8 bg-heading/3 text-sm text-heading placeholder:text-text focus:outline-none focus:border-accent/40 transition-colors" />
 									</div>
 								</div>
 							</div>
 						</div>
 
 						<!-- Step 2 Footer -->
-						<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0 rounded-b-sm">
+						<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0 rounded-b-xl">
 							<button @click="goBack" :disabled="saving" class="flex-1 tazko-btn-cancel">
 								Back
 							</button>

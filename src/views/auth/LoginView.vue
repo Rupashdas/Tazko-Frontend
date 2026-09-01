@@ -1,13 +1,13 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { addIcons } from "oh-vue-icons";
-import { MdAlternateemailOutlined, RiLockPasswordLine, RiEyeLine, RiEyeOffLine, BiArrowRepeat, BiSlashCircle, BiBoxArrowInRight } from "oh-vue-icons/icons";
+import { BiEnvelope, BiLock, BiEye, BiEyeSlash, BiArrowRepeat, BiSlashCircle, BiBoxArrowInRight } from "oh-vue-icons/icons";
 import { validators } from '@/utils/validators'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useRouter, useRoute } from 'vue-router'
 import { useToast } from '@/utils/toast'
 
-addIcons(MdAlternateemailOutlined, RiLockPasswordLine, RiEyeLine, RiEyeOffLine, BiArrowRepeat, BiSlashCircle, BiBoxArrowInRight);
+addIcons(BiEnvelope, BiLock, BiEye, BiEyeSlash, BiArrowRepeat, BiSlashCircle, BiBoxArrowInRight);
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -131,53 +131,52 @@ const handleLogin = async () => {
 
             <!-- Email -->
             <div class="flex flex-col gap-1.5">
-                <label class="block text-base font-semibold text-text">
-                    Email address <span class="text-red-400 ml-0.5">*</span>
+                <label class="form-label">
+                    Email address <span class="text-red-500 ml-0.5">*</span>
                 </label>
                 <div class="group relative flex items-center">
                     <span
                         class="absolute left-3.5 text-text group-focus-within:text-accent transition-colors duration-200 pointer-events-none z-10">
-                        <v-icon name="md-alternateemail-outlined" scale="0.85" />
+                        <v-icon name="bi-envelope" scale="0.85" />
                     </span>
                     <input v-model="email" type="email" placeholder="you@company.com" autocomplete="email"
-                        class="input-field has-icon" :class="{ 'border-red-400': errors.email }"
+                        class="input-field has-icon" :class="{ 'border-red-400 focus:border-red-400 focus:ring-red-500/10': errors.email }"
                         @input="clearError('email')" />
                 </div>
-                <p v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</p>
+                <p v-if="errors.email" class="form-error">{{ errors.email }}</p>
             </div>
 
             <!-- Password -->
             <div class="flex flex-col gap-1.5">
                 <div class="flex items-center justify-between">
-                    <label class="block text-base font-semibold text-text">
-                        Password <span class="text-red-400 ml-0.5">*</span>
+                    <label class="form-label">
+                        Password <span class="text-red-500 ml-0.5">*</span>
                     </label>
                     <router-link :to="{ name: 'forgot-password' }"
-                        class="text-sm font-medium text-accent hover:text-accent/70 transition-colors">
+                        class="text-sm font-medium text-accent hover:text-accent/80 transition-colors">
                         Forgot password?
                     </router-link>
                 </div>
                 <div class="group relative flex items-center">
                     <span
                         class="absolute left-3.5 text-text group-focus-within:text-accent transition-colors duration-200 pointer-events-none z-10">
-                        <v-icon name="ri-lock-password-line" scale="0.85" />
+                        <v-icon name="bi-lock" scale="0.85" />
                     </span>
                     <input v-model="password" :type="showPassword ? 'text' : 'password'"
                         placeholder="Enter your password" autocomplete="current-password"
-                        class="input-field has-icon has-eye" :class="{ 'border-red-400': errors.password }"
+                        class="input-field has-icon has-eye" :class="{ 'border-red-400 focus:border-red-400 focus:ring-red-500/10': errors.password }"
                         @input="clearError('password')" />
                     <button type="button" @click="showPassword = !showPassword"
                         class="absolute right-3.5 text-text hover:text-accent transition-colors duration-200 z-10">
-                        <v-icon :name="showPassword ? 'ri-eye-off-line' : 'ri-eye-line'" scale="0.85" />
+                        <v-icon :name="showPassword ? 'bi-eye-slash' : 'bi-eye'" scale="0.85" />
                     </button>
                 </div>
-                <p v-if="errors.password" class="text-red-500 text-sm mt-1">{{ errors.password }}</p>
+                <p v-if="errors.password" class="form-error">{{ errors.password }}</p>
             </div>
 
             <!-- Submit -->
             <button type="submit" :disabled="loading"
-                class="tazko-btn w-full"
-                :class="loading ? 'opacity-75 cursor-not-allowed' : ''">
+                class="tazko-btn w-full">
                 <span class="relative z-10 flex items-center justify-center gap-2">
                     <v-icon v-if="loading" name="bi-arrow-repeat" class="w-4 h-4 animate-spin" scale="1" />
                     <v-icon v-else name="bi-box-arrow-in-right" scale="1" />

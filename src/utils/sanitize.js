@@ -8,6 +8,20 @@ import DOMPurify from 'dompurify'
  * (<div data-file-attachment ...>), while stripping scripts, event
  * handlers, and other dangerous content.
  */
+export function excerpt(html, maxLength = 110) {
+    if (!html) return ''
+    const text = String(html)
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/\s+/g, ' ')
+        .trim()
+    if (text.length <= maxLength) return text
+    return text.slice(0, maxLength).trimEnd() + '…'
+}
+
 export function sanitize(html) {
     if (!html) return ''
     return DOMPurify.sanitize(html, {
@@ -20,12 +34,12 @@ export function sanitize(html) {
             'table', 'thead', 'tbody', 'tr', 'th', 'td',
             'sup', 'sub', 'mark', 'span',
             // Needed for file attachments + mention chip avatars.
-            'div', 'img', 'video', 'audio',
+            'div', 'img', 'video', 'audio', 'object',
         ],
         ALLOWED_ATTR: [
             'href', 'target', 'rel', 'class', 'colspan', 'rowspan',
             // Media attributes for file attachments.
-            'src', 'alt', 'controls',
+            'src', 'alt', 'controls', 'data', 'type',
             // Mention chip attributes (explicit — see ALLOW_DATA_ATTR below).
             // Color/avatar styling is applied via CSS classes that read
             // data-color / data-palette, not inline `style` (which would be

@@ -206,7 +206,7 @@ const minDate = computed(() => new Date().toISOString().split('T')[0])
 			leave-to-class="opacity-0">
 			<!-- Backdrop -->
 			<div v-if="isOpen"
-				class="fixed inset-0 z-[900] bg-heading/40 backdrop-blur-[1px]"
+				class="drawer-overlay"
 				@click="emit('close')" />
 		</Transition>
 
@@ -218,7 +218,7 @@ const minDate = computed(() => new Date().toISOString().split('T')[0])
 			leave-from-class="opacity-100 translate-x-0"
 			leave-to-class="opacity-0 translate-x-6">
 			<div v-if="isOpen"
-				class="fixed right-0 top-0 bottom-0 z-[901] w-full max-w-[400px] bg-panel border-l border-heading/10 shadow-2xl flex flex-col overflow-hidden">
+				class="drawer-panel flex flex-col overflow-hidden">
 
 				<!-- Header -->
 				<div class="flex items-start justify-between gap-3 px-5 py-4 border-b border-heading/8 shrink-0">
@@ -301,7 +301,7 @@ const minDate = computed(() => new Date().toISOString().split('T')[0])
 
 						<div v-else class="flex flex-col gap-2">
 							<div v-for="share in shares" :key="share.id"
-								class="rounded-sm border border-heading/8 bg-heading/[0.02] overflow-hidden">
+								class="card card-hover">
 
 								<!-- Status bar -->
 								<div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-heading/6">
@@ -375,7 +375,7 @@ const minDate = computed(() => new Date().toISOString().split('T')[0])
 					</p>
 
 					<!-- Security note -->
-					<div class="flex items-start gap-2 text-xs text-text/55 bg-heading/[0.03] rounded-sm px-3 py-2.5 border border-heading/8">
+					<div class="flex items-start gap-2 text-xs text-text/55 bg-heading/[0.03] rounded-lg px-3 py-2.5 border border-heading/8">
 						<v-icon name="bi-shield" scale="0.85" class="shrink-0 mt-0.5 text-text/40" />
 						<span>Links are public — anyone with the URL can view the file. Internal access and project membership are unaffected by share links.</span>
 					</div>

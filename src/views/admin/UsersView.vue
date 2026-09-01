@@ -10,14 +10,14 @@ import { addIcons } from 'oh-vue-icons'
 import {
 	BiPeople, BiSearch, BiPencil,
 	BiEnvelope, BiTrash, BiX, BiPersonPlus, BiPower,
-	CoLockLocked, BiArrowRepeat, MdCancelOutlined,
+	BiLock, BiArrowRepeat,
 	BiCheck2
 } from 'oh-vue-icons/icons'
 
 addIcons(
 	BiPeople, BiSearch, BiPencil,
 	BiEnvelope, BiTrash, BiX, BiPersonPlus, BiPower,
-	CoLockLocked, BiArrowRepeat, MdCancelOutlined,
+	BiLock, BiArrowRepeat,
 	BiCheck2
 )
 
@@ -248,7 +248,7 @@ const handleCancel = async () => {
 					</div>
 				</div>
 				<button v-if="canCreate" @click="showInviteModal = true"
-					class="inline-flex items-center gap-2 px-5 py-3 bg-accent text-white text-base font-semibold rounded-sm shadow-sm hover:bg-accent/88 active:scale-95 transition-all shrink-0">
+					class="inline-flex items-center gap-2 px-5 py-3 bg-accent text-white text-base font-semibold rounded-md shadow-sm hover:bg-accent/88 active:scale-95 transition-all shrink-0">
 					<v-icon name="bi-person-plus" scale="1" />
 					Invite User
 				</button>
@@ -271,94 +271,93 @@ const handleCancel = async () => {
 				</div>
 			</div>
 
-			<!-- Desktop Table -->
-			<div class="hidden sm:block overflow-x-auto flex-1">
-				<table class="w-full min-w-[520px]">
-					<thead>
-						<tr class="border-b border-heading/6 bg-body/40">
-							<th class="px-7 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">User</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Role</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Status</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Joined</th>
-							<th class="px-7 py-3 text-right text-sm font-semibold uppercase tracking-wide text-text">Actions</th>
-						</tr>
-					</thead>
-					<tbody class="divide-y divide-heading/5">
-						<tr v-for="user in filteredUsers" :key="user.id"
-							class="group transition-colors hover:bg-heading/3"
-							:class="{ 'opacity-50': !user.is_active }">
-							<td class="px-7 py-4">
-								<div class="flex items-center gap-3">
-									<img v-if="user.avatar" :src="user.avatar" alt="Avatar"
-										class="w-10 h-10 rounded-full object-cover shrink-0" />
-									<div v-else
-										class="w-10 h-10 rounded-full flex items-center justify-center text-white text-base font-bold shrink-0"
-										:class="paletteColor(user.palette)">
-										{{ getInitials(user.name) }}
-									</div>
-									<div class="min-w-0">
-										<div class="flex items-center gap-1.5 flex-wrap">
-											<p class="text-base font-semibold text-heading leading-tight truncate">{{
-												user.name }}</p>
-											<span v-if="isOwnAccount(user.id)"
-												class="shrink-0 text-sm font-bold px-2 py-0.5 rounded-sm bg-accent/15 text-accent">You</span>
-										</div>
-										<p class="text-base text-text mt-0.5 truncate">{{ user.email }}</p>
-									</div>
+		<!-- Desktop Table -->
+		<div class="hidden sm:block overflow-x-auto flex-1">
+			<table class="data-table">
+				<thead>
+					<tr class="border-b border-heading/6 bg-body/40">
+						<th class="px-4 py-3 text-left text-xs uppercase tracking-wider text-text/70">User</th>
+						<th class="px-4 py-3 text-left text-xs uppercase tracking-wider text-text/70">Role</th>
+						<th class="px-4 py-3 text-left text-xs uppercase tracking-wider text-text/70">Status</th>
+						<th class="px-4 py-3 text-left text-xs uppercase tracking-wider text-text/70">Joined</th>
+						<th class="px-4 py-3 text-right text-xs uppercase tracking-wider text-text/70">Actions</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-heading/5">
+					<tr v-for="user in filteredUsers" :key="user.id"
+						class="transition-colors hover:bg-heading/3"
+						:class="{ 'opacity-50': !user.is_active }">
+						<td class="px-4 py-3">
+							<div class="flex items-center gap-3">
+								<img v-if="user.avatar" :src="user.avatar" alt="Avatar"
+									class="w-10 h-10 rounded-full object-cover shrink-0" />
+								<div v-else
+									class="w-10 h-10 rounded-full flex items-center justify-center text-white text-base font-bold shrink-0"
+									:class="paletteColor(user.palette)">
+									{{ getInitials(user.name) }}
 								</div>
-							</td>
-							<td class="px-4 py-4">
-								<span v-if="getPrimaryRole(user)"
-									class="inline-flex px-2.5 py-1 rounded-sm text-sm font-semibold"
-									:class="getRoleBadge(getPrimaryRole(user).name)">
-									{{ getPrimaryRole(user).label }}
-								</span>
-								<span v-else class="text-sm text-text italic">No role</span>
-							</td>
-							<td class="px-4 py-4">
-								<span
-									class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-sm font-semibold"
-									:class="user.is_active ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/15 text-red-600 dark:text-red-400'">
-									<span class="w-2 h-2 rounded-full"
-										:class="user.is_active ? 'bg-emerald-500' : 'bg-red-500'" />
-									{{ user.is_active ? 'Active' : 'Inactive' }}
-								</span>
-							</td>
-							<td class="px-4 py-4">
-								<span class="text-base text-text">{{ formatDate(user.created_at) }}</span>
-							</td>
-							<td class="px-7 py-4 text-right">
-								<div class="flex items-center justify-end gap-1.5" @click.stop>
-									<button v-if="canViewProfile || canUpdate" @click="openUserPopup(user)"
-										class="w-9 h-9 rounded-sm flex items-center justify-center cursor-pointer text-text hover:text-accent hover:bg-accent/10 transition-all"
-										title="View / Edit">
-										<v-icon name="bi-pencil" scale="0.85" />
-									</button>
-									<button v-if="canActivate && !isOwnAccount(user.id) && !isSuperAdminUser(user)"
-										@click="handleToggleActive(user)" :disabled="userStore.loading.activate"
-										:title="user.is_active ? 'Deactivate' : 'Activate'"
-										class="w-9 h-9 rounded-sm flex items-center justify-center cursor-pointer transition-all disabled:opacity-40"
-										:class="user.is_active ? 'text-text hover:text-amber-500 hover:bg-amber-500/10' : 'text-text hover:text-emerald-500 hover:bg-emerald-500/10'">
-										<v-icon name="bi-power" scale="1.1" />
-									</button>
-									<button v-if="canDelete && !isOwnAccount(user.id) && !isSuperAdminUser(user)"
-										@click="confirmDelete(user.id)"
-										class="w-9 h-9 rounded-sm flex items-center justify-center cursor-pointer text-text hover:text-red-500 hover:bg-red-500/10 transition-all"
-										title="Delete">
-										<v-icon name="bi-trash" scale="1" />
-									</button>
+								<div class="min-w-0">
+									<div class="flex items-center gap-1.5 flex-wrap">
+										<p class="text-base font-semibold text-heading leading-tight truncate">{{
+											user.name }}</p>
+										<span v-if="isOwnAccount(user.id)"
+											class="shrink-0 text-sm font-bold px-2 py-0.5 rounded-sm bg-accent/15 text-accent">You</span>
+									</div>
+									<p class="text-base text-text mt-0.5 truncate">{{ user.email }}</p>
 								</div>
-							</td>
-						</tr>
-						<tr v-if="filteredUsers.length === 0">
-							<td colspan="5" class="px-7 py-16 text-center">
-								<p class="text-base font-semibold text-text">No users found</p>
-								<p class="text-base text-text mt-0.5">Try adjusting your search or filter</p>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
+							</div>
+						</td>
+						<td class="px-4 py-3">
+							<span v-if="getPrimaryRole(user)"
+								class="badge"
+								:class="getRoleBadge(getPrimaryRole(user).name)">
+								{{ getPrimaryRole(user).label }}
+							</span>
+							<span v-else class="text-sm text-text italic">No role</span>
+						</td>
+						<td class="px-4 py-3">
+							<span class="badge"
+								:class="user.is_active ? 'badge-success' : 'badge-error'">
+								<span class="w-2 h-2 rounded-full"
+									:class="user.is_active ? 'bg-emerald-500' : 'bg-red-500'" />
+								{{ user.is_active ? 'Active' : 'Inactive' }}
+							</span>
+						</td>
+						<td class="px-4 py-3">
+							<span class="text-base text-text">{{ formatDate(user.created_at) }}</span>
+						</td>
+						<td class="px-4 py-3 text-right">
+							<div class="flex items-center justify-end gap-1.5" @click.stop>
+								<button v-if="canViewProfile || canUpdate" @click="openUserPopup(user)"
+									class="w-9 h-9 rounded-md flex items-center justify-center cursor-pointer text-text hover:text-accent hover:bg-accent/10 transition-all"
+									title="View / Edit">
+									<v-icon name="bi-pencil" scale="0.85" />
+								</button>
+								<button v-if="canActivate && !isOwnAccount(user.id) && !isSuperAdminUser(user)"
+									@click="handleToggleActive(user)" :disabled="userStore.loading.activate"
+									:title="user.is_active ? 'Deactivate' : 'Activate'"
+									class="w-9 h-9 rounded-md flex items-center justify-center cursor-pointer transition-all disabled:opacity-40"
+									:class="user.is_active ? 'text-text hover:text-amber-500 hover:bg-amber-500/10' : 'text-text hover:text-emerald-500 hover:bg-emerald-500/10'">
+									<v-icon name="bi-power" scale="1.1" />
+								</button>
+								<button v-if="canDelete && !isOwnAccount(user.id) && !isSuperAdminUser(user)"
+									@click="confirmDelete(user.id)"
+									class="w-9 h-9 rounded-md flex items-center justify-center cursor-pointer text-text hover:text-red-500 hover:bg-red-500/10 transition-all"
+									title="Delete">
+									<v-icon name="bi-trash" scale="1" />
+								</button>
+							</div>
+						</td>
+					</tr>
+					<tr v-if="filteredUsers.length === 0">
+						<td colspan="5" class="px-4 py-16 text-center">
+							<p class="text-base font-semibold text-text">No users found</p>
+							<p class="text-base text-text mt-0.5">Try adjusting your search or filter</p>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 
 			<!-- Mobile Card List -->
 			<div class="sm:hidden divide-y divide-heading/5">
@@ -446,73 +445,70 @@ const handleCancel = async () => {
 				</div>
 			</div>
 
-			<div class="hidden sm:block overflow-x-auto">
-				<table class="w-full min-w-[620px]">
-					<thead>
-						<tr class="border-b border-heading/6 bg-body/40">
-							<th class="px-7 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Invitee</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Role</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Invited By</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Status</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide text-text">Expires</th>
-							<th class="px-7 py-3 text-right text-sm font-semibold uppercase tracking-wide text-text">Actions</th>
-						</tr>
-					</thead>
-					<tbody class="divide-y divide-heading/5">
-						<tr v-for="inv in invitations" :key="inv.id" class="group hover:bg-heading/3 transition-colors">
-							<td class="px-7 py-4">
-								<p class="text-base font-semibold text-heading leading-tight truncate">{{ inv.name }}
-								</p>
-								<p class="text-base text-text mt-0.5 truncate">{{ inv.email }}</p>
-							</td>
-							<td class="px-4 py-4">
-								<span v-if="inv.role" class="inline-flex px-2.5 py-1 rounded-sm text-sm font-semibold"
-									:class="getRoleBadge(inv.role.name)">{{ inv.role.label }}</span>
-								<span v-else class="text-base text-text italic">No role</span>
-							</td>
-							<td class="px-4 py-4">
-								<div class="flex items-center gap-2">
-									<img v-if="inv.invited_by.avatar" :src="inv.invited_by.avatar" alt="Avatar"
-										class="w-7 h-7 rounded-full object-cover shrink-0" />
-									<div v-else
-										class="w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
-										:class="paletteColor(inv.invited_by.palette)">
-										{{ getInitials(inv.invited_by.name) }}
-									</div>
-									<span class="text-base text-heading font-medium truncate">{{ inv.invited_by.name
-									}}</span>
+		<div class="hidden sm:block overflow-x-auto">
+			<table class="data-table">
+				<thead>
+					<tr class="border-b border-heading/6 bg-body/40">
+						<th class="px-4 py-3 text-left text-xs uppercase tracking-wider text-text/70">Invitee</th>
+						<th class="px-4 py-3 text-left text-xs uppercase tracking-wider text-text/70">Role</th>
+						<th class="px-4 py-3 text-left text-xs uppercase tracking-wider text-text/70">Invited By</th>
+						<th class="px-4 py-3 text-left text-xs uppercase tracking-wider text-text/70">Status</th>
+						<th class="px-4 py-3 text-left text-xs uppercase tracking-wider text-text/70">Expires</th>
+						<th class="px-4 py-3 text-right text-xs uppercase tracking-wider text-text/70">Actions</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-heading/5">
+					<tr v-for="inv in invitations" :key="inv.id" class="transition-colors hover:bg-heading/3">
+						<td class="px-4 py-3">
+							<p class="text-base font-semibold text-heading leading-tight truncate">{{ inv.name }}
+							</p>
+							<p class="text-base text-text mt-0.5 truncate">{{ inv.email }}</p>
+						</td>
+						<td class="px-4 py-3">
+							<span v-if="inv.role" class="badge"
+								:class="getRoleBadge(inv.role.name)">{{ inv.role.label }}</span>
+							<span v-else class="text-base text-text italic">No role</span>
+						</td>
+						<td class="px-4 py-3">
+							<div class="flex items-center gap-2">
+								<img v-if="inv.invited_by.avatar" :src="inv.invited_by.avatar" alt="Avatar"
+									class="w-7 h-7 rounded-full object-cover shrink-0" />
+								<div v-else
+									class="w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+									:class="paletteColor(inv.invited_by.palette)">
+									{{ getInitials(inv.invited_by.name) }}
 								</div>
-							</td>
-							<td class="px-4 py-4">
-								<span
-									class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-sm font-semibold capitalize"
-									:class="getStatusBadge(inv.status)">
-									<span class="w-1.5 h-1.5 rounded-full"
-										:class="inv.status === 'pending' ? 'bg-amber-400' : inv.status === 'expired' ? 'bg-red-400' : 'bg-emerald-400'" />
-									{{ inv.status }}
-								</span>
-							</td>
-							<td class="px-4 py-4">
-								<span class="text-base text-text">{{ formatDate(inv.expires_at) }}</span>
-							</td>
-							<td class="px-7 py-4 text-right">
-								<div class="flex items-center justify-end gap-2">
-									<button @click="handleResend(inv.id)" :disabled="userStore.loading.resend"
-										class="w-9 h-9 rounded-sm flex items-center justify-center cursor-pointer text-text hover:text-accent hover:bg-accent/10 transition-all disabled:opacity-40"
-										title="Resend">
-										<v-icon name="bi-arrow-repeat" scale="1.1" />
-									</button>
-									<button @click="pendingCancelId = inv.id; showCancelConfirm = true"
-										class="w-9 h-9 rounded-sm flex items-center justify-center cursor-pointer text-text hover:text-red-500 hover:bg-red-500/10 transition-all"
-										title="Cancel">
-										<v-icon name="md-cancel-outlined" scale="1.1" />
-									</button>
-								</div>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
+								<span class="text-base text-heading font-medium truncate">{{ inv.invited_by.name
+								}}</span>
+							</div>
+						</td>
+						<td class="px-4 py-3">
+							<span class="badge capitalize"
+								:class="getStatusBadge(inv.status)">
+								{{ inv.status }}
+							</span>
+						</td>
+						<td class="px-4 py-3">
+							<span class="text-base text-text">{{ formatDate(inv.expires_at) }}</span>
+						</td>
+						<td class="px-4 py-3 text-right">
+							<div class="flex items-center justify-end gap-2">
+								<button @click="handleResend(inv.id)" :disabled="userStore.loading.resend"
+									class="w-9 h-9 rounded-md flex items-center justify-center cursor-pointer text-text hover:text-accent hover:bg-accent/10 transition-all disabled:opacity-40"
+									title="Resend">
+									<v-icon name="bi-arrow-repeat" scale="1.1" />
+								</button>
+								<button @click="pendingCancelId = inv.id; showCancelConfirm = true"
+									class="w-9 h-9 rounded-md flex items-center justify-center cursor-pointer text-text hover:text-red-500 hover:bg-red-500/10 transition-all"
+									title="Cancel">
+									<v-icon name="md-cancel-outlined" scale="1.1" />
+								</button>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 
 			<!-- Mobile invitations -->
 			<div class="sm:hidden divide-y divide-heading/5">
@@ -583,14 +579,14 @@ const handleCancel = async () => {
 
 							<!-- Edit user info -->
 							<div v-if="canUpdate">
-								<p class="text-base font-bold uppercase text-text mb-3">User Info</p>
+								<p class="section-title mb-3">User Info</p>
 								<div v-if="!editMode" class="space-y-2">
 									<div class="flex items-center justify-between">
-										<span class="block text-base font-semibold text-text">Name</span>
+										<span class="form-label">Name</span>
 										<span class="text-base font-semibold text-text">{{ selectedUser.name }}</span>
 									</div>
 									<div class="flex items-center justify-between">
-										<span class="block text-base font-semibold text-text">Email</span>
+										<span class="form-label">Email</span>
 										<span class="text-base font-semibold text-text max-w-lg">{{ selectedUser.email
 										}}</span>
 									</div>
@@ -602,17 +598,17 @@ const handleCancel = async () => {
 								</div>
 								<div v-else class="space-y-3">
 									<div class="flex flex-col gap-1.5">
-										<label class="block text-base font-semibold text-text">Name</label>
+										<label class="form-label">Name</label>
 										<input v-model="editName" type="text" class="input-field"
 											:class="{ 'border-red-400': editErrors.name }" />
-										<p v-if="editErrors.name" class="text-red-500 text-sm mt-1">{{ editErrors.name
+										<p v-if="editErrors.name" class="form-error">{{ editErrors.name
 										}}</p>
 									</div>
 									<div class="flex flex-col gap-1.5">
-										<label class="block text-base font-semibold text-text">Email</label>
+										<label class="form-label">Email</label>
 										<input v-model="editEmail" type="email" class="input-field"
 											:class="{ 'border-red-400': editErrors.email }" />
-										<p v-if="editErrors.email" class="text-red-500 text-sm mt-1">{{
+										<p v-if="editErrors.email" class="form-error">{{
 											editErrors.email }}</p>
 									</div>
 									<div class="flex gap-2">
@@ -632,9 +628,9 @@ const handleCancel = async () => {
 							<!-- Activate / Deactivate -->
 							<div
 								v-if="canActivate && !isOwnAccount(selectedUser.id) && !isSuperAdminUser(selectedUser)">
-								<p class="text-base font-bold uppercase text-text mb-2">Account Status</p>
+								<p class="section-title mb-2">Account Status</p>
 								<button @click="handleToggleActive(selectedUser)" :disabled="userStore.loading.activate"
-									class="w-full inline-flex items-center justify-center gap-2 py-3 rounded-sm text-base font-semibold transition-all disabled:opacity-40"
+									class="w-full inline-flex items-center justify-center gap-2 py-3 rounded-md text-base font-semibold transition-all disabled:opacity-40"
 									:class="selectedUser.is_active
 										? 'bg-amber-500/8 text-amber-600 hover:bg-amber-500/15 border border-amber-500/20'
 										: 'bg-emerald-500/8 text-emerald-600 hover:bg-emerald-500/15 border border-emerald-500/20'">
@@ -648,17 +644,17 @@ const handleCancel = async () => {
 
 							<!-- Assign Role -->
 							<div v-if="canAssignRole && !isOwnAccount(selectedUser.id)">
-								<p class="text-base font-bold uppercase text-text mb-3">Assign Role</p>
+								<p class="section-title mb-3">Assign Role</p>
 								<div v-if="isSuperAdminUser(selectedUser)"
-									class="px-4 py-3 bg-violet-50 border border-violet-100 rounded-sm flex items-center gap-3">
-									<v-icon name="co-lock-locked" class="text-violet-600" />
+									class="px-4 py-3 bg-violet-500/10 border border-violet-500/20 rounded-md flex items-center gap-3">
+									<v-icon name="co-lock-locked" class="text-violet-500" />
 									<p class="text-base text-violet-600 font-medium">Super-admin role cannot be changed.
 									</p>
 								</div>
 								<template v-else>
 									<div class="grid grid-cols-1 gap-1.5">
 										<button v-for="role in roles" :key="role.id" @click="pendingRoleId = role.id"
-											class="flex items-center gap-2.5 px-4 py-3 rounded-sm border text-base font-medium transition-all"
+											class="flex items-center gap-2.5 px-4 py-3 rounded-md border text-base font-medium transition-all"
 											:class="pendingRoleId === role.id
 												? 'border-accent/40 bg-accent/8 text-accent'
 												: 'border-heading/10 hover:border-heading/20 hover:bg-heading/4 text-text'">
@@ -714,27 +710,27 @@ const handleCancel = async () => {
 						</div>
 						<div class="p-6 space-y-4">
 							<div class="flex flex-col gap-1.5">
-								<label class="block text-base font-semibold text-text">Name <span
+								<label class="form-label">Name <span
 										class="text-red-400">*</span></label>
 								<input v-model="newUser.name" type="text" placeholder="John Doe" class="input-field"
 									:class="{ 'border-red-400': inviteErrors.name }" />
-								<p v-if="inviteErrors.name" class="text-red-500 text-sm mt-1">{{ inviteErrors.name }}
+								<p v-if="inviteErrors.name" class="form-error">{{ inviteErrors.name }}
 								</p>
 							</div>
 							<div class="flex flex-col gap-1.5">
-								<label class="block text-base font-semibold text-text">Email <span
+								<label class="form-label">Email <span
 										class="text-red-400">*</span></label>
 								<input v-model="newUser.email" type="email" placeholder="john@company.com"
 									class="input-field" :class="{ 'border-red-400': inviteErrors.email }" />
-								<p v-if="inviteErrors.email" class="text-red-500 text-sm mt-1">{{ inviteErrors.email
+								<p v-if="inviteErrors.email" class="form-error">{{ inviteErrors.email
 								}}</p>
 							</div>
 							<div class="flex flex-col gap-1.5">
-								<label class="block text-base font-semibold text-text">Role <span
+								<label class="form-label">Role <span
 										class="text-text font-normal">(optional)</span></label>
 								<div class="grid grid-cols-2 gap-2">
 									<button v-for="role in roles" :key="role.id" @click="newUser.role_id = role.id"
-										class="flex items-center gap-2.5 px-4 py-3 rounded-sm border text-base font-medium transition-all"
+										class="flex items-center gap-2.5 px-4 py-3 rounded-md border text-base font-medium transition-all"
 										:class="newUser.role_id === role.id
 											? 'border-accent/40 bg-accent/8 text-accent'
 											: 'border-heading/10 hover:border-heading/20 hover:bg-heading/4 text-text'">

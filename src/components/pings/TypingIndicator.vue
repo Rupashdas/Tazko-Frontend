@@ -7,26 +7,26 @@ defineProps({
 <template>
     <Transition name="typing-fade">
         <div v-if="users.length"
-             class="flex items-center gap-2.5 px-5 py-2">
+             class="flex items-center gap-3 px-4 sm:px-5 py-2.5">
 
             <!-- Stacked avatars -->
             <div class="flex -space-x-1.5 shrink-0">
                 <div v-for="u in users.slice(0, 3)" :key="u.id"
-                     class="w-5 h-5 rounded-full border border-panel flex items-center justify-center text-[8px] font-bold text-white"
+                     class="w-6 h-6 rounded-full border-2 border-panel flex items-center justify-center text-[9px] font-bold text-white"
                      :style="`background: ${u.color}`">
                     {{ u.initials?.slice(0, 1) }}
                 </div>
             </div>
 
             <!-- Dots -->
-            <div class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-panel border border-heading/10 shadow-sm">
+            <div class="flex items-center gap-1 px-3 py-2 rounded-lg bg-panel border border-heading/8">
                 <span v-for="i in 3" :key="i"
                       class="w-1.5 h-1.5 rounded-full bg-accent/60 typing-dot"
                       :style="`animation-delay: ${(i - 1) * 0.15}s`" />
             </div>
 
             <!-- Text -->
-            <span class="text-[12px] text-text/55 font-medium italic">
+            <span class="text-xs text-text font-medium truncate">
                 {{ users.map(u => u.name.split(' ')[0]).join(', ') }}
                 {{ users.length === 1 ? 'is' : 'are' }} typing…
             </span>

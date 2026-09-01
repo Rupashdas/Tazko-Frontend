@@ -150,7 +150,7 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 	<div class="pb-20 pt-8">
 
 		<!-- ── Page Header ──────────────────────────────── -->
-		<div class="mb-8 flex items-end justify-between gap-4 flex-wrap">
+		<div class="mb-6 flex items-end justify-between gap-4 flex-wrap">
 			<div>
 				<p class="page-eyebrow">Projects</p>
 				<h1 class="page-title">Archived Projects</h1>
@@ -158,66 +158,67 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 			</div>
 			<button
 				@click="router.push({ name: 'projects' })"
-				class="tazko-btn-outline">
-				← Back to Projects
+				class="tazko-btn-outline shrink-0">
+				<span aria-hidden="true">←</span>
+				Back to Projects
 			</button>
 		</div>
 
 		<!-- ── Stat strip ────────────────────────────────── -->
-		<div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-			<div class="bg-panel rounded-sm border border-heading/8 p-4 flex items-center gap-3">
-				<div class="w-12 h-12 rounded-sm bg-heading/8 flex items-center justify-center shrink-0">
-					<v-icon name="bi-archive" class="text-text" scale="1.4" />
+		<div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+			<div class="card card-hover p-4 flex items-center gap-3">
+				<div class="w-10 h-10 rounded-lg bg-heading/8 flex items-center justify-center shrink-0">
+					<v-icon name="bi-archive" class="text-text" scale="1.2" />
 				</div>
-				<div>
-					<p class="text-2xl font-bold text-heading leading-none tabular-nums">{{ store.archivedMeta.total }}</p>
-					<p class="text-sm text-text mt-0.5">Archived</p>
-				</div>
-			</div>
-			<div class="bg-panel rounded-sm border border-heading/8 p-4 flex items-center gap-3">
-				<div class="w-12 h-12 rounded-sm bg-emerald-500/10 flex items-center justify-center shrink-0">
-					<v-icon name="bi-check-circle" class="text-emerald-500" scale="1.4" />
-				</div>
-				<div>
-					<p class="text-2xl font-bold text-heading leading-none tabular-nums">{{ store.archivedMeta.completed }}</p>
-					<p class="text-sm text-text mt-0.5">Completed</p>
+				<div class="min-w-0">
+					<p class="text-xl font-bold text-heading leading-none tabular-nums">{{ store.archivedMeta.total }}</p>
+					<p class="text-xs text-text mt-1 font-medium">Archived</p>
 				</div>
 			</div>
-			<div class="bg-panel rounded-sm border border-heading/8 p-4 flex items-center gap-3 col-span-2 sm:col-span-1">
-				<div class="w-12 h-12 rounded-sm bg-amber-500/10 flex items-center justify-center shrink-0">
-					<v-icon name="bi-clock" class="text-amber-500" scale="1.4" />
+			<div class="card card-hover p-4 flex items-center gap-3">
+				<div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+					<v-icon name="bi-check-circle" class="text-emerald-600" scale="1.2" />
 				</div>
-				<div>
-					<p class="text-2xl font-bold text-heading leading-none tabular-nums">{{ store.archivedMeta.incomplete }}</p>
-					<p class="text-sm text-text mt-0.5">Incomplete</p>
+				<div class="min-w-0">
+					<p class="text-xl font-bold text-heading leading-none tabular-nums">{{ store.archivedMeta.completed }}</p>
+					<p class="text-xs text-text mt-1 font-medium">Completed</p>
+				</div>
+			</div>
+			<div class="card card-hover p-4 flex items-center gap-3 col-span-2 sm:col-span-1">
+				<div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+					<v-icon name="bi-clock" class="text-amber-600" scale="1.2" />
+				</div>
+				<div class="min-w-0">
+					<p class="text-xl font-bold text-heading leading-none tabular-nums">{{ store.archivedMeta.incomplete }}</p>
+					<p class="text-xs text-text mt-1 font-medium">Incomplete</p>
 				</div>
 			</div>
 		</div>
 
 		<!-- ── Toolbar ────────────────────────────────────── -->
-		<div class="bg-panel rounded-sm border border-heading/5 p-3.5 mb-6">
-			<div class="flex flex-wrap items-center gap-2.5">
+		<div class="card p-3 mb-6">
+			<div class="flex flex-wrap items-center gap-3">
 				<div class="relative flex-1 min-w-48">
 					<v-icon name="bi-search"
 						class="absolute left-3 top-1/2 -translate-y-1/2 text-text pointer-events-none"
 						scale="0.85" />
 					<input v-model="searchQuery" type="text" placeholder="Search archived projects…"
-						class="w-full pl-9 pr-8 py-2 rounded-sm border border-heading/8 bg-heading/3 text-base text-heading placeholder:text-text focus:outline-none focus:border-accent/40 transition-colors" />
-					<button v-if="searchQuery" @click="searchQuery = ''"
-						class="absolute right-2.5 top-1/2 -translate-y-1/2 text-text hover:text-heading">
+						class="tazko-search pl-9 pr-8 py-2" />
+					<button v-if="searchQuery" type="button" aria-label="Clear search" @click="searchQuery = ''"
+						class="absolute right-2.5 top-1/2 -translate-y-1/2 text-text hover:text-heading transition-colors">
 						<v-icon name="bi-x" scale="0.8" />
 					</button>
 				</div>
 				<div class="flex-1 hidden sm:block" />
-				<div class="flex items-center gap-1 bg-heading/5 rounded-sm p-1">
+				<div class="flex items-center gap-1 bg-heading/5 rounded-md p-1">
 					<button @click="viewMode = 'grid'"
 						:class="[viewMode === 'grid' ? 'bg-panel text-heading shadow-sm' : 'text-text hover:text-heading',
-							'px-3 py-1.5 rounded-sm text-sm font-semibold transition-all flex items-center gap-1.5']">
+							'px-3 py-1.5 rounded-md text-sm font-semibold transition-all flex items-center gap-1.5']">
 						<v-icon name="bi-grid-3x3-gap" scale="0.85" /> Grid
 					</button>
 					<button @click="viewMode = 'list'"
 						:class="[viewMode === 'list' ? 'bg-panel text-heading shadow-sm' : 'text-text hover:text-heading',
-							'px-3 py-1.5 rounded-sm text-sm font-semibold transition-all flex items-center gap-1.5']">
+							'px-3 py-1.5 rounded-md text-sm font-semibold transition-all flex items-center gap-1.5']">
 						<v-icon name="bi-list-ul" scale="0.85" /> List
 					</button>
 				</div>
@@ -226,132 +227,133 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 
 		<!-- ── Initial skeleton — grid ────────────────────── -->
 		<div v-if="store.archivedLoading && store.archived.length === 0 && viewMode === 'grid'"
-			class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-			<div v-for="n in 6" :key="n"
-				class="bg-panel rounded-sm border border-heading/8 overflow-hidden animate-pulse">
+			class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+			<div v-for="n in 6" :key="n" class="card overflow-hidden animate-pulse">
 				<div class="h-1 bg-heading/10 w-full" />
-				<div class="p-5 space-y-3">
+				<div class="p-5 flex flex-col gap-3">
 					<div class="flex items-start justify-between">
-						<div class="w-10 h-10 bg-heading/10 rounded-sm" />
-						<div class="w-20 h-6 bg-heading/10 rounded-full" />
+						<div class="w-10 h-10 bg-heading/10 rounded-lg" />
+						<div class="w-20 h-6 bg-heading/10 rounded-md" />
 					</div>
 					<div class="h-4 bg-heading/10 rounded w-3/4" />
 					<div class="h-3 bg-heading/8 rounded w-full" />
 					<div class="h-3 bg-heading/8 rounded w-2/3" />
-					<div class="h-1.5 bg-heading/8 rounded-full mt-3" />
-					<div class="flex gap-2 mt-2">
-						<div class="h-6 w-20 bg-heading/8 rounded-full" />
-						<div class="h-6 w-16 bg-heading/8 rounded-full" />
+					<div class="h-1.5 bg-heading/8 rounded-full mt-1" />
+					<div class="flex gap-2">
+						<div class="h-6 w-20 bg-heading/8 rounded-md" />
+						<div class="h-6 w-16 bg-heading/8 rounded-md" />
 					</div>
 				</div>
 				<div class="px-5 py-3 border-t border-heading/8 flex justify-between">
 					<div class="flex -space-x-2">
 						<div v-for="i in 2" :key="i" class="w-8 h-8 rounded-full bg-heading/10 border-2 border-panel" />
 					</div>
-					<div class="w-24 h-7 bg-heading/10 rounded-sm" />
+					<div class="w-24 h-7 bg-heading/10 rounded-md" />
 				</div>
 			</div>
 		</div>
 
 		<!-- ── Initial skeleton — list ────────────────────── -->
 		<div v-else-if="store.archivedLoading && store.archived.length === 0 && viewMode === 'list'"
-			class="bg-panel rounded-sm border border-heading/8 overflow-hidden animate-pulse">
-			<div class="border-b border-heading/8 bg-heading/[0.02] px-5 py-3 flex gap-4">
+			class="card overflow-hidden animate-pulse">
+			<div class="border-b border-heading/8 bg-heading/3 px-5 py-3 flex gap-4">
 				<div v-for="n in 5" :key="n" class="h-3 bg-heading/10 rounded" :class="n===1?'w-40':'w-20'" />
 			</div>
-			<div class="divide-y divide-heading/5">
+			<div class="divide-y divide-heading/6">
 				<div v-for="n in 6" :key="n" class="px-5 py-4 flex items-center gap-4">
-					<div class="w-8 h-8 bg-heading/10 rounded-sm shrink-0" />
-					<div class="flex-1 space-y-1.5">
+					<div class="w-9 h-9 bg-heading/10 rounded-lg shrink-0" />
+					<div class="flex-1 flex flex-col gap-2">
 						<div class="h-3.5 bg-heading/10 rounded w-44" />
 						<div class="h-3 bg-heading/8 rounded w-64" />
 					</div>
-					<div class="w-20 h-6 bg-heading/8 rounded-full hidden sm:block" />
+					<div class="w-20 h-6 bg-heading/8 rounded-md hidden sm:block" />
 					<div class="w-28 h-2 bg-heading/8 rounded-full hidden md:block" />
 					<div class="w-12 h-3 bg-heading/8 rounded hidden lg:block" />
-					<div class="w-20 h-7 bg-heading/10 rounded-sm ml-auto" />
+					<div class="w-20 h-7 bg-heading/10 rounded-md ml-auto" />
 				</div>
 			</div>
 		</div>
 
 		<!-- ── Empty state ────────────────────────────────── -->
-		<div v-else-if="!store.archivedLoading && store.archived.length === 0" class="text-center py-24">
-			<div class="w-20 h-20 bg-heading/5 rounded-3xl flex items-center justify-center mx-auto mb-5">
-				<v-icon name="bi-archive" class="text-text" scale="2" />
+		<div v-else-if="!store.archivedLoading && store.archived.length === 0" class="card p-12 text-center">
+			<div class="w-14 h-14 bg-heading/5 rounded-xl flex items-center justify-center mx-auto mb-4">
+				<v-icon name="bi-archive" class="text-text" scale="1.6" />
 			</div>
-			<h3 class="section-title mb-2">No archived projects</h3>
-			<p class="page-subtitle mb-6">
-				{{ searchQuery ? 'No results for your search.' : 'Projects you archive will appear here.' }}
+			<h3 class="section-title mb-1.5">No archived projects</h3>
+			<p class="text-sm text-text mb-6 max-w-sm mx-auto leading-relaxed">
+				{{ searchQuery ? 'No results for your search.' : 'Projects you archive will appear here, ready to restore at any time.' }}
 			</p>
-			<button v-if="searchQuery" @click="searchQuery = ''"
-				class="inline-flex items-center gap-2 px-4 py-2 rounded-sm border border-heading/10 text-base font-semibold text-text hover:bg-heading/5 transition-colors">
+			<button v-if="searchQuery" @click="searchQuery = ''" class="tazko-btn-outline">
+				<v-icon name="bi-x" scale="0.9" />
 				Clear search
 			</button>
 		</div>
 
 		<!-- ── GRID VIEW ──────────────────────────────────── -->
-		<div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+		<div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
 			<div v-for="project in decoratedProjects" :key="project.id"
-				class="bg-panel rounded-sm border border-heading/8 hover:shadow-lg hover:shadow-heading/5 transition-all duration-200 group overflow-hidden flex flex-col opacity-80 hover:opacity-100 cursor-pointer"
+				class="card card-hover group overflow-hidden flex flex-col cursor-pointer opacity-85 hover:opacity-100"
 				@click="openProject(project.id)">
 
 				<!-- Color stripe -->
 				<div :class="`h-1 w-full ${project.color} opacity-60`" />
 
-				<div class="p-5 flex-1">
+				<div class="p-5 flex-1 flex flex-col gap-4">
 					<!-- Header row -->
-					<div class="flex items-start justify-between mb-3">
-						<div :class="`w-10 h-10 rounded-sm ${project.color} opacity-60 flex items-center justify-center shrink-0`">
+					<div class="flex items-start justify-between gap-3">
+						<div :class="`w-10 h-10 rounded-lg ${project.color} opacity-60 flex items-center justify-center shrink-0`">
 							<v-icon name="md-folderspecial-outlined" class="text-white" scale="1.0" />
 						</div>
-						<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-heading/8 border border-heading/10">
-							<v-icon name="bi-archive" class="text-text" scale="0.75" />
-							<span class="text-sm font-semibold text-text">Archived</span>
-						</div>
+						<span class="badge badge-neutral shrink-0">
+							<v-icon name="bi-archive" scale="0.7" />
+							Archived
+						</span>
 					</div>
 
 					<!-- Title + description -->
-					<h3 class="section-title mb-1.5 line-clamp-1">{{ project.name }}</h3>
-					<p class="text-base text-text leading-relaxed line-clamp-2 mb-4">{{ project.description }}</p>
+					<div>
+						<h3 class="section-title line-clamp-1 group-hover:text-accent transition-colors">{{ project.name }}</h3>
+						<p class="text-sm text-text leading-relaxed line-clamp-2 mt-1.5">{{ project.description }}</p>
+					</div>
 
 					<!-- Progress -->
-					<div class="mb-3">
-						<div class="flex items-center justify-between mb-1.5">
-							<span class="text-sm font-semibold uppercase tracking-wide text-text">Progress</span>
-							<span class="text-sm font-bold tabular-nums text-text">{{ project.progress }}%</span>
+					<div>
+						<div class="flex items-center justify-between mb-2">
+							<span class="text-xs font-semibold uppercase tracking-wider text-text">Progress</span>
+							<span class="text-sm font-bold tabular-nums text-heading">{{ project.progress }}%</span>
 						</div>
 						<div class="h-1.5 bg-heading/8 rounded-full overflow-hidden">
-							<div :class="[progressColor(project.progress), 'h-full rounded-full opacity-60']"
+							<div :class="[progressColor(project.progress), 'h-full rounded-full opacity-60 transition-all duration-300']"
 								:style="`width: ${project.progress}%`" />
 						</div>
 					</div>
 
 					<!-- Status + priority chips -->
-					<div class="flex items-center gap-2 flex-wrap mb-4">
-						<span :class="[statusConfig[project.status]?.cls, 'inline-flex items-center gap-1 text-sm px-2.5 py-1 rounded-full font-semibold']">
+					<div class="flex items-center gap-2 flex-wrap">
+						<span :class="[statusConfig[project.status]?.cls, 'badge']">
 							<span :class="[statusConfig[project.status]?.dot, 'w-1.5 h-1.5 rounded-full']" />
 							{{ project.status }}
 						</span>
-						<span :class="[priorityConfig[project.priority]?.cls, 'text-sm px-2.5 py-1 rounded-full font-semibold']">
+						<span :class="[priorityConfig[project.priority]?.cls, 'badge']">
 							{{ project.priority }}
 						</span>
 					</div>
 
 					<!-- Archived date -->
-					<p class="text-sm text-text flex items-center gap-1.5">
+					<p class="text-xs text-text flex items-center gap-1.5 mt-auto">
 						<v-icon name="bi-calendar3" scale="0.75" />
 						Archived {{ formatDate(project.archived_at) }}
 					</p>
 				</div>
 
 				<!-- Card footer -->
-				<div class="px-5 py-3 border-t border-heading/8 flex items-center justify-between bg-heading/[0.01]">
+				<div class="px-5 py-3 border-t border-heading/8 flex items-center justify-between gap-3">
 					<!-- Members -->
 					<div class="flex -space-x-2">
 						<template v-for="(m, i) in project.decoratedMembers.slice(0, 3)" :key="i">
 							<img v-if="m.avatar" :src="m.avatar" :title="m.name"
 								class="w-8 h-8 rounded-full border-2 border-panel object-cover opacity-70" />
-							<div v-else :class="[m.color, 'w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-panel opacity-70']"
+							<div v-else :class="[m.color, 'w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold border-2 border-panel opacity-70']"
 								:title="m.name">
 								{{ m.initials }}
 							</div>
@@ -361,14 +363,14 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 					<div class="flex items-center gap-1.5" @click.stop>
 						<button
 							@click="confirmUnarchive(project.id)"
-							class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-accent/30 text-accent text-sm font-semibold hover:bg-accent/8 transition-all"
+							class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-accent/30 text-accent text-sm font-semibold hover:bg-accent/8 transition-all duration-150 active:scale-[0.98]"
 							title="Restore project">
 							<v-icon name="bi-arrow-counterclockwise" scale="0.85" />
 							Unarchive
 						</button>
 						<button
 							@click="confirmDelete(project.id)"
-							class="w-7 h-7 rounded-sm flex items-center justify-center text-text hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+							class="w-8 h-8 rounded-md flex items-center justify-center text-text hover:text-red-600 hover:bg-red-500/10 transition-all duration-150"
 							title="Delete permanently">
 							<v-icon name="bi-trash" scale="0.85" />
 						</button>
@@ -378,78 +380,79 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 
 			<!-- Infinite scroll skeleton rows -->
 			<template v-if="store.archivedLoading && store.archived.length > 0">
-				<div v-for="n in 3" :key="`sk-${n}`"
-					class="bg-panel rounded-sm border border-heading/8 overflow-hidden animate-pulse">
+				<div v-for="n in 3" :key="`sk-${n}`" class="card overflow-hidden animate-pulse">
 					<div class="h-1 bg-heading/10 w-full" />
-					<div class="p-5 space-y-3">
+					<div class="p-5 flex flex-col gap-3">
 						<div class="h-4 bg-heading/10 rounded w-3/4" />
 						<div class="h-3 bg-heading/8 rounded w-full" />
-						<div class="h-1.5 bg-heading/8 rounded-full mt-3" />
+						<div class="h-1.5 bg-heading/8 rounded-full mt-1" />
 					</div>
 				</div>
 			</template>
 		</div>
 
 		<!-- ── LIST VIEW ──────────────────────────────────── -->
-		<div v-else-if="store.archived.length" class="bg-panel rounded-sm border border-heading/8">
-			<table class="w-full">
+		<div v-else-if="store.archived.length" class="card overflow-hidden">
+			<table class="data-table">
 				<thead>
-					<tr class="border-b border-heading/8 bg-heading/[0.02]">
-						<th class="text-left px-5 py-3 text-sm font-semibold uppercase tracking-wide text-text">Project</th>
-						<th class="hidden sm:table-cell text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text">Status</th>
-						<th class="hidden md:table-cell text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text w-36">Progress</th>
-						<th class="hidden md:table-cell text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text">Tasks</th>
-						<th class="hidden lg:table-cell text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide text-text">Archived</th>
-						<th class="px-4 py-3 text-right text-sm font-semibold uppercase tracking-wide text-text">Actions</th>
+					<tr>
+						<th>Project</th>
+						<th class="hidden sm:table-cell">Status</th>
+						<th class="hidden md:table-cell w-36">Progress</th>
+						<th class="hidden md:table-cell">Tasks</th>
+						<th class="hidden lg:table-cell">Archived</th>
+						<th class="text-right">Actions</th>
 					</tr>
 				</thead>
-				<tbody class="divide-y divide-heading/5">
+				<tbody>
 					<tr v-for="project in decoratedProjects" :key="project.id"
-						class="hover:bg-heading/[0.015] transition-colors opacity-80 hover:opacity-100 cursor-pointer"
+						class="opacity-85 hover:opacity-100 cursor-pointer"
 						@click="openProject(project.id)">
-						<td class="px-5 py-4">
+						<td>
 							<div class="flex items-center gap-3">
-								<div :class="`w-8 h-8 rounded-sm ${project.color} opacity-60 flex items-center justify-center shrink-0`">
+								<div :class="`w-9 h-9 rounded-lg ${project.color} opacity-60 flex items-center justify-center shrink-0`">
 									<v-icon name="md-folderspecial-outlined" class="text-white" scale="0.85" />
 								</div>
-								<div>
-									<p class="text-base font-semibold text-heading">{{ project.name }}</p>
-									<p class="text-sm text-text line-clamp-1 max-w-xs mt-0.5">{{ project.description }}</p>
+								<div class="min-w-0">
+									<p class="text-sm font-semibold text-heading truncate">{{ project.name }}</p>
+									<p class="text-xs text-text line-clamp-1 max-w-xs mt-0.5">{{ project.description }}</p>
 								</div>
 							</div>
 						</td>
-						<td class="hidden sm:table-cell px-4 py-4">
-							<span :class="[statusConfig[project.status]?.cls, 'inline-flex items-center gap-1.5 text-sm px-2.5 py-1 rounded-full font-semibold']">
+						<td class="hidden sm:table-cell">
+							<span :class="[statusConfig[project.status]?.cls, 'badge']">
 								<span :class="[statusConfig[project.status]?.dot, 'w-1.5 h-1.5 rounded-full']" />
 								{{ project.status }}
 							</span>
 						</td>
-						<td class="hidden md:table-cell px-4 py-4">
+						<td class="hidden md:table-cell">
 							<div class="flex items-center gap-2">
 								<div class="flex-1 h-1.5 bg-heading/8 rounded-full overflow-hidden min-w-16">
 									<div :class="[progressColor(project.progress), 'h-full rounded-full opacity-60']"
 										:style="`width: ${project.progress}%`" />
 								</div>
-								<span class="text-sm font-bold text-text w-8 text-right tabular-nums">{{ project.progress }}%</span>
+								<span class="text-sm font-semibold text-heading w-9 text-right tabular-nums">{{ project.progress }}%</span>
 							</div>
 						</td>
-						<td class="hidden md:table-cell px-4 py-4">
-							<span class="text-base text-text font-medium">{{ project.task_counts.done }}/{{ project.task_counts.total }}</span>
+						<td class="hidden md:table-cell">
+							<span class="text-sm text-text font-medium tabular-nums">{{ project.task_counts.done }}/{{ project.task_counts.total }}</span>
 						</td>
-						<td class="hidden lg:table-cell px-4 py-4">
+						<td class="hidden lg:table-cell">
 							<span class="text-sm text-text">{{ formatDate(project.archived_at) }}</span>
 						</td>
-						<td class="px-4 py-4 text-right" @click.stop>
+						<td class="text-right" @click.stop>
 							<div class="flex items-center justify-end gap-1.5">
 								<button
 									@click="confirmUnarchive(project.id)"
-									class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-accent/30 text-accent text-sm font-semibold hover:bg-accent/8 transition-all">
+									class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-accent/30 text-accent text-sm font-semibold hover:bg-accent/8 transition-all duration-150 active:scale-[0.98]"
+									title="Restore project">
 									<v-icon name="bi-arrow-counterclockwise" scale="0.8" />
 									<span class="hidden sm:inline">Unarchive</span>
 								</button>
 								<button
 									@click="confirmDelete(project.id)"
-									class="w-8 h-8 rounded-sm flex items-center justify-center text-text hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
+									class="w-8 h-8 rounded-md flex items-center justify-center text-text hover:text-red-600 hover:bg-red-500/10 transition-all duration-150"
+									title="Delete permanently">
 									<v-icon name="bi-trash" scale="0.9" />
 								</button>
 							</div>
@@ -461,20 +464,20 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 			<!-- Infinite scroll skeleton rows (list) -->
 			<template v-if="store.archivedLoading && store.archived.length > 0">
 				<div v-for="n in 3" :key="`sk-l-${n}`"
-					class="px-5 py-4 border-t border-heading/8 flex items-center gap-4 animate-pulse">
-					<div class="w-8 h-8 bg-heading/10 rounded-sm shrink-0" />
-					<div class="flex-1 space-y-1.5">
+					class="px-4 py-4 border-t border-heading/6 flex items-center gap-4 animate-pulse">
+					<div class="w-9 h-9 bg-heading/10 rounded-lg shrink-0" />
+					<div class="flex-1 flex flex-col gap-2">
 						<div class="h-3.5 bg-heading/10 rounded w-44" />
 						<div class="h-3 bg-heading/8 rounded w-64" />
 					</div>
-					<div class="w-20 h-6 bg-heading/8 rounded-full hidden sm:block" />
+					<div class="w-20 h-6 bg-heading/8 rounded-md hidden sm:block" />
 					<div class="w-28 h-2 bg-heading/8 rounded-full hidden md:block" />
-					<div class="w-20 h-7 bg-heading/10 rounded-sm ml-auto" />
+					<div class="w-20 h-7 bg-heading/10 rounded-md ml-auto" />
 				</div>
 			</template>
 
-			<div class="px-5 py-3 border-t border-heading/8 bg-body/40">
-				<p class="text-base text-text">{{ store.archivedMeta.total }} archived project{{ store.archivedMeta.total !== 1 ? 's' : '' }}</p>
+			<div class="px-4 py-3 border-t border-heading/8">
+				<p class="text-sm text-text">{{ store.archivedMeta.total }} archived project{{ store.archivedMeta.total !== 1 ? 's' : '' }}</p>
 			</div>
 		</div>
 
@@ -484,14 +487,14 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 		<!-- ── Unarchive Confirm Modal ─────────────────────── -->
 		<Teleport to="body">
 			<Transition name="modal">
-				<div v-if="showUnarchiveConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+				<div v-if="showUnarchiveConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="showUnarchiveConfirm = false">
 					<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="showUnarchiveConfirm = false" />
-					<div class="relative w-full max-w-sm bg-panel rounded-sm shadow-2xl border border-heading/10 p-6">
-						<div class="w-12 h-12 rounded-sm bg-accent/10 flex items-center justify-center mb-4">
+					<div class="relative w-full max-w-sm bg-panel rounded-xl shadow-sm border border-heading/10 p-6" @click.stop>
+						<div class="w-12 h-12 rounded-md bg-accent/10 flex items-center justify-center mb-4">
 							<v-icon name="bi-arrow-counterclockwise" class="text-accent" scale="1.2" />
 						</div>
 						<h3 class="section-title mb-2">Unarchive Project?</h3>
-						<p class="text-base text-text mb-6">
+						<p class="text-sm text-text mb-6 leading-relaxed">
 							This project will be restored to your active projects list and become visible to the team again.
 						</p>
 						<div class="flex gap-3">
@@ -512,14 +515,14 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 		<!-- ── Delete Confirm Modal ────────────────────────── -->
 		<Teleport to="body">
 			<Transition name="modal">
-				<div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+				<div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="showDeleteConfirm = false">
 					<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="showDeleteConfirm = false" />
-					<div class="relative w-full max-w-sm bg-panel rounded-sm shadow-2xl border border-heading/10 p-6">
-						<div class="w-12 h-12 rounded-sm bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
-							<v-icon name="bi-trash" class="text-red-500" scale="1.2" />
+					<div class="relative w-full max-w-sm bg-panel rounded-xl shadow-sm border border-heading/10 p-6" @click.stop>
+						<div class="w-12 h-12 rounded-md bg-red-500/10 flex items-center justify-center mb-4">
+							<v-icon name="bi-trash" class="text-red-600" scale="1.2" />
 						</div>
 						<h3 class="section-title mb-2">Delete Permanently?</h3>
-						<p class="text-base text-text mb-6">
+						<p class="text-sm text-text mb-6 leading-relaxed">
 							This will permanently delete the project and all its tasks. This action cannot be undone.
 						</p>
 						<div class="flex gap-3">

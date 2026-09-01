@@ -27,7 +27,7 @@ watch(activeSection, (val) => emit('update:activeSection', val))
 </script>
 
 <template>
-	<div class="bg-panel rounded-sm border border-heading/5 overflow-hidden">
+	<div class="card rounded-lg overflow-hidden">
 
 		<!-- Tab switcher -->
 		<div class="flex items-center gap-1 px-5 pt-4 pb-0 border-b border-heading/5">
@@ -38,13 +38,13 @@ watch(activeSection, (val) => emit('update:activeSection', val))
 				]"
 				:key="tab.key"
 				@click="activeSection = tab.key"
-				:class="['inline-flex items-center gap-1.5 px-4 py-3 text-base font-semibold transition-all border-b-2 -mb-px',
+				:class="['inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold transition-all border-b-2 -mb-px',
 					activeSection === tab.key
 						? 'text-accent border-accent'
 						: 'text-text border-transparent hover:text-text hover:border-heading/15']">
 				<v-icon :name="tab.icon" scale="0.85" />
 				{{ tab.label }}
-				<span :class="['text-sm font-bold px-1.5 py-0.5 rounded-full tabular-nums',
+				<span :class="['badge text-sm px-1.5 py-0.5 tabular-nums',
 					activeSection === tab.key ? 'bg-accent/15 text-accent' : 'bg-heading/5 text-text']">
 					{{ tab.count }}
 				</span>

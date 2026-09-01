@@ -391,7 +391,7 @@ function applyHeading(val) {
 		<Teleport to="body">
 			<Transition name="tb-panel">
 				<div v-if="showColorPicker"
-					class="fixed z-[9999] bg-panel border border-heading/9 rounded-[0.4rem] shadow-[0_8px_30px_rgba(0,0,0,0.14),0_2px_8px_rgba(0,0,0,0.08)] overflow-hidden cp-panel"
+					class="fixed z-[9999] dropdown-menu cp-panel"
 					:style="{ top: colorPos.top + 'px', left: colorPos.left + 'px' }"
 					@click.stop
 					@keydown.escape="closeAllPanels">
@@ -403,7 +403,7 @@ function applyHeading(val) {
 		<Teleport to="body">
 			<Transition name="tb-panel">
 				<div v-if="showEmojiPicker"
-					class="fixed z-[9999] bg-panel border border-heading/9 rounded-[0.4rem] shadow-[0_8px_30px_rgba(0,0,0,0.14),0_2px_8px_rgba(0,0,0,0.08)] overflow-hidden ep-panel"
+					class="fixed z-[9999] dropdown-menu ep-panel"
 					:style="{ top: emojiPos.top + 'px', left: emojiPos.left + 'px' }"
 					@click.stop
 					@keydown.escape="closeAllPanels">
@@ -415,7 +415,7 @@ function applyHeading(val) {
 		<Teleport to="body">
 			<Transition name="tb-panel">
 				<div v-if="showSpecialChars"
-					class="fixed z-[9999] bg-panel border border-heading/9 rounded-[0.4rem] shadow-[0_8px_30px_rgba(0,0,0,0.14),0_2px_8px_rgba(0,0,0,0.08)] overflow-hidden sc-panel"
+					class="fixed z-[9999] dropdown-menu sc-panel"
 					:style="{ top: specialPos.top + 'px', left: specialPos.left + 'px' }"
 					@click.stop
 					@keydown.escape="closeAllPanels">

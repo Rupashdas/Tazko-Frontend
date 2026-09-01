@@ -280,7 +280,7 @@ const submitAvatar = async () => {
 				<div class="lg:w-80 shrink-0 space-y-4">
 
 					<!-- Avatar Card -->
-					<div class="bg-panel border border-heading/8 rounded-sm p-6 shadow-sm text-center">
+					<div class="card p-6 text-center">
 
 						<!-- Avatar display -->
 						<div class="relative w-40 h-40 mx-auto mb-4 group">
@@ -319,8 +319,8 @@ const submitAvatar = async () => {
 						</div>
 					</div>
 
-					<!-- Quick Info Card -->
-					<div class="bg-panel border border-heading/8 rounded-sm p-5 shadow-sm space-y-3">
+				<!-- Quick Info Card -->
+				<div class="card p-5 space-y-3">
 						<p class="text-base font-semibold text-text mb-1.5">Quick Info</p>
 						<div class="flex items-center gap-3">
 							<div
@@ -371,122 +371,115 @@ const submitAvatar = async () => {
 				<!-- ── RIGHT COLUMN: Form ───────────────────────── -->
 				<div class="flex-1 space-y-5">
 
-					<!-- Section: Basic Information -->
-					<div class="bg-panel border border-heading/8 rounded-sm shadow-sm overflow-hidden">
-						<div class="px-5 md:px-6 py-5 border-b border-heading/6 flex items-center gap-3">
-							<div class="w-12 h-12 rounded-sm bg-accent/10 flex items-center justify-center shrink-0">
-								<v-icon name="bi-person" class="text-accent" scale="1.4" />
-							</div>
-							<div>
-								<h6 class="section-title">Basic Information</h6>
-								<p class="section-desc">Your public profile details</p>
-							</div>
+				<!-- Section: Basic Information -->
+				<div class="card overflow-hidden">
+					<div class="px-5 md:px-6 py-5 border-b border-heading/6 flex items-center gap-3">
+						<div class="w-12 h-12 rounded-md bg-accent/10 flex items-center justify-center shrink-0">
+							<v-icon name="bi-person" class="text-accent" scale="1.4" />
 						</div>
-						<div class="p-5 md:p-6 space-y-4">
-							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-								<div class="flex flex-col gap-1.5">
-									<label class="block text-base font-semibold text-text">
-										First Name <span class="text-red-400">*</span>
-									</label>
-									<input v-model="firstName" type="text" placeholder="John" class="input-field"
-										:class="{ 'border-red-400': errors.firstName }"
-										:disabled="!canUpdateProfile" @input="clearError('firstName')" />
-									<p v-if="errors.firstName" class="text-red-500 text-sm mt-1">{{ errors.firstName }}</p>
-								</div>
-								<div class="flex flex-col gap-1.5">
-									<label class="block text-base font-semibold text-text">
-										Last Name <span class="text-red-400">*</span>
-									</label>
-									<input v-model="lastName" type="text" placeholder="Doe" class="input-field"
-										:class="{ 'border-red-400': errors.lastName }"
-										:disabled="!canUpdateProfile" @input="clearError('lastName')" />
-									<p v-if="errors.lastName" class="text-red-500 text-sm mt-1">{{ errors.lastName }}</p>
-								</div>
-							</div>
-							<div class="flex flex-col gap-1.5">
-								<label class="block text-base font-semibold text-text">
-									Email Address <span class="text-red-400">*</span>
-								</label>
-								<div class="relative">
-									<span class="absolute left-3 top-1/2 -translate-y-1/2 text-text">
-										<v-icon name="bi-envelope" scale="0.9" />
-									</span>
-									<input v-model="email" type="email" placeholder="you@company.com"
-										class="input-field pl-10" :disabled="!canUpdateProfile"
-										:class="{ 'border-red-400': errors.email }" @input="clearError('email')" />
-								</div>
-								<p v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</p>
-							</div>
-							<div class="flex flex-col gap-1.5">
-								<label class="block text-base font-semibold text-text">Job Title</label>
-								<input v-model="title" type="text" placeholder="e.g. Senior Developer"
-									class="input-field" :disabled="!canUpdateProfile" />
-							</div>
+						<div>
+							<h6 class="section-title">Basic Information</h6>
+							<p class="section-desc">Your public profile details</p>
 						</div>
 					</div>
+					<div class="p-5 md:p-6 space-y-4">
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<div class="flex flex-col gap-1.5">
+								<label class="form-label">First Name <span class="text-red-500">*</span></label>
+								<input v-model="firstName" type="text" placeholder="John" class="input-field"
+									:class="{ 'border-red-400': errors.firstName }"
+									:disabled="!canUpdateProfile" @input="clearError('firstName')" />
+								<p v-if="errors.firstName" class="form-error">{{ errors.firstName }}</p>
+							</div>
+							<div class="flex flex-col gap-1.5">
+								<label class="form-label">Last Name <span class="text-red-500">*</span></label>
+								<input v-model="lastName" type="text" placeholder="Doe" class="input-field"
+									:class="{ 'border-red-400': errors.lastName }"
+									:disabled="!canUpdateProfile" @input="clearError('lastName')" />
+								<p v-if="errors.lastName" class="form-error">{{ errors.lastName }}</p>
+							</div>
+						</div>
+						<div class="flex flex-col gap-1.5">
+							<label class="form-label">Email Address <span class="text-red-500">*</span></label>
+							<div class="relative">
+								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-text">
+									<v-icon name="bi-envelope" scale="0.9" />
+								</span>
+								<input v-model="email" type="email" placeholder="you@company.com"
+									class="input-field pl-10" :disabled="!canUpdateProfile"
+									:class="{ 'border-red-400': errors.email }" @input="clearError('email')" />
+							</div>
+							<p v-if="errors.email" class="form-error">{{ errors.email }}</p>
+						</div>
+						<div class="flex flex-col gap-1.5">
+							<label class="form-label">Job Title</label>
+							<input v-model="title" type="text" placeholder="e.g. Senior Developer"
+								class="input-field" :disabled="!canUpdateProfile" />
+						</div>
+					</div>
+				</div>
 
-					<!-- Section: Contact Details -->
-					<div class="bg-panel border border-heading/8 rounded-sm shadow-sm overflow-hidden">
-						<div class="px-5 md:px-6 py-5 border-b border-heading/6 flex items-center gap-3">
-							<div class="w-12 h-12 rounded-sm bg-blue-500/10 flex items-center justify-center shrink-0">
-								<v-icon name="bi-telephone" class="text-blue-500" scale="1.4" />
-							</div>
-							<div>
-								<h6 class="section-title">Contact Details</h6>
-								<p class="section-desc">Phone & location</p>
+				<!-- Section: Contact Details -->
+				<div class="card overflow-hidden">
+					<div class="px-5 md:px-6 py-5 border-b border-heading/6 flex items-center gap-3">
+						<div class="w-12 h-12 rounded-md bg-blue-500/10 flex items-center justify-center shrink-0">
+							<v-icon name="bi-telephone" class="text-blue-500" scale="1.4" />
+						</div>
+						<div>
+							<h6 class="section-title">Contact Details</h6>
+							<p class="section-desc">Phone & location</p>
+						</div>
+					</div>
+					<div class="p-5 md:p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+						<div class="flex flex-col gap-1.5">
+							<label class="form-label">Phone</label>
+							<div class="relative">
+								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-text">
+									<v-icon name="bi-telephone" scale="0.9" />
+								</span>
+								<input v-model="phone" type="text" placeholder="+1 (555) 000-0000"
+									class="input-field pl-10" :disabled="!canUpdateProfile" />
 							</div>
 						</div>
-						<div class="p-5 md:p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-							<div class="flex flex-col gap-1.5">
-								<label class="block text-base font-semibold text-text">Phone</label>
-								<div class="relative">
-									<span class="absolute left-3 top-1/2 -translate-y-1/2 text-text">
-										<v-icon name="bi-telephone" scale="0.9" />
-									</span>
-									<input v-model="phone" type="text" placeholder="+1 (555) 000-0000"
-										class="input-field pl-10" :disabled="!canUpdateProfile" />
-								</div>
-							</div>
-							<div class="flex flex-col gap-1.5">
-								<label class="block text-base font-semibold text-text">Location</label>
-								<div class="relative">
-									<span class="absolute left-3 top-1/2 -translate-y-1/2 text-text">
-										<v-icon name="bi-geo-alt" scale="0.9" />
-									</span>
-									<input v-model="location" type="text" placeholder="City, Country"
-										class="input-field pl-10" :disabled="!canUpdateProfile" />
-								</div>
+						<div class="flex flex-col gap-1.5">
+							<label class="form-label">Location</label>
+							<div class="relative">
+								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-text">
+									<v-icon name="bi-geo-alt" scale="0.9" />
+								</span>
+								<input v-model="location" type="text" placeholder="City, Country"
+									class="input-field pl-10" :disabled="!canUpdateProfile" />
 							</div>
 						</div>
 					</div>
+				</div>
 
-					<!-- Section: About -->
-					<div class="bg-panel border border-heading/8 rounded-sm shadow-sm overflow-hidden">
-						<div class="px-5 md:px-6 py-5 border-b border-heading/6 flex items-center gap-3">
-							<div
-								class="w-12 h-12 rounded-sm bg-violet-500/10 flex items-center justify-center shrink-0">
-								<v-icon name="bi-list-ul" class="text-violet-500" scale="1.4" />
-							</div>
-							<div>
-								<h6 class="section-title">About</h6>
-								<p class="section-desc">Short bio or introduction</p>
-							</div>
+				<!-- Section: About -->
+				<div class="card overflow-hidden">
+					<div class="px-5 md:px-6 py-5 border-b border-heading/6 flex items-center gap-3">
+						<div class="w-12 h-12 rounded-md bg-violet-500/10 flex items-center justify-center shrink-0">
+							<v-icon name="bi-list-ul" class="text-violet-500" scale="1.4" />
 						</div>
-						<div class="p-5 md:p-6">
-							<div class="flex flex-col gap-1.5">
-								<label class="block text-base font-semibold text-text">Bio</label>
-								<textarea v-model="bio" rows="3" placeholder="Tell your team a bit about yourself…"
-									class="input-field resize-none leading-relaxed" :disabled="!canUpdateProfile" />
-								<p class="text-sm text-text mt-1.5">{{ (bio || '').length }}/500 characters</p>
-							</div>
+						<div>
+							<h6 class="section-title">About</h6>
+							<p class="section-desc">Short bio or introduction</p>
 						</div>
 					</div>
+					<div class="p-5 md:p-6">
+						<div class="flex flex-col gap-1.5">
+							<label class="form-label">Bio</label>
+							<textarea v-model="bio" rows="3" placeholder="Tell your team a bit about yourself…"
+								class="input-field resize-none leading-relaxed" :disabled="!canUpdateProfile" />
+							<p class="text-sm text-text mt-1.5">{{ (bio || '').length }}/500 characters</p>
+						</div>
+					</div>
+				</div>
 
 					<!-- Section: Change Password -->
 					<div v-if="canChangePassword"
-						class="bg-panel border border-heading/8 rounded-sm shadow-sm overflow-hidden">
+						class="card overflow-hidden">
 						<div class="px-5 md:px-6 py-5 border-b border-heading/6 flex items-center gap-3">
-							<div class="w-12 h-12 rounded-sm bg-amber-500/10 flex items-center justify-center shrink-0">
+							<div class="w-12 h-12 rounded-md bg-amber-500/10 flex items-center justify-center shrink-0">
 								<v-icon name="bi-lock" scale="1.4" class="text-amber-500" />
 							</div>
 							<div>
@@ -496,7 +489,7 @@ const submitAvatar = async () => {
 						</div>
 						<div class="p-5 md:p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
 							<div class="flex flex-col gap-1.5">
-								<label class="block text-base font-semibold text-text">New Password</label>
+								<label class="form-label">New Password</label>
 								<div class="relative">
 									<input v-model="password" :type="showPassword ? 'text' : 'password'"
 										placeholder="••••••••" autocomplete="new-password" class="input-field pr-10" />
@@ -507,7 +500,7 @@ const submitAvatar = async () => {
 								</div>
 							</div>
 							<div class="flex flex-col gap-1.5">
-								<label class="block text-base font-semibold text-text">Confirm Password</label>
+								<label class="form-label">Confirm Password</label>
 								<div class="relative">
 									<input v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'"
 										placeholder="••••••••" autocomplete="new-password" class="input-field pr-10"
@@ -518,23 +511,23 @@ const submitAvatar = async () => {
 										<v-icon :name="showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'" scale="0.9" />
 									</button>
 								</div>
-								<p v-if="errors.confirmPassword" class="text-red-500 text-sm mt-1">{{ errors.confirmPassword }}</p>
+								<p v-if="errors.confirmPassword" class="form-error">{{ errors.confirmPassword }}</p>
 							</div>
 						</div>
 					</div>
 
-					<!-- Change Password locked -->
-					<div v-else class="bg-panel border border-heading/8 rounded-sm shadow-sm overflow-hidden">
-						<div class="px-5 md:px-6 py-4 flex items-center gap-3">
-							<div class="w-9 h-9 rounded-sm bg-heading/6 flex items-center justify-center shrink-0">
-								<v-icon name="bi-lock" class="text-text" scale="1.1" />
-							</div>
-							<div>
-								<h6 class="section-title text-heading">Change Password</h6>
-								<p class="section-desc">You do not have permission to change your password</p>
-							</div>
+				<!-- Change Password locked -->
+				<div class="card overflow-hidden">
+					<div class="px-5 md:px-6 py-4 flex items-center gap-3">
+						<div class="w-9 h-9 rounded-md bg-heading/6 flex items-center justify-center shrink-0">
+							<v-icon name="bi-lock" class="text-text" scale="1.1" />
+						</div>
+						<div>
+							<h6 class="section-title text-heading">Change Password</h6>
+							<p class="section-desc">You do not have permission to change your password</p>
 						</div>
 					</div>
+				</div>
 
 					<!-- Save Button -->
 					<div class="flex justify-end">
@@ -558,7 +551,7 @@ const submitAvatar = async () => {
 
 				<!-- Panel -->
 				<div
-					class="avatar-modal-panel relative bg-panel rounded-sm shadow-2xl w-full max-w-2xl z-10 overflow-hidden">
+					class="avatar-modal-panel relative bg-panel rounded-xl shadow-2xl w-full max-w-2xl z-10 overflow-hidden">
 
 					<!-- Header -->
 					<div class="px-6 py-5 border-b border-heading/8 flex items-center justify-between">

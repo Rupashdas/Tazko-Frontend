@@ -1,12 +1,12 @@
 <script setup>
 import { ref, watch, computed, nextTick } from 'vue'
 import { addIcons } from 'oh-vue-icons'
-import { BiX, BiPlus, BiCheck2, BiArrowRepeat, MdErroroutlineRound } from 'oh-vue-icons/icons'
+import { BiX, BiPlus, BiCheck2, BiArrowRepeat, BiExclamationCircleFill } from 'oh-vue-icons/icons'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import AppDatePicker from '@/components/ui/AppDatePicker.vue'
 import RichTextEditor from '@/components/shared/RichTextEditor.vue'
 
-addIcons(BiX, BiPlus, BiCheck2, BiArrowRepeat, MdErroroutlineRound)
+addIcons(BiX, BiPlus, BiCheck2, BiArrowRepeat, BiExclamationCircleFill)
 
 const props = defineProps({
 	show:   { type: Boolean, default: false },
@@ -100,7 +100,7 @@ const handleClose = () => {
 			<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4"
 				@click.self="handleClose">
 				<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="handleClose" />
-				<div class="relative bg-panel rounded-sm shadow-2xl w-full max-w-4xl z-10 overflow-hidden transition-all flex flex-col max-h-[92vh]">
+				<div class="relative bg-panel rounded-xl shadow-sm w-full max-w-4xl z-10 overflow-hidden transition-all flex flex-col max-h-[92vh]">
 
 					<div class="border-b border-heading/8 px-6 pt-6 pb-5 shrink-0">
 						<div class="flex items-center justify-between">
@@ -111,15 +111,15 @@ const handleClose = () => {
 								</p>
 							</div>
 							<button @click="handleClose"
-								class="w-7 h-7 rounded-sm flex items-center justify-center text-text hover:text-text hover:bg-heading/8 transition-all">
+								class="w-7 h-7 rounded-md flex items-center justify-center text-text hover:text-text hover:bg-heading/8 transition-all">
 								<v-icon name="bi-x" scale="1.3" />
 							</button>
 						</div>
 					</div>
 
-					<div v-scrollbar class="overflow-y-auto flex-1"><div class="px-6 py-5 space-y-6">
+					<div v-scrollbar class="overflow-y-auto flex-1"><div class="px-6 py-5 space-y-5">
 						<div>
-							<label class="block text-base font-semibold text-text mb-2">
+							<label class="form-label">
 								Project Name <span class="text-red-400">*</span>
 							</label>
 							<input
@@ -130,14 +130,14 @@ const handleClose = () => {
 								class="input-field focus:border-accent"
 								:class="{ 'border-red-400': errors.name }"
 								@input="clearError('name')" />
-							<p v-if="errors.name" class="text-red-500 text-base mt-1.5 flex items-center gap-1">
+							<p v-if="errors.name" class="form-error">
 								<v-icon name="md-erroroutline-round" scale="0.85" />
 								{{ errors.name }}
 							</p>
 						</div>
 
 						<div>
-							<label class="block text-base font-semibold text-text mb-2">Description</label>
+							<label class="form-label">Description</label>
 							<RichTextEditor
 								ref="descriptionEditorRef"
 								v-model="form.description"
@@ -148,7 +148,7 @@ const handleClose = () => {
 						</div>
 
 						<div>
-							<label class="block text-base font-semibold text-text mb-2">Goal</label>
+							<label class="form-label">Goal</label>
 							<input
 								v-model="form.goal"
 								type="text"
@@ -156,16 +156,16 @@ const handleClose = () => {
 								class="input-field" />
 						</div>
 
-						<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							<div>
-								<label class="block text-base font-semibold text-text mb-2">Priority</label>
+								<label class="form-label">Priority</label>
 								<AppSelect
 									v-model="form.priority"
 									:options="['Urgent', 'High', 'Medium', 'Low']"
 									placeholder="Select priority" />
 							</div>
 							<div>
-								<label class="block text-base font-semibold text-text mb-2">Status</label>
+								<label class="form-label">Status</label>
 								<AppSelect
 									v-model="form.status"
 									:options="['Planning', 'In Progress', 'On Hold', 'Completed']"
@@ -173,22 +173,22 @@ const handleClose = () => {
 							</div>
 						</div>
 
-						<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							<div>
-								<label class="block text-base font-semibold text-text mb-2">
+								<label class="form-label">
 									Start Date <span class="text-red-400">*</span>
 								</label>
 								<AppDatePicker
 									v-model="form.startDate"
 									placeholder="Pick start date"
 									@update:model-value="clearError('startDate')" />
-								<p v-if="errors.startDate" class="text-red-500 text-base mt-1.5 flex items-center gap-1">
+								<p v-if="errors.startDate" class="form-error">
 									<v-icon name="md-erroroutline-round" scale="0.85" />
 									{{ errors.startDate }}
 								</p>
 							</div>
 							<div>
-								<label class="block text-base font-semibold text-text mb-2">
+								<label class="form-label">
 									End Date <span class="text-red-400">*</span>
 								</label>
 								<AppDatePicker
@@ -196,7 +196,7 @@ const handleClose = () => {
 									placeholder="Pick end date"
 									:min="form.startDate || ''"
 									@update:model-value="clearError('endDate')" />
-								<p v-if="errors.endDate" class="text-red-500 text-base mt-1.5 flex items-center gap-1">
+								<p v-if="errors.endDate" class="form-error">
 									<v-icon name="md-erroroutline-round" scale="0.85" />
 									{{ errors.endDate }}
 								</p>
@@ -204,7 +204,7 @@ const handleClose = () => {
 						</div>
 
 						<div>
-							<label class="block text-base font-semibold text-text mb-3">Project Color</label>
+							<label class="form-label">Project Color</label>
 							<div class="flex flex-wrap gap-3">
 								<button
 									v-for="color in projectColors" :key="color"
@@ -220,7 +220,7 @@ const handleClose = () => {
 								</button>
 							</div>
 							<div class="mt-3 flex items-center gap-2">
-								<div :class="[form.color, 'w-5 h-5 rounded-sm shrink-0 shadow-sm']" />
+								<div :class="[form.color, 'w-5 h-5 rounded-md shrink-0 shadow-sm']" />
 								<span class="text-sm text-text capitalize">
 									{{ form.color.replace('bg-', '').replace('-500', '') }} selected
 								</span>
@@ -228,7 +228,7 @@ const handleClose = () => {
 						</div>
 					</div></div>
 
-					<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0">
+					<div class="px-6 py-4 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] shrink-0 rounded-b-xl">
 						<button @click="handleClose" :disabled="saving" class="flex-1 tazko-btn-cancel">
 							Cancel
 						</button>

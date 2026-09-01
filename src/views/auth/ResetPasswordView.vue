@@ -3,16 +3,15 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { addIcons } from 'oh-vue-icons'
 import {
-    RiLockPasswordLine, RiEyeLine, RiEyeOffLine,
-    BiCheckCircle, BiLock, BiCheckCircleFill,
-    BiExclamationCircleFill, BiArrowRepeat, BiCheck2,
+    BiLock, BiEye, BiEyeSlash,
+    BiCheckCircleFill, BiExclamationCircleFill, BiArrowRepeat, BiCheck2,
 } from 'oh-vue-icons/icons'
 import axios from '@/axios'
 import { useToast } from '@/utils/toast'
 import { validators } from '@/utils/validators'
 
 addIcons(
-    RiLockPasswordLine, RiEyeLine, RiEyeOffLine,
+    BiLock, BiEye, BiEyeSlash,
     BiCheckCircle, BiLock, BiCheckCircleFill,
     BiExclamationCircleFill, BiArrowRepeat, BiCheck2,
 )
@@ -148,13 +147,11 @@ const submit = async () => {
 
                 <!-- New Password -->
                 <div class="flex flex-col gap-1.5">
-                    <label class="block text-base font-semibold text-text">
-                        New Password <span class="text-red-400">*</span>
-                    </label>
+                    <label class="form-label">New Password <span class="text-red-500">*</span></label>
                     <div class="group relative flex items-center">
                         <span
                             class="absolute left-3.5 text-text group-focus-within:text-accent transition-colors pointer-events-none z-10">
-                            <v-icon name="ri-lock-password-line" scale="0.85" />
+                            <v-icon name="bi-lock" scale="0.85" />
                         </span>
                         <input v-model="password" :type="showPassword ? 'text' : 'password'"
                             placeholder="Create a strong password" required autocomplete="new-password"
@@ -162,10 +159,10 @@ const submit = async () => {
                             @input="clearError('password')" />
                         <button type="button" @click="showPassword = !showPassword"
                             class="absolute right-3.5 text-text hover:text-accent transition-colors z-10">
-                            <v-icon :name="showPassword ? 'ri-eye-off-line' : 'ri-eye-line'" scale="0.85" />
+                            <v-icon :name="showPassword ? 'bi-eye-slash' : 'bi-eye'" scale="0.85" />
                         </button>
                     </div>
-                    <p v-if="errors.password" class="text-red-500 text-sm mt-1">{{ errors.password }}</p>
+                    <p v-if="errors.password" class="form-error">{{ errors.password }}</p>
 
                     <!-- Strength bar -->
                     <div v-if="password" class="flex items-center gap-2 mt-0.5">
@@ -196,13 +193,11 @@ const submit = async () => {
 
                 <!-- Confirm Password -->
                 <div class="flex flex-col gap-1.5">
-                    <label class="block text-base font-semibold text-text">
-                        Confirm Password <span class="text-red-400">*</span>
-                    </label>
+                    <label class="form-label">Confirm Password <span class="text-red-500">*</span></label>
                     <div class="group relative flex items-center">
                         <span
                             class="absolute left-3.5 text-text group-focus-within:text-accent transition-colors pointer-events-none z-10">
-                            <v-icon name="ri-lock-password-line" scale="0.85" />
+                            <v-icon name="bi-lock" scale="0.85" />
                         </span>
                         <input v-model="password_confirmation" :type="showConfirm ? 'text' : 'password'"
                             placeholder="Repeat your new password" required autocomplete="new-password"
@@ -215,11 +210,11 @@ const submit = async () => {
                             @input="clearError('password_confirmation')" />
                         <button type="button" @click="showConfirm = !showConfirm"
                             class="absolute right-3.5 text-text hover:text-accent transition-colors z-10">
-                            <v-icon :name="showConfirm ? 'ri-eye-off-line' : 'ri-eye-line'" scale="0.85" />
+                            <v-icon :name="showConfirm ? 'bi-eye-slash' : 'bi-eye'" scale="0.85" />
                         </button>
                     </div>
                     <p v-if="errors.password_confirmation || (password_confirmation && password !== password_confirmation)"
-                        class="text-sm text-red-400 font-medium flex items-center gap-1">
+                        class="form-error flex items-center gap-1">
                         <v-icon name="bi-exclamation-circle-fill" scale="0.75" />
                         {{ errors.password_confirmation || "Passwords don't match" }}
                     </p>

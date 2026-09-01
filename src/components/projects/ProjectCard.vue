@@ -1,12 +1,12 @@
 <script setup>
 import { addIcons } from 'oh-vue-icons'
 import {
-	MdFolderspecialOutlined, BiCalendar3, BiCheckCircle,
+	BiFolder2Open, BiCalendar3, BiCheckCircle, BiThreeDotsVertical
 } from 'oh-vue-icons/icons'
 import ProjectActionMenu from './ProjectActionMenu.vue'
-import { sanitize } from '@/utils/sanitize'
+import { sanitize, excerpt } from '@/utils/sanitize'
 
-addIcons(MdFolderspecialOutlined, BiCalendar3, BiCheckCircle)
+addIcons(BiFolder2Open, BiCalendar3, BiCheckCircle, BiThreeDotsVertical)
 
 defineProps({
 	project:  { type: Object, required: true },
@@ -32,18 +32,18 @@ const progressColor = (p) => {
 
 <template>
 	<div
-		class="bg-panel rounded-sm border border-heading/8 hover:shadow-xl hover:shadow-heading/5 hover:-translate-y-0.5 hover:border-accent/20 transition-all duration-200 group overflow-hidden flex flex-col cursor-pointer"
+		class="card card-hover flex flex-col cursor-pointer group"
 		@click="emit('open')">
 
 		<div :class="`h-1 w-full ${color}`" />
 
 		<div class="p-5 flex-1">
-			<div class="flex items-start justify-between mb-3">
-				<div :class="`w-10 h-10 rounded-sm ${color} flex items-center justify-center shrink-0 shadow-sm`">
-					<v-icon name="md-folderspecial-outlined" class="text-white" scale="1.0" />
+			<div class="flex items-start justify-between mb-4">
+				<div :class="`w-11 h-11 rounded-lg ${color} flex items-center justify-center shrink-0`">
+					<v-icon name="bi-folder2-open" class="text-white" scale="1.2" />
 				</div>
 				<div class="flex items-center gap-1.5" @click.stop>
-					<span :class="[status.cls, 'inline-flex items-center gap-1 text-sm px-2.5 py-1 rounded-full font-semibold']">
+					<span :class="[status.cls, 'badge']">
 						<span :class="[status.dot, 'w-1.5 h-1.5 rounded-full']" />
 						{{ project.status }}
 					</span>
@@ -52,8 +52,8 @@ const progressColor = (p) => {
 						:can-update="canUpdate"
 						:can-archive="canArchive"
 						:can-delete="canDelete"
-						button-size="w-7 h-7"
-						icon-scale="0.8"
+						button-size="w-8 h-8"
+						icon-scale="0.9"
 						@toggle="emit('toggle-menu')"
 						@open="emit('open')"
 						@edit="emit('edit')"
@@ -62,48 +62,49 @@ const progressColor = (p) => {
 				</div>
 			</div>
 
-			<h3 class="section-title mb-1.5 group-hover:text-accent transition-colors">{{ project.name }}</h3>
-			<div
-				v-if="project.description"
-				class="text-base text-text leading-relaxed line-clamp-2 mb-4 rich-content"
-				v-html="sanitize(project.description)" />
-			<p v-else class="text-base text-text leading-relaxed line-clamp-2 mb-4 italic">No description</p>
+			<h3 class="text-base font-semibold text-heading mb-1.5 group-hover:text-accent transition-colors leading-snug">{{ project.name }}</h3>
+			<p v-if="project.description" class="text-sm text-text leading-relaxed line-clamp-2 mb-4">
+				{{ excerpt(project.description) }}
+			</p>
+			<p v-else class="text-sm text-text/60 leading-relaxed mb-4 italic">No description</p>
 
 			<div class="mb-4">
 				<div class="flex items-center justify-between mb-1.5">
-					<span class="text-sm font-semibold uppercase tracking-wide text-text">Progress</span>
+					<span class="text-sm font-semibold uppercase tracking-wider text-text/70">Progress</span>
 					<span class="text-sm font-bold tabular-nums"
-						:class="project.progress >= 100 ? 'text-emerald-500' : project.progress >= 60 ? 'text-accent' : 'text-text'">
+						:class="project.progress >= 100 ? 'text-emerald-600' : project.progress >= 60 ? 'text-accent' : 'text-text'">
 						{{ project.progress }}%
 					</span>
 				</div>
-				<div class="h-1.5 bg-heading/8 rounded-full overflow-hidden">
+				<div class="h-1.5 bg-heading/6 rounded-full overflow-hidden">
 					<div :class="[progressColor(project.progress), 'h-full rounded-full transition-all duration-500']"
 						:style="`width: ${project.progress}%`" />
 				</div>
 			</div>
 
-			<div class="flex items-center gap-2 flex-wrap">
-				<span class="inline-flex items-center gap-1 text-sm text-text font-medium">
-					<v-icon name="bi-check-circle" scale="0.75" class="text-emerald-500" />
-					{{ project.taskCounts.done }}/{{ project.taskCounts.total }} tasks
-				</span>
-				<span :class="[priority.cls, 'text-sm px-2.5 py-1 rounded-full font-semibold']">
-					{{ project.priority }}
-				</span>
+			<div class="flex items-center justify-between">
+				<div class="flex items-center gap-3">
+					<span class="inline-flex items-center gap-1.5 text-sm font-medium text-text">
+						<v-icon name="bi-check-circle" scale="0.85" class="text-emerald-500" />
+						{{ project.taskCounts.done }}/{{ project.taskCounts.total }}
+					</span>
+					<span :class="[priority.cls, 'badge text-sm px-2 py-0.5']">
+						{{ project.priority }}
+					</span>
+				</div>
 			</div>
 		</div>
 
-		<div class="px-5 py-3 border-t border-heading/8 flex items-center justify-between bg-heading/[0.015]">
+		<div class="px-5 py-3 border-t border-heading/6 flex items-center justify-between bg-heading/[0.015]">
 			<div class="flex -space-x-2">
 				<div v-for="(m, i) in project.members.slice(0, 3)" :key="i"
-					:class="[m.color, 'w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-panel overflow-hidden']"
+					:class="[m.color, 'w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold border-2 border-panel overflow-hidden']"
 					:title="m.name">
 					<img v-if="m.avatar" :src="m.avatar" :alt="m.name" class="w-full h-full object-cover" />
 					<span v-else>{{ m.initials }}</span>
 				</div>
 				<div v-if="project.members.length > 3"
-					class="w-10 h-10 rounded-full bg-heading/10 flex items-center justify-center text-sm font-bold border-2 border-panel text-text">
+					class="w-7 h-7 rounded-full bg-heading/10 flex items-center justify-center text-xs font-bold border-2 border-panel text-text">
 					+{{ project.members.length - 3 }}
 				</div>
 			</div>

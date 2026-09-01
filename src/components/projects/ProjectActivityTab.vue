@@ -13,7 +13,7 @@ defineProps({
 <template>
 	<div class="p-5">
 		<div v-if="!canView" class="flex flex-col items-center justify-center py-16 text-center">
-			<div class="w-16 h-16 rounded-sm bg-heading/5 flex items-center justify-center mb-4">
+			<div class="w-16 h-16 rounded-md bg-heading/5 flex items-center justify-center mb-4">
 				<v-icon name="bi-activity" class="text-text" scale="1.8" />
 			</div>
 			<p class="text-base font-semibold text-text">Access Denied</p>
@@ -29,7 +29,7 @@ defineProps({
 								:class="[item.color, 'w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 z-10 ring-2 ring-panel shadow-sm']">
 								{{ item.initials }}
 							</div>
-							<div class="flex-1 bg-panel border border-heading/5 rounded-sm px-4 py-3 shadow-sm">
+							<div class="flex-1 card px-4 py-3">
 								<p class="text-base text-text leading-relaxed">{{ item.text }}</p>
 								<p class="text-sm text-text mt-1.5">{{ item.time }}</p>
 							</div>

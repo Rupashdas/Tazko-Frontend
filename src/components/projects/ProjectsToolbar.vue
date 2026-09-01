@@ -1,9 +1,9 @@
 <script setup>
 import { addIcons } from 'oh-vue-icons'
-import { BiSearch, BiX, BiGrid3X3Gap, BiListUl } from 'oh-vue-icons/icons'
+import { BiSearch, BiX, BiGrid3X3Gap, BiListUl, BiKanban } from 'oh-vue-icons/icons'
 import AppSelect from '@/components/ui/AppSelect.vue'
 
-addIcons(BiSearch, BiX, BiGrid3X3Gap, BiListUl)
+addIcons(BiSearch, BiX, BiGrid3X3Gap, BiListUl, BiKanban)
 
 const props = defineProps({
 	search:         { type: String,  default: '' },
@@ -20,12 +20,12 @@ const emit = defineEmits([
 </script>
 
 <template>
-	<div class="bg-panel rounded-sm border border-heading/5 p-3.5 mb-6">
+	<div class="card p-3 mb-6">
 		<div class="flex flex-wrap items-center gap-2.5">
 			<div class="relative flex-1 min-w-48">
 				<v-icon name="bi-search" class="absolute left-3 top-1/2 -translate-y-1/2 text-text pointer-events-none" scale="0.85" />
 				<input :value="search" @input="emit('update:search', $event.target.value)" type="text" placeholder="Search projects…"
-					class="w-full pl-9 pr-8 py-2 rounded-sm border border-heading/8 bg-heading/3 text-base text-heading placeholder:text-text focus:outline-none focus:border-accent/40 transition-colors" />
+					class="tazko-search pl-9 pr-8 py-2" />
 				<button v-if="search"
 					type="button"
 					aria-label="Clear search"
@@ -59,14 +59,18 @@ const emit = defineEmits([
 
 			<div class="flex-1 hidden sm:block" />
 
-			<div class="flex items-center gap-1 bg-heading/5 rounded-sm p-1">
+			<div class="flex items-center gap-1 bg-heading/5 rounded-md p-1">
 				<button @click="emit('update:viewMode', 'grid')"
-					:class="[viewMode === 'grid' ? 'bg-panel text-heading shadow-sm' : 'text-text hover:text-text', 'px-3 py-1.5 rounded-sm text-sm font-semibold transition-all flex items-center gap-1.5']">
+					:class="[viewMode === 'grid' ? 'bg-panel text-heading shadow-sm' : 'text-text hover:text-text', 'px-3 py-1.5 rounded-md text-sm font-semibold transition-all flex items-center gap-1.5']">
 					<v-icon name="bi-grid-3x3-gap" scale="0.85" /> Grid
 				</button>
 				<button @click="emit('update:viewMode', 'list')"
-					:class="[viewMode === 'list' ? 'bg-panel text-heading shadow-sm' : 'text-text hover:text-text', 'px-3 py-1.5 rounded-sm text-sm font-semibold transition-all flex items-center gap-1.5']">
+					:class="[viewMode === 'list' ? 'bg-panel text-heading shadow-sm' : 'text-text hover:text-text', 'px-3 py-1.5 rounded-md text-sm font-semibold transition-all flex items-center gap-1.5']">
 					<v-icon name="bi-list-ul" scale="0.85" /> List
+				</button>
+				<button @click="emit('update:viewMode', 'board')"
+					:class="[viewMode === 'board' ? 'bg-panel text-heading shadow-sm' : 'text-text hover:text-text', 'px-3 py-1.5 rounded-md text-sm font-semibold transition-all flex items-center gap-1.5']">
+					<v-icon name="bi-kanban" scale="0.85" /> Board
 				</button>
 			</div>
 		</div>

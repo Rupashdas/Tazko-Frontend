@@ -65,33 +65,33 @@ function endCall() { store.endCall() }
 <template>
     <Transition name="call-fade">
         <div v-if="call"
-             class="fixed inset-0 z-[300] flex items-center justify-center"
-             style="backdrop-filter: blur(18px) saturate(140%); background: rgba(15,12,40,0.78);">
+             class="fixed inset-0 z-[300] flex items-center justify-center p-4"
+             style="backdrop-filter: blur(18px) saturate(140%); background: rgba(15,23,42,0.78);">
 
             <!-- Card -->
-            <div class="relative flex flex-col items-center w-full max-w-sm mx-4 rounded-3xl overflow-hidden"
-                 style="background: linear-gradient(160deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.04) 100%);
+            <div class="relative flex flex-col items-center w-full max-w-sm rounded-xl overflow-hidden"
+                 style="background: linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%);
                         border: 1px solid rgba(255,255,255,0.12);
-                        box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06) inset;">
+                        box-shadow: 0 32px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06) inset;">
 
                 <!-- Top gradient bar -->
-                <div class="absolute top-0 inset-x-0 h-1 rounded-t-3xl"
+                <div class="absolute top-0 inset-x-0 h-1 rounded-t-xl"
                      :style="isVideo
-                         ? 'background: linear-gradient(90deg,#6c63ff,#a78bfa)'
+                         ? 'background: linear-gradient(90deg, var(--color-accent), #a78bfa)'
                          : 'background: linear-gradient(90deg,#10b981,#34d399)'" />
 
                 <!-- ── Video layout (when video call) ──────────────── -->
                 <div v-if="isVideo" class="w-full">
                     <!-- Remote video (simulated) -->
                     <div class="relative w-full h-52 flex items-center justify-center overflow-hidden"
-                         style="background: linear-gradient(135deg, #1a1440 0%, #0d0b25 100%);">
-                        <div v-if="cameraOff" class="flex flex-col items-center gap-2 opacity-50">
-                            <v-icon name="bi-camera-video-off" class="text-white/60" scale="1.8" />
-                            <span class="text-white/50 text-xs font-medium">Camera is off</span>
+                         style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);">
+                        <div v-if="cameraOff" class="flex flex-col items-center gap-2 opacity-60">
+                            <v-icon name="bi-camera-video-off" class="text-white/70" scale="1.8" />
+                            <span class="text-white/60 text-xs font-medium">Camera is off</span>
                         </div>
                         <div v-else class="flex flex-col items-center gap-2">
                             <div class="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-2xl"
-                                 :style="`background: ${calleeUser?.color ?? '#6c63ff'}`">
+                                 :style="`background: ${calleeUser?.color ?? '#6366f1'}`">
                                 {{ calleeUser?.initials ?? calleeName.slice(0,2).toUpperCase() }}
                             </div>
                         </div>
@@ -104,11 +104,11 @@ function endCall() { store.endCall() }
                         </div>
 
                         <!-- Self video (PiP) -->
-                        <div class="absolute bottom-3 right-3 w-20 h-[54px] rounded-xl overflow-hidden border-2 border-white/20 shadow-lg"
-                             style="background: linear-gradient(135deg, #312e6b 0%, #1a1f4e 100%);">
+                        <div class="absolute bottom-3 right-3 w-20 h-[54px] rounded-lg overflow-hidden border-2 border-white/20 shadow-lg"
+                             style="background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%);">
                             <div class="w-full h-full flex items-center justify-center">
                                 <div class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                                     :style="`background: ${store.currentUser?.color ?? '#6c63ff'}`">
+                                     :style="`background: ${store.currentUser?.color ?? '#6366f1'}`">
                                     {{ store.currentUser?.initials }}
                                 </div>
                             </div>
@@ -116,7 +116,7 @@ function endCall() { store.endCall() }
 
                         <!-- Screen sharing badge -->
                         <div v-if="screenSharing"
-                             class="absolute top-3 left-3 flex items-center gap-1.5 bg-emerald-500/90 text-white text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm">
+                             class="absolute top-3 left-3 inline-flex items-center gap-1.5 bg-emerald-500/90 text-white text-xs font-semibold px-2.5 py-1 rounded-md backdrop-blur-sm">
                             <v-icon name="bi-display-fill" scale="0.7" />
                             Sharing screen
                         </div>
@@ -131,36 +131,36 @@ function endCall() { store.endCall() }
                         <div class="pulse-ring-sm" style="animation-delay: 0.5s;" />
                         <div class="pulse-ring-sm" style="animation-delay: 1s;" />
                         <div class="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-2xl relative z-10"
-                             :style="`background: ${calleeUser?.color ?? '#6c63ff'}`">
+                             :style="`background: ${calleeUser?.color ?? '#6366f1'}`">
                             {{ calleeUser?.initials ?? calleeName.slice(0,2).toUpperCase() }}
                         </div>
                     </div>
                     <div v-else class="mb-4 relative">
                         <div class="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-2xl ring-2 ring-emerald-400/40"
-                             :style="`background: ${calleeUser?.color ?? '#6c63ff'}`">
+                             :style="`background: ${calleeUser?.color ?? '#6366f1'}`">
                             {{ calleeUser?.initials ?? calleeName.slice(0,2).toUpperCase() }}
                         </div>
-                        <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-400 border-2 border-white/20 flex items-center justify-center">
+                        <span class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-white/20 flex items-center justify-center">
                             <v-icon name="bi-telephone" class="text-white" scale="0.55" />
                         </span>
                     </div>
                 </div>
 
                 <!-- ── Name + status ──────────────────────────────────── -->
-                <div class="flex flex-col items-center gap-1 px-6 pt-4" :class="isVideo ? '' : ''">
-                    <h3 class="text-white text-xl font-bold tracking-tight">{{ calleeName }}</h3>
-                    <div class="flex items-center gap-1.5">
+                <div class="flex flex-col items-center gap-1.5 px-6 pt-4">
+                    <h3 class="text-white text-xl font-bold tracking-tight text-center">{{ calleeName }}</h3>
+                    <div class="flex items-center gap-2">
                         <template v-if="!isConnected">
                             <span class="flex gap-1">
                                 <span v-for="i in 3" :key="i"
                                       class="w-[5px] h-[5px] rounded-full bg-white/50 call-dot"
                                       :style="`animation-delay: ${(i-1)*0.2}s`" />
                             </span>
-                            <span class="text-white/55 text-[13px]">Calling…</span>
+                            <span class="text-white/60 text-sm">Calling…</span>
                         </template>
                         <template v-else>
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            <span class="text-emerald-400 text-[13px] font-semibold tabular-nums">
+                            <span class="text-emerald-400 text-sm font-semibold tabular-nums">
                                 {{ durationStr }}
                             </span>
                         </template>
@@ -168,7 +168,7 @@ function endCall() { store.endCall() }
                 </div>
 
                 <!-- ── Controls ───────────────────────────────────────── -->
-                <div class="flex items-center gap-3 px-6 py-6 mt-2">
+                <div class="flex items-center justify-center gap-3 px-6 py-6 mt-2 flex-wrap">
 
                     <!-- Mic toggle -->
                     <button @click="micMuted = !micMuted"
@@ -223,7 +223,7 @@ function endCall() { store.endCall() }
     width: 260px;
     height: 260px;
     border-radius: 50%;
-    border: 1.5px solid rgba(108, 99, 255, 0.3);
+    border: 1.5px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
     animation: pulse-out 2.4s ease-out infinite;
 }
 @keyframes pulse-out {
@@ -259,16 +259,17 @@ function endCall() { store.endCall() }
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
-    min-width: 60px;
+    gap: 6px;
+    min-width: 64px;
     padding: 10px 12px;
-    border-radius: 16px;
-    font-size: 0.6875rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
     font-weight: 600;
-    transition: all 0.15s ease;
+    letter-spacing: -0.01em;
+    transition: all 0.15s ease-in-out;
     color: white;
 }
-.ctrl-btn:hover { transform: scale(1.06); }
+.ctrl-btn:hover { transform: scale(1.04); }
 .ctrl-btn:active { transform: scale(0.97); }
 
 .ctrl-btn--default {
@@ -291,7 +292,7 @@ function endCall() { store.endCall() }
     background: rgba(239, 68, 68, 0.9);
     border: 1px solid rgba(239, 68, 68, 0.6);
     box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35);
-    min-width: 68px;
+    min-width: 72px;
 }
 .ctrl-btn--end:hover { background: #ef4444; }
 </style>

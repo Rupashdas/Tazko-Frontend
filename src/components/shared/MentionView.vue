@@ -26,12 +26,12 @@ const handleImageError = () => {
 		role="button"
 		:aria-label="`Mention: ${node.attrs.name}`"
 		tabindex="0"
-		class="mention-chip inline-flex items-center gap-1.5 bg-accent/10 px-2 py-1 rounded-[4px] cursor-pointer transition-colors duration-150 hover:bg-accent/15"
-		:class="{ 'ring-2 ring-accent': selected }"
+		class="inline-flex items-center gap-1.5 bg-accent/10 px-2 py-1 rounded-md cursor-pointer transition-colors duration-150 hover:bg-accent/15"
+		:class="{ 'ring-2 ring-accent/30': selected }"
 	>
 		<!-- Avatar with initials fallback -->
 		<div
-			class="w-[20px] h-[20px] rounded-full flex items-center justify-center text-white text-[0.6rem] font-bold shrink-0"
+			class="w-5 h-5 rounded-full flex items-center justify-center text-white text-[0.65rem] font-bold shrink-0"
 			:class="node.attrs.color || 'bg-accent'"
 		>
 			<img
@@ -45,7 +45,7 @@ const handleImageError = () => {
 		</div>
 
 		<!-- Username in accent color -->
-		<span class="text-accent font-semibold text-[0.85rem] whitespace-nowrap">
+		<span class="text-accent font-semibold text-sm whitespace-nowrap">
 			{{ node.attrs.name }}
 		</span>
 	</NodeViewWrapper>

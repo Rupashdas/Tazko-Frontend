@@ -1,13 +1,13 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { addIcons } from "oh-vue-icons";
-import { MdAlternateemailOutlined, RiLockPasswordLine, CoUserPlus, RiEyeLine, RiEyeOffLine, BiPersonPlus, BiExclamationCircleFill, BiArrowRepeat } from "oh-vue-icons/icons";
+import { BiEnvelope, BiLock, BiPersonPlus, BiEye, BiEyeSlash, BiExclamationCircleFill, BiArrowRepeat } from "oh-vue-icons/icons";
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/utils/toast'
 import { validators } from '@/utils/validators'
 
-addIcons(MdAlternateemailOutlined, RiLockPasswordLine, CoUserPlus, RiEyeLine, RiEyeOffLine, BiPersonPlus, BiExclamationCircleFill, BiArrowRepeat);
+addIcons(BiEnvelope, BiLock, BiPersonPlus, BiEye, BiEyeSlash, BiPersonPlus, BiExclamationCircleFill, BiArrowRepeat);
 
 const router = useRouter()
 const { errorToast } = useToast()
@@ -115,63 +115,55 @@ const handleSignup = async () => {
             <!-- Name row -->
             <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1.5">
-                    <label class="block text-base font-semibold text-text">
-                        First Name <span class="text-red-400">*</span>
-                    </label>
+                    <label class="form-label">First Name <span class="text-red-500">*</span></label>
                     <div class="group relative flex items-center">
                         <span
                             class="absolute left-3.5 text-text group-focus-within:text-accent transition-colors pointer-events-none z-10">
-                            <v-icon name="co-user-plus" scale="0.82" />
+                            <v-icon name="bi-person-plus" scale="0.82" />
                         </span>
                         <input v-model="firstName" type="text" placeholder="Jane" autocomplete="given-name"
                             class="input-field has-icon" :class="{ 'border-red-400': errors.firstName }"
                             @input="clearError('firstName')" />
                     </div>
-                    <p v-if="errors.firstName" class="text-red-500 text-sm mt-1">{{ errors.firstName }}</p>
+                    <p v-if="errors.firstName" class="form-error">{{ errors.firstName }}</p>
                 </div>
                 <div class="flex flex-col gap-1.5">
-                    <label class="block text-base font-semibold text-text">
-                        Last Name <span class="text-red-400">*</span>
-                    </label>
+                    <label class="form-label">Last Name <span class="text-red-500">*</span></label>
                     <div class="group relative flex items-center">
                         <span
                             class="absolute left-3.5 text-text group-focus-within:text-accent transition-colors pointer-events-none z-10">
-                            <v-icon name="co-user-plus" scale="0.82" />
+                            <v-icon name="bi-person-plus" scale="0.82" />
                         </span>
                         <input v-model="lastName" type="text" placeholder="Doe" autocomplete="family-name"
                             class="input-field has-icon" :class="{ 'border-red-400': errors.lastName }"
                             @input="clearError('lastName')" />
                     </div>
-                    <p v-if="errors.lastName" class="text-red-500 text-sm mt-1">{{ errors.lastName }}</p>
+                    <p v-if="errors.lastName" class="form-error">{{ errors.lastName }}</p>
                 </div>
             </div>
 
             <!-- Email -->
             <div class="flex flex-col gap-1.5">
-                <label class="block text-base font-semibold text-text">
-                    Email address <span class="text-red-400">*</span>
-                </label>
+                <label class="form-label">Email address <span class="text-red-500">*</span></label>
                 <div class="group relative flex items-center">
                     <span
                         class="absolute left-3.5 text-text group-focus-within:text-accent transition-colors pointer-events-none z-10">
-                        <v-icon name="md-alternateemail-outlined" scale="0.85" />
+                        <v-icon name="bi-envelope" scale="0.85" />
                     </span>
                     <input v-model="email" type="email" placeholder="you@company.com" autocomplete="email"
                         class="input-field has-icon" :class="{ 'border-red-400': errors.email }"
                         @input="clearError('email')" />
                 </div>
-                <p v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</p>
+                <p v-if="errors.email" class="form-error">{{ errors.email }}</p>
             </div>
 
             <!-- Password -->
             <div class="flex flex-col gap-1.5">
-                <label class="block text-base font-semibold text-text">
-                    Password <span class="text-red-400">*</span>
-                </label>
+                <label class="form-label">Password <span class="text-red-500">*</span></label>
                 <div class="group relative flex items-center">
                     <span
                         class="absolute left-3.5 text-text group-focus-within:text-accent transition-colors pointer-events-none z-10">
-                        <v-icon name="ri-lock-password-line" scale="0.85" />
+                        <v-icon name="bi-lock" scale="0.85" />
                     </span>
                     <input v-model="password" :type="showPassword ? 'text' : 'password'"
                         placeholder="Create a strong password" autocomplete="new-password"
@@ -179,10 +171,10 @@ const handleSignup = async () => {
                         @input="clearError('password')" />
                     <button type="button" @click="showPassword = !showPassword"
                         class="absolute right-3.5 text-text hover:text-accent transition-colors z-10">
-                        <v-icon :name="showPassword ? 'ri-eye-off-line' : 'ri-eye-line'" scale="0.85" />
+                        <v-icon :name="showPassword ? 'bi-eye-slash' : 'bi-eye'" scale="0.85" />
                     </button>
                 </div>
-                <p v-if="errors.password" class="text-red-500 text-sm mt-1">{{ errors.password }}</p>
+                <p v-if="errors.password" class="form-error">{{ errors.password }}</p>
 
                 <!-- Strength meter -->
                 <div v-if="password" class="flex items-center gap-2 mt-0.5">
@@ -196,13 +188,11 @@ const handleSignup = async () => {
 
             <!-- Confirm Password -->
             <div class="flex flex-col gap-1.5">
-                <label class="block text-base font-semibold text-text">
-                    Confirm Password <span class="text-red-400">*</span>
-                </label>
+                <label class="form-label">Confirm Password <span class="text-red-500">*</span></label>
                 <div class="group relative flex items-center">
                     <span
                         class="absolute left-3.5 text-text group-focus-within:text-accent transition-colors pointer-events-none z-10">
-                        <v-icon name="ri-lock-password-line" scale="0.85" />
+                        <v-icon name="bi-lock" scale="0.85" />
                     </span>
                     <input v-model="confirmPassword" :type="showConfirm ? 'text' : 'password'"
                         placeholder="Repeat your password" autocomplete="new-password"
@@ -215,15 +205,15 @@ const handleSignup = async () => {
                         @input="clearError('confirmPassword')" />
                     <button type="button" @click="showConfirm = !showConfirm"
                         class="absolute right-3.5 text-text hover:text-accent transition-colors z-10">
-                        <v-icon :name="showConfirm ? 'ri-eye-off-line' : 'ri-eye-line'" scale="0.85" />
+                        <v-icon :name="showConfirm ? 'bi-eye-slash' : 'bi-eye'" scale="0.85" />
                     </button>
                 </div>
                 <p v-if="errors.confirmPassword || (confirmPassword && password !== confirmPassword)"
-                    class="text-sm text-red-400 font-medium flex items-center gap-1">
+                    class="form-error flex items-center gap-1">
                     <v-icon name="bi-exclamation-circle-fill" scale="0.75" />
                     {{ errors.confirmPassword || "Passwords don't match" }}
                 </p>
-            </div>
+</div>
 
             <!-- Terms note -->
             <p class="text-sm text-text leading-relaxed">

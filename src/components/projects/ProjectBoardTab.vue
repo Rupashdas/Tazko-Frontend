@@ -148,8 +148,8 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 				{ label: 'In Progress', value: inProgressCount, icon: 'bi-lightning-charge', cls: 'text-accent', bg: 'bg-accent/10' },
 				{ label: 'Done', value: doneCount, icon: 'bi-check-circle', cls: 'text-emerald-500', bg: 'bg-emerald-500/10' },
 				{ label: 'Overdue', value: overdueCount, icon: 'bi-clock', cls: overdueCount ? 'text-red-500' : 'text-text', bg: overdueCount ? 'bg-red-500/10' : 'bg-heading/5' },
-			]" :key="stat.label" class="bg-panel rounded-sm border border-heading/5 px-4 py-3 flex items-center gap-3">
-				<div :class="[stat.bg, 'w-12 h-12 rounded-sm flex items-center justify-center shrink-0']">
+			]" :key="stat.label" class="card p-4 flex items-center gap-3">
+				<div :class="[stat.bg, 'w-12 h-12 rounded-md flex items-center justify-center shrink-0']">
 					<v-icon :name="stat.icon" :class="stat.cls" scale="1.4" />
 				</div>
 				<div>
@@ -160,14 +160,14 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 		</div>
 
 		<!-- Toolbar -->
-		<div class="bg-panel rounded-sm border border-heading/5 p-3.5 mb-4">
+		<div class="card p-3.5 mb-4">
 			<div class="flex flex-wrap items-center gap-2.5">
 				<div class="relative flex-1 min-w-40">
 					<v-icon name="bi-search"
 						class="absolute left-3 top-1/2 -translate-y-1/2 text-text pointer-events-none"
 						scale="0.85" />
 					<input v-model="searchQuery" type="text" placeholder="Search tasks…"
-						class="w-full pl-9 pr-8 py-2 rounded-sm border border-heading/8 bg-heading/3 text-base text-heading placeholder:text-text focus:outline-none focus:border-accent/40 transition-colors" />
+						class="w-full pl-9 pr-8 py-2 rounded-md border border-heading/8 bg-heading/3 text-base text-heading placeholder:text-text focus:outline-none focus:border-accent/40 transition-colors" />
 					<button v-if="searchQuery" @click="searchQuery = ''"
 						class="absolute right-2.5 top-1/2 -translate-y-1/2 text-text hover:text-text">
 						<v-icon name="bi-x" scale="0.8" />
@@ -208,13 +208,13 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 
 				<div class="flex-1 hidden sm:block" />
 
-				<div class="flex items-center gap-1 bg-heading/5 rounded-sm p-1">
+				<div class="flex items-center gap-1 bg-heading/5 rounded-md p-1">
 					<button @click="viewMode = 'board'"
-						:class="[viewMode === 'board' ? 'bg-panel text-heading shadow-sm' : 'text-text hover:text-text', 'px-3 py-1.5 rounded-sm text-sm font-semibold transition-all flex items-center gap-1.5']">
+						:class="[viewMode === 'board' ? 'bg-panel text-heading shadow-sm' : 'text-text hover:text-text', 'px-3 py-1.5 rounded-md text-sm font-semibold transition-all flex items-center gap-1.5']">
 						<v-icon name="bi-kanban" scale="0.85" /> Board
 					</button>
 					<button @click="viewMode = 'list'"
-						:class="[viewMode === 'list' ? 'bg-panel text-heading shadow-sm' : 'text-text hover:text-text', 'px-3 py-1.5 rounded-sm text-sm font-semibold transition-all flex items-center gap-1.5']">
+						:class="[viewMode === 'list' ? 'bg-panel text-heading shadow-sm' : 'text-text hover:text-text', 'px-3 py-1.5 rounded-md text-sm font-semibold transition-all flex items-center gap-1.5']">
 						<v-icon name="bi-list-task" scale="0.85" /> List
 					</button>
 				</div>
@@ -226,26 +226,26 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 			:class="['board-container grid grid-cols-4 gap-4', isDragging ? 'is-dragging-global' : '']">
 
 			<div v-for="status in visibleColumnStatuses" :key="status" :class="[
-				'board-column flex flex-col rounded-sm border transition-all duration-200',
+				'board-column flex flex-col rounded-lg border transition-all duration-200',
 				dragOverColumn === status && isDragging ? 'column-drop-active border-accent/20' : 'border-heading/5',
 			]"
 				@dragenter.prevent="onDragEnterColumn(status)" @dragover.prevent="onDragEnterColumn(status)">
 
 				<!-- Column header -->
 				<div
-					:class="['px-3.5 py-3 rounded-t-sm flex items-center justify-between shrink-0', columnConfig[status].headerBg]">
+					:class="['px-3.5 py-3 rounded-t-lg flex items-center justify-between shrink-0', columnConfig[status].headerBg]">
 					<div class="flex items-center gap-2.5">
 						<span
 							:class="[columnConfig[status].dotClass, 'w-2.5 h-2.5 rounded-full', status === 'In Progress' ? 'animate-pulse' : '']" />
 						<span :class="[columnConfig[status].labelClass, 'text-sm font-bold tracking-wide']">{{
 							status }}</span>
 						<span
-							class="text-sm font-bold tabular-nums px-1.5 py-0.5 rounded-sm bg-heading/8 text-text leading-none">
+							class="text-sm font-bold tabular-nums px-1.5 py-0.5 rounded-md bg-heading/8 text-text leading-none">
 							{{ boardColumns[status]?.length ?? 0 }}
 						</span>
 					</div>
 					<button @click="emit('add-task-click', status)"
-						class="column-add-btn w-6 h-6 rounded-sm flex items-center justify-center hover:bg-heading/10 text-text transition-all">
+						class="column-add-btn w-6 h-6 rounded-md flex items-center justify-center hover:bg-heading/10 text-text transition-all">
 						<v-icon name="bi-plus" scale="0.9" />
 					</button>
 				</div>
@@ -260,14 +260,14 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 
 						<template #item="{ element: task }">
 							<div :class="[
-								'task-card group relative flex flex-col gap-2.5 p-3 rounded-sm border cursor-grab active:cursor-grabbing select-none',
+								'task-card group relative flex flex-col gap-2.5 p-3 rounded-lg border cursor-grab active:cursor-grabbing select-none',
 								task.status === 'Done'
 									? 'opacity-55 bg-heading/[0.02] border-heading/5'
 									: 'bg-panel border-heading/8 hover:border-heading/15 hover:shadow-sm',
 							]" @click="emit('open-task', task.id)">
 
 								<button
-									class="absolute top-2 right-2 w-6 h-6 rounded-sm flex items-center justify-center opacity-0 group-hover:opacity-100 text-text hover:text-red-500 hover:bg-red-500/10 transition-all z-10"
+									class="absolute top-2 right-2 w-6 h-6 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 text-text hover:text-red-500 hover:bg-red-500/10 transition-all z-10"
 									@click.stop="emit('delete-task', task.id)">
 									<v-icon name="bi-trash" scale="0.75" />
 								</button>
@@ -283,8 +283,8 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 									</div>
 
 									<div class="flex items-center justify-between gap-2">
-										<span
-											:class="[priorityConfig[task.priority]?.cls, 'text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide']">
+									<span
+										:class="[priorityConfig[task.priority]?.cls, 'badge text-[10px] px-1.5 py-0.5']">
 											{{ task.priority }}
 										</span>
 										<div class="flex items-center gap-1.5 ml-auto">
@@ -318,7 +318,7 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 
 						<template #footer>
 							<div v-if="boardColumns[status]?.length === 0"
-								:class="['empty-drop-zone rounded-sm flex items-center justify-center min-h-[64px] transition-all duration-200', dragOverColumn === status && isDragging ? 'bg-accent/5 border-2 border-dashed border-accent/20' : 'border-2 border-dashed border-heading/8']">
+								:class="['empty-drop-zone rounded-lg flex items-center justify-center min-h-[64px] transition-all duration-200', dragOverColumn === status && isDragging ? 'bg-accent/5 border-2 border-dashed border-accent/20' : 'border-2 border-dashed border-heading/8']">
 								<p class="text-sm text-text font-medium select-none">{{ isDragging ?
 									'Drop here' : 'No tasks' }}</p>
 							</div>
@@ -326,7 +326,7 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 					</draggable>
 
 					<button @click="emit('add-task-click', status)"
-						class="column-add-footer w-full mt-2 flex items-center gap-1.5 px-2.5 py-2 rounded-sm text-sm font-medium text-text hover:text-text hover:bg-heading/4 transition-all group/add">
+						class="column-add-footer w-full mt-2 flex items-center gap-1.5 px-2.5 py-2 rounded-md text-sm font-medium text-text hover:text-text hover:bg-heading/4 transition-all group/add">
 						<v-icon name="bi-plus" scale="0.85"
 							class="group-hover/add:text-accent transition-colors" />
 						Add task
@@ -338,27 +338,17 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 		<!-- ─── LIST VIEW ─── -->
 		<div v-else>
 			<div v-if="filteredTasks.length === 0"
-				class="bg-panel rounded-sm border border-heading/5 p-12 text-center">
+				class="card p-12 text-center">
 				<v-icon name="bi-list-task" class="text-text mx-auto mb-3" scale="2.5" />
 				<p class="text-base font-semibold text-text">No tasks found</p>
 				<p class="text-sm text-text mt-1">Try adjusting your filters</p>
 			</div>
 
-			<div v-else class="bg-panel rounded-sm border border-heading/5 overflow-hidden">
-				<div
-					class="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-heading/5 bg-heading/[0.02]">
-					<div class="w-5" />
-					<span class="text-sm font-bold uppercase text-text">Task</span>
-					<span class="text-sm font-bold uppercase text-text w-20 text-center">Status</span>
-					<span class="text-sm font-bold uppercase text-text w-16 text-center">Priority</span>
-					<span class="text-sm font-bold uppercase text-text w-8 text-center">Who</span>
-					<span class="text-sm font-bold uppercase text-text w-16 text-right">Due</span>
-				</div>
-
+			<div v-else class="card overflow-hidden">
 				<draggable v-model="listItems" item-key="id" handle=".row-handle" :animation="150"
 					ghost-class="list-row-ghost" drag-class="list-row-dragging" chosen-class="list-row-chosen"
 					@start="onDragStart" @end="onDragEnd" @change="onListChange"
-					class="divide-y divide-heading/[0.04]">
+					class="data-table">
 					<template #item="{ element: task }">
 						<div v-if="matchesFilter(task)"
 							class="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 items-center px-5 py-3 hover:bg-heading/[0.02] transition-colors group select-none cursor-pointer"
@@ -373,9 +363,9 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 							</p>
 							<div class="w-20 flex justify-center">
 								<span :class="[
-									'text-sm px-2 py-0.5 rounded-full font-bold inline-flex items-center gap-1 whitespace-nowrap',
+									'badge text-sm px-2 py-0.5',
 									columnConfig[task.status]?.labelClass,
-									task.status === 'Done' ? 'bg-emerald-500/10' : task.status === 'In Progress' ? 'bg-accent/10' : task.status === 'Review' ? 'bg-violet-500/10' : 'bg-slate-400/10',
+									task.status === 'Done' ? 'badge-success' : task.status === 'In Progress' ? 'badge-info' : 'badge-neutral',
 								]">
 									<span
 										:class="[columnConfig[task.status]?.dotClass, 'w-1 h-1 rounded-full', task.status === 'In Progress' ? 'animate-pulse' : '']" />
@@ -384,7 +374,7 @@ const isDueSoon = (due) => { if (!due) return false; const diff = Math.ceil((new
 							</div>
 							<div class="w-16 flex justify-center">
 								<span
-									:class="[priorityConfig[task.priority]?.cls, 'text-sm px-2 py-0.5 rounded-full font-bold whitespace-nowrap']">
+									:class="[priorityConfig[task.priority]?.cls, 'badge text-sm px-2 py-0.5']">
 									{{ task.priority }}
 								</span>
 							</div>

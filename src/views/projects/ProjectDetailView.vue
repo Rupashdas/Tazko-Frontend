@@ -231,22 +231,6 @@ const handleEditProjectSave = async (data) => {
 	}
 }
 
-// ── Inline save (title / description from hero) ───────
-const handleInlineSave = async (data) => {
-	const payload = {
-		name:        data.name        ?? project.value.name,
-		description: data.description ?? project.value.description,
-		goal:        project.value.goal,
-		color:       project.value.color,
-		priority:    project.value.priority,
-		status:      project.value.status,
-		start_date:  project.value.startDate,
-		end_date:    project.value.endDate,
-	}
-	const result = await store.updateProject(project.value.id, payload)
-	if (!result.success) errorToast(result.message)
-}
-
 // ── More menu (three dots) ────────────────────────────
 const moreMenuOpen = ref(false)
 const toggleMoreMenu = (e) => {
@@ -378,8 +362,7 @@ const handleDelete = async () => {
 				@delete="requestDelete"
 				@add-member="openAddMember"
 				@remove-member="handleRemoveMember"
-				@set-active-tab="setActiveTab"
-				@inline-save="handleInlineSave" />
+				@set-active-tab="setActiveTab" />
 
 			<!-- TAB CONTENT PANEL -->
 			<div class="bg-panel border border-heading/8 rounded-sm">
@@ -387,6 +370,7 @@ const handleDelete = async () => {
 				<ProjectBoardTab
 					v-show="activeTab === 'board'"
 					:tasks="store.tasks"
+					:members="project.members"
 					@open-task="openTask"
 					@add-task-click="openAddTaskModal"
 					@tasks-reordered="handleTasksReordered"
@@ -505,7 +489,6 @@ const handleDelete = async () => {
 :deep(.project-rich-content h1) { font-size: 1.7em; font-weight: 700; color: var(--color-heading, #111); margin: 0.6em 0 0.3em; }
 :deep(.project-rich-content strong) { font-weight: 700; }
 :deep(.project-rich-content code) { font-family: 'Fira Code', monospace; font-size: 0.82em; background: rgba(99, 102, 241, 0.1); padding: 0.15em 0.4em; border-radius: 5px; color: #6366f1; }
-:deep(.project-rich-content img) { max-width: 480px; width: auto; max-height: 320px; height: auto; border-radius: 6px; }
 :deep(.project-rich-content a) { color: var(--color-accent, #6366f1); text-decoration: underline; }
 
 :deep([data-file-attachment]) {

@@ -17,35 +17,35 @@ const emit = defineEmits(['pick', 'close'])
 </script>
 
 <template>
-	<div class="p-[10px_12px_12px] min-w-[220px] cp-panel" @click.stop @keydown.escape="emit('close')">
-		<div class="text-[0.7rem] font-semibold uppercase tracking-[0.05em] text-text/45 mb-1.5">Text Color</div>
-		<div class="grid grid-cols-10 gap-[3px] mb-1">
+	<div class="p-3 min-w-[220px] dropdown-menu cp-panel" @click.stop @keydown.escape="emit('close')">
+		<div class="text-xs font-semibold uppercase tracking-wider text-text/50 mb-2">Text Color</div>
+		<div class="grid grid-cols-10 gap-1 mb-2">
 			<button
 				v-for="c in textColors" :key="c" type="button"
-				class="w-[18px] h-[18px] rounded-[3px] border-0 cursor-pointer p-0 transition-transform duration-100 hover:scale-125 hover:relative hover:z-10"
+				class="w-[18px] h-[18px] rounded-md border-0 cursor-pointer p-0 transition-transform duration-100 hover:scale-110 hover:relative hover:z-10"
 				:style="{ background: c, boxShadow: c === '#ffffff' ? 'inset 0 0 0 1px #ccc' : 'none' }"
 				:title="c"
 				@click="emit('pick', { type: 'color', value: c })"
 			/>
 		</div>
 		<button type="button"
-			class="text-[0.72rem] text-text/55 bg-transparent border border-heading/12 rounded-[4px] px-2 py-0.5 cursor-pointer transition-colors duration-[120ms] hover:bg-heading/6 hover:text-heading"
+			class="text-xs text-text/60 bg-transparent border border-heading/10 rounded-md px-2.5 py-1 cursor-pointer transition-colors hover:bg-heading/5 hover:text-heading"
 			@click="emit('pick', { type: 'color', value: null })">
 			Remove color
 		</button>
 
-		<div class="text-[0.7rem] font-semibold uppercase tracking-[0.05em] text-text/45 mt-2.5 mb-1.5">Highlight</div>
-		<div class="grid grid-cols-10 gap-[3px] mb-1">
+		<div class="text-xs font-semibold uppercase tracking-wider text-text/50 mt-3 mb-2">Highlight</div>
+		<div class="grid grid-cols-10 gap-1 mb-2">
 			<button
 				v-for="c in highlightColors" :key="'h' + c" type="button"
-				class="w-[18px] h-[18px] rounded-[3px] border-0 cursor-pointer p-0 transition-transform duration-100 hover:scale-125 hover:relative hover:z-10"
+				class="w-[18px] h-[18px] rounded-md border-0 cursor-pointer p-0 transition-transform duration-100 hover:scale-110 hover:relative hover:z-10"
 				:style="{ background: c }"
 				:title="c"
 				@click="emit('pick', { type: 'highlight', value: c })"
 			/>
 		</div>
 		<button type="button"
-			class="text-[0.72rem] text-text/55 bg-transparent border border-heading/12 rounded-[4px] px-2 py-0.5 cursor-pointer transition-colors duration-[120ms] hover:bg-heading/6 hover:text-heading"
+			class="text-xs text-text/60 bg-transparent border border-heading/10 rounded-md px-2.5 py-1 cursor-pointer transition-colors hover:bg-heading/5 hover:text-heading"
 			@click="emit('pick', { type: 'highlight', value: null })">
 			Remove highlight
 		</button>

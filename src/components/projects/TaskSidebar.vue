@@ -192,7 +192,7 @@ onMounted(() => {
 	<aside class="w-64 shrink-0 space-y-3 sticky top-24 self-start">
 
 		<!-- ── Assignees ─────────────────────────────── -->
-		<div class="bg-panel rounded-sm border border-heading/5 p-4">
+		<div class="card p-4">
 			<p class="text-sm font-semibold uppercase tracking-wide text-text mb-3">Assignees</p>
 
 			<!-- Current assignee list -->
@@ -240,13 +240,13 @@ onMounted(() => {
 		</div>
 
 		<!-- ── Status ─────────────────────────────────── -->
-		<div class="bg-panel rounded-sm border border-heading/5 p-4">
+		<div class="card p-4">
 			<p class="text-sm font-semibold uppercase tracking-wide text-text mb-3">Status</p>
 			<div class="space-y-1.5">
 				<button v-for="st in statusOptions" :key="st"
 					@click="setStatus(st)"
 					:disabled="!canUpdateStatus"
-					:class="['w-full flex items-center gap-2.5 px-3 py-2 rounded-sm text-sm font-semibold transition-all border',
+					:class="['w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-semibold transition-all border',
 						task.status === st
 							? statusConfig[st].cls
 							: 'text-text border-transparent hover:bg-heading/5 hover:text-text',
@@ -260,13 +260,13 @@ onMounted(() => {
 		</div>
 
 		<!-- ── Priority ───────────────────────────────── -->
-		<div class="bg-panel rounded-sm border border-heading/5 p-4">
+		<div class="card p-4">
 			<p class="text-sm font-semibold uppercase tracking-wide text-text mb-3">Priority</p>
 			<div class="space-y-1.5">
 				<button v-for="pr in priorityOptions" :key="pr"
 					@click="setPriority(pr)"
 					:disabled="!canUpdatePriority"
-					:class="['w-full flex items-center gap-2.5 px-3 py-2 rounded-sm text-sm font-semibold transition-all border',
+					:class="['w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-semibold transition-all border',
 						task.priority === pr
 							? priorityConfig[pr].cls
 							: 'text-text border-transparent hover:bg-heading/5 hover:text-text',
@@ -279,7 +279,7 @@ onMounted(() => {
 		</div>
 
 		<!-- ── Due Date ───────────────────────────────── -->
-		<div ref="dueDateCardRef" class="bg-panel rounded-sm border border-heading/5 p-4">
+		<div ref="dueDateCardRef" class="card p-4">
 			<p class="text-sm font-semibold uppercase tracking-wide text-text mb-3">Due Date</p>
 			<div :class="['due-date-wrapper flex items-center gap-2 w-full transition-opacity',
 				canUpdateDeadline ? 'cursor-pointer hover:opacity-80' : 'cursor-not-allowed opacity-70 pointer-events-none']">
@@ -296,12 +296,12 @@ onMounted(() => {
 		</div>
 
 		<!-- ── Labels ─────────────────────────────────── -->
-		<div class="bg-panel rounded-sm border border-heading/5 p-4">
+		<div class="card p-4">
 			<p class="text-sm font-semibold uppercase tracking-wide text-text mb-3">Labels</p>
 			<div class="space-y-2.5">
 				<div class="flex flex-wrap gap-1.5">
 					<span v-for="label in task.labels" :key="label.id"
-						:class="[label.color, 'text-sm px-2.5 py-1 rounded-full font-semibold border flex items-center gap-1.5']">
+						:class="[label.color, 'badge text-sm px-2.5 py-1 flex items-center gap-1.5']">
 						{{ label.name }}
 						<button v-if="canUpdate" @click="removeLabel(label)"
 							class="hover:opacity-60 transition-opacity leading-none">×</button>
@@ -317,12 +317,12 @@ onMounted(() => {
 						@keydown.escape="showLabelInput = false"
 						class="w-full px-0 py-2 border-0 border-b-2 border-heading/20 bg-transparent text-sm focus:outline-none focus:border-accent transition-colors" />
 
-					<div v-if="labelInput && filteredLabels.length" class="absolute top-full left-0 right-0 mt-1 bg-panel border border-heading/10 rounded-sm shadow-lg z-50">
+					<div v-if="labelInput && filteredLabels.length" class="absolute top-full left-0 right-0 mt-1 bg-panel border border-heading/10 rounded-lg shadow-sm z-50">
 						<button
 							v-for="label in filteredLabels" :key="label.id"
 							@click="addLabel(label.id)"
 							class="w-full text-left px-3 py-2 text-sm hover:bg-heading/5 transition-colors flex items-center gap-2">
-							<span :class="[label.color, 'px-2 py-0.5 rounded-full text-xs font-semibold border']">
+							<span :class="[label.color, 'badge px-2 py-0.5 text-xs font-semibold']">
 								{{ label.name }}
 							</span>
 						</button>
@@ -332,7 +332,7 @@ onMounted(() => {
 				<button
 					v-if="!showLabelInput && canUpdate"
 					@click="showLabelInput = true"
-					class="text-sm px-2.5 py-1 rounded-full border border-dashed border-heading/20 text-text hover:border-accent hover:text-accent transition-colors">
+					class="badge border border-dashed border-heading/20 text-text hover:border-accent hover:text-accent transition-colors">
 					+ Add label
 				</button>
 			</div>

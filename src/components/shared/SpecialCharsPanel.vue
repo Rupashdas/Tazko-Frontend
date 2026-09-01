@@ -127,21 +127,21 @@ const emit = defineEmits(['pick', 'close'])
 </script>
 
 <template>
-	<div class="w-[300px] p-2 sc-panel" @click.stop @keydown.escape="emit('close')">
-		<div class="flex gap-0.5 flex-wrap mb-1.5">
+	<div class="w-[300px] p-2.5 flex flex-col gap-2 dropdown-menu sc-panel" @click.stop @keydown.escape="emit('close')">
+		<div class="flex gap-1 flex-wrap">
 			<button
 				v-for="(cat, i) in categories" :key="cat.name"
 				type="button"
-				class="px-[9px] py-[3px] text-[0.72rem] font-semibold border border-heading/12 rounded-[5px] bg-transparent text-text/60 cursor-pointer transition-colors duration-100 hover:bg-accent/12 hover:text-accent hover:border-accent/30"
-				:class="{ 'bg-accent/12 !text-accent border-accent/30': activeCategory === i }"
+				class="px-2.5 py-1 text-xs font-semibold border border-heading/10 rounded-md bg-transparent text-text/60 cursor-pointer transition-colors duration-150 hover:bg-accent/10 hover:text-accent hover:border-accent/30"
+				:class="{ 'bg-accent/10 text-accent border-accent/30': activeCategory === i }"
 				@click="activeCategory = i"
 			>{{ cat.name }}</button>
 		</div>
-		<div v-scrollbar class="grid grid-cols-8 gap-0.5 max-h-[200px] overflow-y-auto">
+		<div v-scrollbar class="grid grid-cols-8 gap-1 max-h-[200px] overflow-y-auto">
 			<button
 				v-for="item in categories[activeCategory].chars" :key="item.char"
 				type="button"
-				class="w-8 h-8 text-base border border-transparent rounded-[4px] bg-transparent cursor-pointer flex items-center justify-center transition-colors duration-100 text-text font-['Georgia',serif] hover:bg-accent/10 hover:border-accent/20 hover:text-heading"
+				class="w-8 h-8 text-base border border-transparent rounded-md bg-transparent cursor-pointer flex items-center justify-center transition-colors duration-100 text-text font-['Georgia',serif] hover:bg-accent/10 hover:border-accent/20 hover:text-heading"
 				:title="item.label + ' (' + item.char + ')'"
 				@click="emit('pick', item.char)"
 			>{{ item.char }}</button>

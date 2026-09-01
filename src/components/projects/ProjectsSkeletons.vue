@@ -10,11 +10,11 @@ defineProps({
 	<!-- Grid -->
 	<div v-if="mode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
 		<div v-for="n in count" :key="n"
-			class="bg-panel rounded-sm border border-heading/8 overflow-hidden flex flex-col animate-pulse">
+			class="card rounded-lg overflow-hidden flex flex-col animate-pulse">
 			<div class="h-1 w-full bg-heading/10" />
 			<div class="p-5 flex-1">
 				<div class="flex items-start justify-between mb-3">
-					<div class="w-10 h-10 rounded-sm bg-heading/10" />
+					<div class="w-10 h-10 rounded-md bg-heading/10" />
 					<div class="w-20 h-6 rounded-full bg-heading/10" />
 				</div>
 				<div class="h-4 bg-heading/10 rounded w-3/4 mb-2" />
@@ -38,7 +38,7 @@ defineProps({
 	</div>
 
 	<!-- List -->
-	<div v-else class="bg-panel rounded-sm border border-heading/8 overflow-hidden animate-pulse">
+	<div v-else class="card rounded-lg overflow-hidden animate-pulse">
 		<div v-if="header" class="border-b border-heading/8 bg-heading/[0.02] px-5 py-3 flex gap-6">
 			<div class="h-3 w-32 rounded bg-heading/10" />
 			<div class="h-3 w-16 rounded bg-heading/10" />
@@ -51,7 +51,7 @@ defineProps({
 		<div v-for="n in count" :key="n"
 			class="flex items-center gap-4 px-5 py-4 border-b border-heading/5 last:border-0">
 			<div class="flex items-center gap-3 flex-1 min-w-0">
-				<div class="w-8 h-8 rounded-sm bg-heading/10 shrink-0" />
+				<div class="w-8 h-8 rounded-md bg-heading/10 shrink-0" />
 				<div class="space-y-1.5 flex-1">
 					<div class="h-3.5 bg-heading/10 rounded w-2/5" />
 					<div class="h-3 bg-heading/8 rounded w-3/5" />

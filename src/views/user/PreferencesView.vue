@@ -9,14 +9,14 @@ import { usePreferencesStore } from '@/stores/usePreferencesStore'
 import { addIcons } from 'oh-vue-icons'
 import {
 	BiPalette,
-	MdAvtimer,
-	MdDisabledvisibleOutlined,
+	BiClock,
+	BiEye,
 	BiSun,
-	MdDarkmodeOutlined,
-	RiComputerLine, BiArrowRepeat, BiCheck2
+	BiMoon,
+	BiLaptop, BiArrowRepeat, BiCheck2
 } from 'oh-vue-icons/icons'
 
-addIcons(BiPalette, MdAvtimer, MdDisabledvisibleOutlined, BiSun, MdDarkmodeOutlined, RiComputerLine, BiArrowRepeat, BiCheck2)
+addIcons(BiPalette, BiClock, BiEye, BiSun, BiMoon, BiLaptop, BiArrowRepeat, BiCheck2)
 import AppSelect from '@/components/ui/AppSelect.vue'
 
 const { successToast, errorToast } = useToast()
@@ -26,9 +26,9 @@ const { palette, appearance, timezone, week_start, time_format, saving } = store
 const paletteKeys = computed(() => Object.keys(PALETTES))
 
 const APPEARANCE_OPTIONS = [
-	{ icon: 'bi-sun', label: 'Light', value: 'light', desc: 'Bright & clear', bg: '#f8fafc' },
-	{ icon: 'md-darkmode-outlined', label: 'Dark', value: 'dark', desc: 'Easy on the eyes', bg: '#0f172a' },
-	{ icon: 'ri-computer-line', label: 'System', value: 'os', desc: 'Follow OS setting', bg: 'linear-gradient(135deg, #f8fafc 50%, #0f172a 50%)' },
+{ icon: 'bi-sun', label: 'Light', value: 'light', desc: 'Bright & clear', bg: '#f8fafc' },
+    { icon: 'bi-moon', label: 'Dark', value: 'dark', desc: 'Easy on the eyes', bg: '#0f172a' },
+    { icon: 'bi-monitor', label: 'System', value: 'os', desc: 'Follow OS setting', bg: 'linear-gradient(135deg, #f8fafc 50%, #0f172a 50%)' },
 ]
 
 const WEEK_START_OPTIONS = [
@@ -155,7 +155,7 @@ const saveDateTime = async () => {
 			<div class="bg-panel border border-heading/8 rounded-sm p-5 md:p-6 shadow-sm">
 				<div class="flex items-center gap-3 mb-5">
 					<div class="w-12 h-12 rounded-sm bg-accent/10 flex items-center justify-center shrink-0">
-						<v-icon name="md-disabledvisible-outlined" class="text-accent" scale="1.2" />
+						<v-icon name="bi-eye" class="text-accent" scale="1.2" />
 					</div>
 					<div>
 						<!-- FIX: section-title (was text-lg font-bold) -->
@@ -217,10 +217,10 @@ const saveDateTime = async () => {
 
 						<!-- Timezone -->
 						<div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
-							<div class="sm:w-40 shrink-0">
-								<p class="text-base font-semibold text-text">Timezone</p>
-								<p class="section-desc">Your local time</p>
-							</div>
+						<div class="sm:w-40 shrink-0">
+							<p class="form-label">Timezone</p>
+							<p class="section-desc">Your local time</p>
+						</div>
 							<div class="flex-1">
 								<AppSelect
 									v-model="timezone"
@@ -236,10 +236,10 @@ const saveDateTime = async () => {
 
 						<!-- First Day of Week -->
 						<div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
-							<div class="sm:w-40 shrink-0">
-								<p class="text-base font-semibold text-text">Week starts</p>
-								<p class="section-desc">First day of week</p>
-							</div>
+						<div class="sm:w-40 shrink-0">
+							<p class="form-label">Week starts</p>
+							<p class="section-desc">First day of week</p>
+						</div>
 							<div class="flex gap-1.5 flex-wrap">
 								<button v-for="opt in WEEK_START_OPTIONS" :key="opt.value" type="button"
 									@click="week_start = opt.value"
@@ -256,10 +256,10 @@ const saveDateTime = async () => {
 
 						<!-- Time Format -->
 						<div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
-							<div class="sm:w-40 shrink-0">
-								<p class="text-base font-semibold text-text">Time format</p>
-								<p class="section-desc">Clock display style</p>
-							</div>
+						<div class="sm:w-40 shrink-0">
+							<p class="form-label">Time format</p>
+							<p class="section-desc">Clock display style</p>
+						</div>
 							<div class="flex gap-2 flex-wrap">
 								<button v-for="opt in TIME_FORMAT_OPTIONS" :key="opt.value" type="button"
 									@click="time_format = opt.value"

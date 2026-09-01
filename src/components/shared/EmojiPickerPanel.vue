@@ -646,7 +646,7 @@ onMounted(() => {
 </script>
 
 <template>
-	<div class="w-[280px] p-2 flex flex-col gap-1.5 ep-panel" @click.stop @keydown.escape="emit('close')">
+	<div class="w-[280px] p-2.5 flex flex-col gap-2 dropdown-menu ep-panel" @click.stop @keydown.escape="emit('close')">
 		<!-- Category tabs -->
 		<div class="flex gap-0.5 flex-wrap" role="tablist" aria-label="Emoji categories">
 			<button
@@ -655,8 +655,8 @@ onMounted(() => {
 				role="tab"
 				:aria-selected="activeCategory === i && !search.trim()"
 				:aria-label="cat.name"
-				class="text-base w-[30px] h-[30px] border-0 bg-transparent rounded-sm cursor-pointer transition-colors duration-[120ms] flex items-center justify-center hover:bg-accent/12 focus:outline-offset-0 focus:ring-2 focus:ring-accent"
-				:class="{ 'bg-accent/12': activeCategory === i && !search.trim() }"
+				class="text-base w-[30px] h-[30px] border-0 bg-transparent rounded-md cursor-pointer transition-colors duration-150 flex items-center justify-center hover:bg-accent/10 focus:outline-offset-0 focus:ring-2 focus:ring-accent/20"
+				:class="{ 'bg-accent/10': activeCategory === i && !search.trim() }"
 				:title="cat.name"
 				@click="activeCategory = i; search = ''"
 				@keydown.arrow-right="activeCategory = Math.min(activeCategory + 1, categories.length - 1)"
@@ -670,7 +670,7 @@ onMounted(() => {
 				ref="searchInput"
 				v-model="search"
 				type="text"
-				class="w-full py-[5px] px-2 border border-heading/12 rounded-sm text-[0.8rem] bg-heading/3 text-text outline-none focus:border-accent"
+				class="tazko-search"
 				placeholder="Search emoji…"
 			/>
 		</div>
@@ -680,12 +680,12 @@ onMounted(() => {
 			<button
 				v-for="(item, idx) in displayEmojis" :key="`${item.emoji}-${item.name}-${idx}`"
 				type="button"
-				class="text-[1.2rem] w-[30px] h-[30px] border-0 bg-transparent rounded-[5px] cursor-pointer flex items-center justify-center transition-colors duration-100 p-0 leading-none hover:bg-accent/10"
+				class="text-[1.2rem] w-[30px] h-[30px] border-0 bg-transparent rounded-md cursor-pointer flex items-center justify-center transition-colors duration-100 p-0 leading-none hover:bg-accent/10"
 				:title="item.name"
 				@click="emit('pick', item.emoji)"
 			>{{ item.emoji }}</button>
 		</div>
 
-		<div v-if="displayEmojis.length === 0" class="text-center text-[0.8rem] text-text/40 py-4">No emojis found</div>
+		<div v-if="displayEmojis.length === 0" class="text-center text-sm text-text/40 py-4">No emojis found</div>
 	</div>
 </template>

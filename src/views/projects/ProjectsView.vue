@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { addIcons } from 'oh-vue-icons'
-import { BiPlusCircle, BiArchive, MdFolderspecialOutlined } from 'oh-vue-icons/icons'
+import { BiPlus, BiArchive, BiFolder2Open } from 'oh-vue-icons/icons'
 
 import ProjectFormModal   from '@/components/projects/ProjectFormModal.vue'
 import ConfirmModal       from '@/components/ui/ConfirmModal.vue'
@@ -10,6 +10,7 @@ import ProjectStatsCards  from '@/components/projects/ProjectStatsCards.vue'
 import ProjectsToolbar    from '@/components/projects/ProjectsToolbar.vue'
 import ProjectCard        from '@/components/projects/ProjectCard.vue'
 import ProjectListTable   from '@/components/projects/ProjectListTable.vue'
+import ProjectBoardView   from '@/components/projects/ProjectBoardView.vue'
 import ProjectsSkeletons  from '@/components/projects/ProjectsSkeletons.vue'
 
 import { useProjectStore } from '@/stores/useProjectStore'
@@ -17,7 +18,7 @@ import { useAuthStore }    from '@/stores/useAuthStore'
 import { useToast }        from '@/utils/toast'
 import { paletteColor }    from '@/utils/paletteColor'
 
-addIcons(BiPlusCircle, BiArchive, MdFolderspecialOutlined)
+addIcons(BiPlus, BiArchive, BiFolder2Open)
 
 const router = useRouter()
 const store  = useProjectStore()
@@ -255,10 +256,10 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 </script>
 
 <template>
-	<div class="pb-20 pt-8" @click="openMenuId = null">
+	<div class="space-y-5" @click="openMenuId = null">
 
 		<!-- Header -->
-		<div class="mb-8 flex items-end justify-between gap-4 flex-wrap">
+		<div class="flex items-end justify-between gap-4 flex-wrap">
 			<div>
 				<p class="page-eyebrow">Workspace</p>
 				<h1 class="page-title">Projects</h1>
@@ -271,23 +272,25 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 					<v-icon name="bi-archive" scale="0.9" />
 					Archived
 					<span v-if="archivedCount > 0"
-						class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-heading/10 text-sm font-bold text-text leading-none tabular-nums">
+						class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-heading/8 text-xs font-bold text-text tabular-nums">
 						{{ archivedCount }}
 					</span>
 				</button>
-				<button v-if="canCreate" @click.stop="openCreateModal" class="tazko-btn shadow-lg shadow-accent/20">
-					<v-icon name="bi-plus-circle" scale="0.9" />
+				<button v-if="canCreate" @click.stop="openCreateModal" class="tazko-btn">
+					<v-icon name="bi-plus" scale="0.9" />
 					New Project
 				</button>
 			</div>
 		</div>
 
+		<!-- Stats strip -->
 		<ProjectStatsCards
 			:total="store.meta.total"
 			:active="store.meta.active_count"
 			:completed="store.meta.completed_count"
 			:avg-progress="store.meta.avg_progress" />
 
+		<!-- Toolbar -->
 		<ProjectsToolbar
 			v-model:search="searchQuery"
 			v-model:statusFilter="statusFilter"
@@ -304,21 +307,21 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 			header />
 
 		<!-- Empty state -->
-		<div v-else-if="!store.loading && store.projects.length === 0" class="text-center py-24">
-			<div class="w-20 h-20 bg-accent/10 rounded-3xl flex items-center justify-center mx-auto mb-5">
-				<v-icon name="md-folderspecial-outlined" class="text-accent" scale="2" />
+		<div v-else-if="!store.loading && store.projects.length === 0" class="card p-10 text-center">
+			<div class="w-14 h-14 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+				<v-icon name="bi-folder2-open" class="text-accent" scale="1.8" />
 			</div>
-			<h3 class="section-title mb-2">No projects found</h3>
-			<p class="page-subtitle mb-6">Try adjusting your filters or create a new project.</p>
+			<h3 class="section-title mb-1.5">No projects found</h3>
+			<p class="text-sm text-text mb-5 max-w-sm mx-auto">Try adjusting your filters or create a new project to get started.</p>
 			<button @click="clearFilters"
-				class="inline-flex items-center gap-2 px-4 py-2 rounded-sm border border-heading/10 text-base font-semibold text-text hover:bg-heading/5 transition-colors">
+				class="tazko-btn-outline">
 				Clear filters
 			</button>
 		</div>
 
 		<!-- Grid view -->
 		<div v-else-if="viewMode === 'grid'"
-			class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+			class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
 			<ProjectCard
 				v-for="row in decoratedProjects" :key="row.project.id"
 				:project="row.project"
@@ -336,6 +339,11 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 				@archive="requestArchive(row.project.id)"
 				@delete="requestDelete(row.project.id)" />
 		</div>
+
+		<!-- Board view -->
+		<ProjectBoardView v-else-if="viewMode === 'board'"
+			:rows="decoratedProjects"
+			@open="openProject" />
 
 		<!-- List view -->
 		<ProjectListTable v-else
@@ -365,10 +373,10 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 			message="This project will be moved to the archive. You can restore it at any time from the Archived Projects page."
 			icon="bi-archive"
 			icon-bg="bg-amber-500/10"
-			icon-color="text-amber-500"
+			icon-color="text-amber-600"
 			confirm-label="Archive"
 			confirming-label="Archiving…"
-			confirm-bg="bg-amber-500 hover:bg-amber-600"
+			confirm-bg="bg-amber-600 hover:bg-amber-700"
 			:loading="archiving"
 			@close="showArchiveConfirm = false"
 			@confirm="handleArchive" />
@@ -380,6 +388,7 @@ const openProject = (id) => router.push({ name: 'project-detail', params: { id }
 			icon="bi-trash"
 			confirm-label="Delete"
 			confirming-label="Deleting…"
+			confirm-bg="bg-red-600 hover:bg-red-700"
 			:loading="deleting"
 			@close="showDeleteConfirm = false"
 			@confirm="handleDelete" />

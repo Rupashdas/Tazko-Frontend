@@ -1,37 +1,37 @@
 <script setup>
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { addIcons } from "oh-vue-icons"
-import { FaUsers, FaUserCog, FaCogs, IoEnterSharp } from "oh-vue-icons/icons"
+import { BiPeople, BiShield, BiGear, BiArrowRight } from "oh-vue-icons/icons"
 
-addIcons(FaUsers, FaUserCog, FaCogs, IoEnterSharp)
+addIcons(BiPeople, BiShield, BiGear, BiArrowRight)
 
 const route = useRoute()
 
 const navItems = [
 	{
 		name: 'system-settings-roles',
-		icon: 'fa-user-cog',
+		icon: 'bi-shield',
 		label: 'Manage Roles',
 		desc: 'Role permissions',
 		available: true,
 	},
 	{
 		name: 'system-settings-users',
-		icon: 'fa-users',
+		icon: 'bi-people',
 		label: 'Manage Users',
 		desc: 'User accounts',
 		available: true,
 	},
 	{
 		name: null,
-		icon: 'io-enter-sharp',
+		icon: 'bi-arrow-right',
 		label: 'Permissions',
 		desc: 'Access rules',
 		available: false,
 	},
 	{
 		name: null,
-		icon: 'fa-cogs',
+		icon: 'bi-gear',
 		label: 'Configurations',
 		desc: 'System config',
 		available: false,
@@ -77,7 +77,7 @@ const isActive = (name) => name && route.matched.some(r => r.name === name)
 
 			<!-- SIDEBAR: hidden on mobile, visible on desktop -->
 			<aside
-				class="hidden md:flex w-64 shrink-0 bg-panel border border-heading/8 rounded-sm shadow-sm overflow-hidden self-start sticky top-24">
+				class="hidden md:flex w-64 shrink-0 bg-panel border border-heading/8 rounded-lg shadow-sm overflow-hidden self-start sticky top-24">
 				<div class="w-full">
 					<div class="px-5 pt-5 pb-4 border-b border-heading/8">
 						<p class="text-base font-semibold text-text mb-1.5">Admin</p>

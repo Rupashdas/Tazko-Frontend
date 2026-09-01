@@ -158,7 +158,7 @@ const toggleLike = (commentId) => {
 					<div class="w-9 h-9 rounded-full bg-heading/10 shrink-0" />
 					<div class="flex-1 space-y-2">
 						<div class="h-3 w-32 bg-heading/10 rounded" />
-						<div class="h-16 bg-heading/10 rounded-sm" />
+						<div class="h-16 bg-heading/10 rounded-md" />
 					</div>
 				</div>
 			</div>
@@ -226,7 +226,7 @@ const toggleLike = (commentId) => {
 							</div>
 						</div>
 
-						<div class="bg-heading/[0.03] rounded-sm rounded-tl-none px-4 py-3 border border-heading/[0.06]">
+						<div class="bg-heading/[0.03] rounded-lg rounded-tl-none px-4 py-3 border border-heading/[0.06]">
 							<!-- View mode -->
 							<div
 								v-if="editingCommentId !== comment.id"
@@ -264,7 +264,7 @@ const toggleLike = (commentId) => {
 
 				<!-- Empty state -->
 				<div v-if="store.comments.length === 0" class="text-center py-12">
-					<div class="w-14 h-14 mx-auto rounded-sm bg-heading/5 flex items-center justify-center mb-3">
+					<div class="w-14 h-14 mx-auto rounded-md bg-heading/5 flex items-center justify-center mb-3">
 						<v-icon name="bi-chat" class="text-text" scale="1.5" />
 					</div>
 					<p class="text-base font-semibold text-text">No comments yet</p>

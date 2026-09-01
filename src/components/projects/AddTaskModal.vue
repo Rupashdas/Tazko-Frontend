@@ -90,7 +90,7 @@ const handleClose = () => emit('close')
 			<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4"
 				@click.self="handleClose">
 				<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="handleClose"></div>
-				<div class="relative bg-panel rounded-sm shadow-2xl w-full max-w-4xl z-10 overflow-hidden transition-all">
+				<div class="relative bg-panel rounded-xl shadow-sm w-full max-w-4xl z-10 overflow-hidden transition-all">
 
 					<div class="border-b border-heading/8 px-6 pt-6 pb-5">
 						<div class="flex items-center justify-between">
@@ -99,7 +99,7 @@ const handleClose = () => emit('close')
 								<p class="section-desc">Create a new task for this project.</p>
 							</div>
 							<button @click="handleClose"
-								class="w-7 h-7 rounded-sm flex items-center justify-center text-text hover:text-text hover:bg-heading/8 transition-all">
+								class="w-7 h-7 rounded-md flex items-center justify-center text-text hover:text-text hover:bg-heading/8 transition-all">
 								<v-icon name="bi-x" scale="1.3" />
 							</button>
 						</div>
@@ -107,26 +107,26 @@ const handleClose = () => emit('close')
 
 					<div v-scrollbar class="max-h-[60vh] overflow-y-auto"><div class="p-6 space-y-4">
 						<div>
-							<label class="block text-base font-semibold text-text mb-1.5">Task Title <span class="text-red-400">*</span></label>
+							<label class="form-label">Task Title <span class="text-red-400">*</span></label>
 							<input v-model="title" type="text" placeholder="e.g. Implement login page"
 								class="input-field border-heading/15 focus:border-accent"
 								@keydown.enter="handleSave" />
 						</div>
-						<div class="grid grid-cols-2 gap-3">
+						<div class="grid grid-cols-2 gap-4">
 							<div>
-								<label class="block text-base font-semibold text-text mb-1.5">Priority</label>
+								<label class="form-label">Priority</label>
 								<AppSelect
 									v-model="priority"
 									:options="['Urgent', 'High', 'Medium', 'Low']"
 									placeholder="Select priority" />
 							</div>
 							<div>
-								<label class="block text-base font-semibold text-text mb-1.5">Due Date</label>
+								<label class="form-label">Due Date</label>
 								<AppDatePicker v-model="due" placeholder="Pick due date" />
 							</div>
 						</div>
 						<div>
-							<label class="block text-base font-semibold text-text mb-1.5">Assignees</label>
+							<label class="form-label">Assignees</label>
 							<AppSelect
 								v-model="assignees"
 								:options="assigneeOptions"
@@ -135,19 +135,19 @@ const handleClose = () => emit('close')
 								:multiple="true" />
 						</div>
 						<div>
-							<label class="block text-base font-semibold text-text mb-1.5">Status</label>
+							<label class="form-label">Status</label>
 							<AppSelect
 								v-model="status"
 								:options="columnStatuses"
 								placeholder="Select status" />
 						</div>
 						<div>
-							<label class="block text-base font-semibold text-text mb-1.5">Description</label>
+							<label class="form-label">Description</label>
 							<RichTextEditor ref="taskEditorRef" v-model="description" placeholder="Describe the task…" min-height="120px" :enable-mention="true" :users="members" :project-id="projectId" :draft-context-key="`project:${projectId}:task:new`" />
 						</div>
 					</div></div>
 
-					<div class="px-6 py-3 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01]">
+					<div class="px-6 py-3 border-t border-heading/8 flex items-center gap-3 bg-heading/[0.01] rounded-b-xl">
 						<button @click="handleClose" class="flex-1 tazko-btn-cancel">
 							Cancel
 						</button>

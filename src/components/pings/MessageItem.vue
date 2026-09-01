@@ -41,56 +41,55 @@ function fileColor(type) {
 
 <template>
     <!-- Deleted -->
-    <div v-if="message.deleted" class="flex gap-3 px-5 py-1">
+    <div v-if="message.deleted" class="flex gap-3 px-4 sm:px-5 py-1.5">
         <div class="w-8 shrink-0" />
-        <p class="text-[13px] italic text-text/30 select-none">This message was deleted.</p>
+        <p class="text-sm italic text-text/60 select-none">This message was deleted.</p>
     </div>
 
     <!-- Message -->
     <div v-else
-         class="group relative flex px-5 transition-colors duration-100 hover:bg-heading/[0.025]"
+         class="group relative flex px-4 sm:px-5 transition-colors duration-100 hover:bg-heading/3"
          :class="[isMine ? 'flex-row-reverse' : 'flex-row', isGrouped ? 'py-0.5' : 'pt-3 pb-0.5']"
          @mouseenter="showActions = true"
          @mouseleave="showActions = false">
 
         <!-- Avatar (others only) -->
-        <div class="shrink-0 mt-0.5" :class="isMine ? 'ml-2' : 'mr-2.5 w-8'">
+        <div class="shrink-0 mt-0.5" :class="isMine ? 'ml-2' : 'mr-3 w-8'">
             <div v-if="!isGrouped && !isMine"
-                 class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+                 class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
                  :style="`background:${sender?.color ?? '#6c63ff'}`">
                 {{ sender?.initials ?? '?' }}
             </div>
         </div>
 
         <!-- Body -->
-        <div class="flex flex-col max-w-[72%]" :class="isMine ? 'items-end' : 'items-start'">
+        <div class="flex flex-col max-w-[85%] sm:max-w-[72%]" :class="isMine ? 'items-end' : 'items-start'">
 
             <!-- Sender + time -->
             <div v-if="!isGrouped"
-                 class="flex items-baseline gap-2 mb-1"
+                 class="flex items-baseline gap-2 mb-1.5"
                  :class="isMine ? 'flex-row-reverse' : ''">
-                <span class="text-[13px] font-bold" :class="isMine ? 'text-accent' : 'text-heading'">
+                <span class="text-sm font-semibold" :class="isMine ? 'text-accent' : 'text-heading'">
                     {{ isMine ? 'You' : sender?.name }}
                 </span>
-                <span class="text-[10px] text-text/35 tabular-nums">
+                <span class="text-xs text-text/60 tabular-nums">
                     {{ message.time }}
                 </span>
             </div>
             <span v-else
-                  class="text-[10px] text-text/25 opacity-0 group-hover:opacity-100 transition-opacity mb-0.5 tabular-nums">
+                  class="text-xs text-text/50 opacity-0 group-hover:opacity-100 transition-opacity mb-0.5 tabular-nums">
                 {{ message.time }}
             </span>
 
-            <!-- ── Reply quote (Facebook style) ──────────────────── -->
+            <!-- ── Reply quote ──────────────────────────────────── -->
             <div v-if="message.replyTo"
-                 class="mb-1.5 flex items-start gap-2 px-3 py-2 rounded-xl border-l-2 border-accent/50
-                        bg-accent/5 max-w-full cursor-default"
-                 :class="isMine ? 'rounded-tr-sm' : 'rounded-tl-sm'">
+                 class="mb-1.5 flex items-start gap-2 px-3 py-2 rounded-lg border-l-2 border-accent/50
+                        bg-accent/5 max-w-full cursor-default">
                 <div class="min-w-0">
-                    <p class="text-[11px] font-bold text-accent truncate mb-0.5">
+                    <p class="text-xs font-semibold text-accent truncate mb-0.5">
                         {{ message.replyTo.senderId === store.CURRENT_USER_ID ? 'You' : message.replyTo.senderName }}
                     </p>
-                    <p class="text-[12px] text-text/65 truncate max-w-[220px]">
+                    <p class="text-xs text-text truncate max-w-[220px]">
                         {{ message.replyTo.content }}
                     </p>
                 </div>
@@ -98,57 +97,57 @@ function fileColor(type) {
 
             <!-- Image -->
             <div v-if="message.type === 'image'"
-                 class="relative rounded-2xl overflow-hidden max-w-[320px] cursor-zoom-in"
-                 :class="isMine ? 'rounded-tr-sm' : 'rounded-tl-sm'">
+                 class="relative rounded-xl overflow-hidden max-w-[320px] border border-heading/8 cursor-zoom-in"
+                 :class="isMine ? 'rounded-tr-md' : 'rounded-tl-md'">
                 <img :src="message.url" :alt="message.content"
                      class="w-full object-cover max-h-64 hover:brightness-95 transition-all duration-200" />
             </div>
 
             <!-- File card -->
             <div v-else-if="message.type === 'file'"
-                 class="inline-flex items-center gap-3 px-4 py-3 rounded-2xl border border-heading/12
+                 class="inline-flex items-center gap-3 px-4 py-3 rounded-xl border border-heading/8
                         bg-panel hover:border-accent/25 hover:bg-accent/3 cursor-pointer transition-all duration-150 group/file max-w-[280px]"
-                 :class="isMine ? 'rounded-tr-sm' : 'rounded-tl-sm'">
-                <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                 :class="isMine ? 'rounded-tr-md' : 'rounded-tl-md'">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                      :style="`background:${fileColor(message.fileType)}18`">
                     <v-icon :name="fileIcon(message.fileType)" scale="1.05"
                             :style="`color:${fileColor(message.fileType)}`" />
                 </div>
                 <div class="min-w-0 flex-1">
-                    <p class="text-[13px] font-semibold text-heading truncate">{{ message.content }}</p>
-                    <p class="text-[11px] text-text/50 mt-0.5">{{ message.fileSize }}</p>
+                    <p class="text-sm font-semibold text-heading truncate">{{ message.content }}</p>
+                    <p class="text-xs text-text mt-0.5">{{ message.fileSize }}</p>
                 </div>
                 <v-icon name="bi-download" scale="0.88"
-                        class="text-text/30 group-hover/file:text-accent transition-colors shrink-0" />
+                        class="text-text/50 group-hover/file:text-accent transition-colors shrink-0" />
             </div>
 
             <!-- Text bubble -->
             <div v-else
-                 class="px-4 py-2.5 text-[14px] leading-relaxed break-words rounded-2xl"
+                 class="px-4 py-2.5 text-sm leading-relaxed break-words rounded-xl transition-colors duration-150"
                  :class="isMine
-                     ? 'bg-accent text-white rounded-tr-sm shadow-sm shadow-accent/20'
-                     : 'bg-panel border border-heading/10 text-heading rounded-tl-sm shadow-sm shadow-heading/5'">
+                     ? 'bg-accent text-white rounded-tr-md'
+                     : 'bg-panel border border-heading/8 text-heading rounded-tl-md'">
                 <span v-html="message.content.replace(/@(\w[\w\s]*)/g, '<span class=\'@mention\'>@$1</span>')" />
             </div>
 
             <!-- Reactions -->
-            <div v-if="message.reactions?.length" class="flex flex-wrap gap-1 mt-1.5">
+            <div v-if="message.reactions?.length" class="flex flex-wrap gap-1.5 mt-2">
                 <button
                     v-for="r in message.reactions" :key="r.emoji"
                     @click="store.toggleReaction(message.id, r.emoji)"
-                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] border
-                           transition-all duration-100 active:scale-95"
+                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs border
+                           transition-all duration-150 active:scale-95"
                     :class="r.userIds.includes(store.CURRENT_USER_ID)
-                        ? 'bg-accent/12 border-accent/30 text-accent font-semibold'
-                        : 'bg-heading/5 border-heading/10 text-text hover:bg-heading/10'">
-                    {{ r.emoji }} <span class="font-medium">{{ r.userIds.length }}</span>
+                        ? 'bg-accent/10 border-accent/30 text-accent font-semibold'
+                        : 'bg-heading/5 border-heading/8 text-text hover:bg-heading/10 hover:border-heading/15'">
+                    {{ r.emoji }} <span class="font-semibold tabular-nums">{{ r.userIds.length }}</span>
                 </button>
             </div>
 
             <!-- Read receipt (own) -->
-            <div v-if="isMine" class="mt-0.5">
-                <span class="text-[10px] tabular-nums"
-                      :class="message.readBy.length > 1 ? 'text-accent/60' : 'text-text/30'">
+            <div v-if="isMine" class="mt-1">
+                <span class="text-xs tabular-nums"
+                      :class="message.readBy.length > 1 ? 'text-accent/70' : 'text-text/50'">
                     {{ message.readBy.length > 1 ? '✓✓ Seen' : '✓ Sent' }}
                 </span>
             </div>
@@ -157,30 +156,30 @@ function fileColor(type) {
         <!-- ── Floating action toolbar ──────────────────────── -->
         <Transition name="toolbar">
             <div v-if="showActions"
-                 class="absolute z-20 flex items-center gap-0.5 bg-panel rounded-xl border border-heading/12
-                        shadow-lg shadow-heading/10 px-1.5 py-1.5"
-                 :class="isMine ? 'left-5 -top-5' : 'right-5 -top-5'">
+                 class="absolute z-20 flex items-center gap-0.5 bg-panel rounded-lg border border-heading/8
+                        shadow-lg shadow-heading/10 px-1.5 py-1.5 max-w-[calc(100%-2rem)] overflow-x-auto scrollbar-thin"
+                 :class="isMine ? 'left-4 sm:left-5 -top-4' : 'right-4 sm:right-5 -top-4'">
                 <!-- Quick reactions -->
-                <div class="flex items-center gap-0.5 pr-1.5 border-r border-heading/10">
+                <div class="flex items-center gap-0.5 pr-1.5 border-r border-heading/8">
                     <button v-for="emoji in QUICK_EMOJIS" :key="emoji"
                             @click="store.toggleReaction(message.id, emoji)"
-                            class="w-7 h-7 rounded-lg text-[14px] hover:bg-heading/8 flex items-center justify-center
-                                   transition-all duration-100 hover:scale-125 active:scale-95">
+                            class="w-7 h-7 rounded-md text-sm hover:bg-heading/8 flex items-center justify-center
+                                   transition-all duration-150 hover:scale-125 active:scale-95">
                         {{ emoji }}
                     </button>
                 </div>
                 <!-- Reply -->
                 <button @click="store.setReplyTo(message)"
-                        class="w-7 h-7 rounded-lg flex items-center justify-center text-text/50
-                               hover:bg-accent/10 hover:text-accent transition-all duration-100"
+                        class="w-7 h-7 rounded-md flex items-center justify-center text-text
+                               hover:bg-accent/10 hover:text-accent transition-all duration-150"
                         title="Reply">
                     <v-icon name="bi-reply" scale="0.82" />
                 </button>
                 <!-- Delete (own) -->
                 <button v-if="isMine"
                         @click="store.deleteMessage(message.id)"
-                        class="w-7 h-7 rounded-lg flex items-center justify-center text-text/50
-                               hover:bg-red-50 hover:text-red-500 transition-all duration-100"
+                        class="w-7 h-7 rounded-md flex items-center justify-center text-text
+                               hover:bg-red-500/10 hover:text-red-600 transition-all duration-150"
                         title="Delete">
                     <v-icon name="bi-trash" scale="0.82" />
                 </button>

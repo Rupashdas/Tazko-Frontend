@@ -237,259 +237,251 @@ const openProject = (projectId) => {
 <template>
 	<div class="pb-20 pt-8">
 
-		<!-- Page header -->
-		<div class="mb-8">
+		<!-- ── Page header ──────────────────────────────── -->
+		<div class="mb-6">
+			<p class="page-eyebrow">Workspace</p>
 			<h1 class="page-title">My Stuff</h1>
-			<p class="page-subtitle">Your tasks across all projects</p>
+			<p class="page-subtitle">Every task assigned to you, across all of your projects.</p>
 		</div>
 
-		<!-- Stat strip -->
-		<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+		<!-- ── Stat strip ───────────────────────────────── -->
+		<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 			<div v-for="stat in [
 				{ label: 'Overdue', value: overdueCount, icon: 'bi-clock', cls: overdueCount ? 'text-red-500' : 'text-text', bg: overdueCount ? 'bg-red-500/10' : 'bg-heading/5' },
 				{ label: 'Due Today', value: dueTodayCount, icon: 'bi-calendar3', cls: dueTodayCount ? 'text-amber-500' : 'text-text', bg: dueTodayCount ? 'bg-amber-500/10' : 'bg-heading/5' },
 				{ label: 'In Progress', value: inProgressCount, icon: 'bi-lightning-charge', cls: 'text-accent', bg: 'bg-accent/10' },
 				{ label: 'Completed', value: completedCount, icon: 'bi-check-circle', cls: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-			]" :key="stat.label" class="bg-panel rounded-sm border border-heading/5 px-4 py-3 flex items-center gap-3">
-				<div :class="[stat.bg, 'w-12 h-12 rounded-sm flex items-center justify-center shrink-0']">
-					<v-icon :name="stat.icon" :class="stat.cls" scale="1.4" />
+			]" :key="stat.label" class="card card-hover p-4 flex items-center gap-3">
+				<div :class="[stat.bg, 'w-10 h-10 rounded-lg flex items-center justify-center shrink-0']">
+					<v-icon :name="stat.icon" :class="stat.cls" scale="1.2" />
 				</div>
-				<div>
-					<p :class="[stat.cls, 'text-2xl font-bold leading-none tabular-nums']">{{ stat.value }}</p>
-					<p class="text-sm text-text mt-0.5">{{ stat.label }}</p>
+				<div class="min-w-0">
+					<p :class="[stat.cls, 'text-xl font-bold leading-none tabular-nums']">{{ stat.value }}</p>
+					<p class="text-xs text-text mt-1 font-medium">{{ stat.label }}</p>
 				</div>
 			</div>
 		</div>
 
-		<!-- Tab bar -->
-		<div class="relative overflow-hidden rounded-t-sm">
-			<div class="absolute inset-0 bg-accent/8" />
-			<div class="absolute inset-0 bg-panel/80 backdrop-blur-sm border border-b-0 border-heading/8 rounded-t-sm" />
-			<div class="relative px-6 pt-4">
-				<div class="flex items-end gap-0.5 -mb-px relative z-10 flex-wrap">
-					<button v-for="tab in tabs" :key="tab.key" @click="activeTab = tab.key" :class="[
-						'relative flex items-center gap-1.5 px-4 py-2.5 rounded-t-sm border select-none transition-all duration-150',
-						activeTab === tab.key
-							? 'bg-panel border-heading/8 border-b-panel text-accent font-semibold -mb-px pb-[11px] shadow-sm text-base'
-							: 'border-transparent text-text hover:text-text hover:bg-heading/5 text-base font-medium',
-					]">
-						<v-icon :name="tab.icon" scale="0.85" />
-						{{ tab.label }}
+		<!-- ── Tab bar ──────────────────────────────────── -->
+		<div class="border-b border-heading/8 mb-6 overflow-x-auto scrollbar-thin">
+			<div class="flex items-center gap-1">
+				<button v-for="tab in tabs" :key="tab.key" @click="activeTab = tab.key" :class="[
+					'inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold whitespace-nowrap select-none border-b-2 -mb-px transition-all duration-150',
+					activeTab === tab.key
+						? 'text-accent border-accent'
+						: 'text-text border-transparent hover:text-heading hover:border-heading/15',
+				]">
+					<v-icon :name="tab.icon" scale="0.85" />
+					{{ tab.label }}
+				</button>
+			</div>
+		</div>
+
+		<!-- ── Toolbar ──────────────────────────────────── -->
+		<div class="card p-3 mb-6">
+			<div class="flex flex-wrap items-center gap-3">
+				<div class="relative flex-1 min-w-48">
+					<v-icon name="bi-search"
+						class="absolute left-3 top-1/2 -translate-y-1/2 text-text pointer-events-none"
+						scale="0.85" />
+					<input v-model="searchQuery" type="text" placeholder="Search tasks…"
+						class="tazko-search pl-9 pr-8 py-2" />
+					<button v-if="searchQuery" type="button" aria-label="Clear search" @click="searchQuery = ''"
+						class="absolute right-2.5 top-1/2 -translate-y-1/2 text-text hover:text-heading transition-colors">
+						<v-icon name="bi-x" scale="0.8" />
 					</button>
 				</div>
+
+				<div class="w-36">
+					<AppSelect
+						v-model="statusFilter"
+						:options="[
+							{ label: 'All Status', value: 'All' },
+							{ label: 'Todo', value: 'Todo' },
+							{ label: 'In Progress', value: 'In Progress' },
+							{ label: 'Review', value: 'Review' },
+							{ label: 'Done', value: 'Done' },
+						]"
+						placeholder="All Status"
+						size="sm"
+						:highlight="true"
+						inactive-value="All" />
+				</div>
+
+				<div class="w-36">
+					<AppSelect
+						v-model="priorityFilter"
+						:options="[
+							{ label: 'All Priority', value: 'All' },
+							{ label: 'Urgent', value: 'Urgent' },
+							{ label: 'High', value: 'High' },
+							{ label: 'Medium', value: 'Medium' },
+							{ label: 'Low', value: 'Low' },
+						]"
+						placeholder="All Priority"
+						size="sm"
+						:highlight="true"
+						inactive-value="All" />
+				</div>
 			</div>
 		</div>
 
-		<!-- Tab content panel -->
-		<div class="bg-panel border border-heading/8 border-t-0 rounded-b-sm shadow-sm">
-			<div class="p-4 md:p-5">
+		<!-- ═══ TAB: My assignments / Stuff I've assigned (grouped by project) ═══ -->
+		<template v-if="activeTab === 'assignments' || activeTab === 'delegated'">
+			<div v-if="groupedByProject.length > 0" class="flex flex-col gap-4">
+				<div v-for="group in groupedByProject" :key="group.id" class="card overflow-hidden">
 
-				<!-- Toolbar -->
-				<div class="bg-panel rounded-sm border border-heading/5 p-3.5 mb-4">
-					<div class="flex flex-wrap items-center gap-2.5">
-						<div class="relative flex-1 min-w-40">
-							<v-icon name="bi-search"
-								class="absolute left-3 top-1/2 -translate-y-1/2 text-text pointer-events-none"
-								scale="0.85" />
-							<input v-model="searchQuery" type="text" placeholder="Search tasks…"
-								class="w-full pl-9 pr-8 py-2 rounded-sm border border-heading/8 bg-heading/3 text-base text-heading placeholder:text-text focus:outline-none focus:border-accent/40 transition-colors" />
-							<button v-if="searchQuery" @click="searchQuery = ''"
-								class="absolute right-2.5 top-1/2 -translate-y-1/2 text-text hover:text-text">
-								<v-icon name="bi-x" scale="0.8" />
-							</button>
-						</div>
+					<!-- Project section header -->
+					<div
+						class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-heading/3 transition-colors select-none"
+						@click="toggleCollapse(group.id)">
+						<v-icon
+							:name="isCollapsed(group.id) ? 'bi-chevron-right' : 'bi-chevron-down'"
+							class="text-text shrink-0" scale="0.8" />
+						<span :class="[group.color, 'w-2.5 h-2.5 rounded-full shrink-0']" />
+						<button
+							class="text-sm font-semibold text-heading hover:text-accent transition-colors truncate"
+							@click.stop="openProject(group.id)">
+							{{ group.name }}
+						</button>
+						<span class="badge badge-neutral tabular-nums shrink-0">{{ group.tasks.length }}</span>
+						<div class="flex-1" />
+						<button
+							class="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-text hover:text-accent transition-colors shrink-0"
+							@click.stop="openProject(group.id)">
+							View project <v-icon name="bi-arrow-right" scale="0.7" />
+						</button>
+					</div>
 
-						<div class="w-36">
-							<AppSelect
-								v-model="statusFilter"
-								:options="[
-									{ label: 'All Status', value: 'All' },
-									{ label: 'Todo', value: 'Todo' },
-									{ label: 'In Progress', value: 'In Progress' },
-									{ label: 'Review', value: 'Review' },
-									{ label: 'Done', value: 'Done' },
-								]"
-								placeholder="All Status"
-								size="sm"
-								:highlight="true"
-								inactive-value="All" />
-						</div>
-
-						<div class="w-36">
-							<AppSelect
-								v-model="priorityFilter"
-								:options="[
-									{ label: 'All Priority', value: 'All' },
-									{ label: 'Urgent', value: 'Urgent' },
-									{ label: 'High', value: 'High' },
-									{ label: 'Medium', value: 'Medium' },
-									{ label: 'Low', value: 'Low' },
-								]"
-								placeholder="All Priority"
-								size="sm"
-								:highlight="true"
-								inactive-value="All" />
+					<!-- Task rows -->
+					<div v-show="!isCollapsed(group.id)" class="border-t border-heading/8 divide-y divide-heading/6">
+						<div v-for="task in group.tasks" :key="task.id"
+							class="group flex items-center gap-3 px-4 py-3 hover:bg-heading/3 transition-colors cursor-pointer"
+							@click="openTask(group.id, task.id)">
+							<span :class="[priorityConfig[task.priority]?.dot, 'w-1.5 h-1.5 rounded-full shrink-0']" />
+							<p :class="[
+								'text-sm font-medium flex-1 min-w-0 truncate transition-colors',
+								task.status === 'Done' ? 'line-through text-text' : 'text-heading group-hover:text-accent',
+							]">{{ task.title }}</p>
+							<span :class="[
+								columnConfig[task.status]?.bg,
+								columnConfig[task.status]?.labelClass,
+								'badge text-sm px-2 py-0.5 shrink-0 hidden sm:inline-flex',
+							]">
+								<span :class="[columnConfig[task.status]?.dotClass, 'w-1.5 h-1.5 rounded-full', task.status === 'In Progress' ? 'animate-pulse' : '']" />
+								{{ task.status }}
+							</span>
+							<span :class="[priorityConfig[task.priority]?.cls, 'badge text-sm px-2 py-0.5 shrink-0 hidden md:inline-flex']">
+								{{ task.priority }}
+							</span>
+							<div class="flex items-center shrink-0">
+								<div v-for="(ini, ai) in task.assignees.slice(0, 2)" :key="ini"
+									:class="[memberColorMap[ini] || 'bg-accent', 'w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ring-2 ring-panel', ai > 0 ? '-ml-1.5' : '']"
+									:title="ini">
+									{{ ini }}
+								</div>
+								<div v-if="task.assignees.length > 2"
+									class="w-7 h-7 rounded-full bg-heading/10 flex items-center justify-center text-[10px] font-bold text-text shrink-0 ring-2 ring-panel -ml-1.5">
+									+{{ task.assignees.length - 2 }}
+								</div>
+							</div>
+							<div class="w-16 text-right shrink-0 hidden sm:block">
+								<span v-if="task.due" :class="[
+									'text-sm tabular-nums',
+									isDueOverdue(task.due) && task.status !== 'Done' ? 'text-red-500 font-semibold'
+										: isDueSoon(task.due) && task.status !== 'Done' ? 'text-amber-600 font-medium'
+											: 'text-text',
+								]">{{ formatShort(task.due) }}</span>
+								<span v-else class="text-sm text-text">—</span>
+							</div>
 						</div>
 					</div>
 				</div>
-
-				<!-- ═══ TAB: My assignments (grouped by project) ═══ -->
-				<!-- ═══ TAB: Stuff I've assigned (grouped by project) ═══ -->
-				<template v-if="activeTab === 'assignments' || activeTab === 'delegated'">
-					<div v-if="groupedByProject.length > 0" class="flex flex-col gap-4">
-						<div v-for="group in groupedByProject" :key="group.id"
-							class="bg-panel rounded-sm border border-heading/5 overflow-hidden">
-
-							<!-- Project section header -->
-							<div
-								class="flex items-center gap-3 px-5 py-3.5 cursor-pointer hover:bg-heading/[0.02] transition-colors select-none"
-								@click="toggleCollapse(group.id)">
-								<v-icon
-									:name="isCollapsed(group.id) ? 'bi-chevron-right' : 'bi-chevron-down'"
-									class="text-text transition-transform duration-200" scale="0.85" />
-								<span :class="[group.color, 'w-3 h-3 rounded-full shrink-0']" />
-								<button
-									class="text-base font-bold text-heading hover:text-accent transition-colors"
-									@click.stop="openProject(group.id)">
-									{{ group.name }}
-								</button>
-								<span class="text-sm font-bold tabular-nums px-1.5 py-0.5 rounded-sm bg-heading/8 text-text leading-none">
-									{{ group.tasks.length }}
-								</span>
-								<div class="flex-1" />
-								<button
-									class="text-sm text-text hover:text-accent transition-colors flex items-center gap-1"
-									@click.stop="openProject(group.id)">
-									View Project <v-icon name="bi-arrow-right" scale="0.7" />
-								</button>
-							</div>
-
-							<!-- Task rows -->
-							<div v-show="!isCollapsed(group.id)" class="divide-y divide-heading/[0.04]">
-								<div v-for="task in group.tasks" :key="task.id"
-									class="flex items-center gap-4 px-5 py-3 hover:bg-heading/[0.02] transition-colors cursor-pointer"
-									@click="openTask(group.id, task.id)">
-									<span :class="[priorityConfig[task.priority]?.dot, 'w-1.5 h-1.5 rounded-full shrink-0']" />
-									<p :class="[
-										'text-base font-medium flex-1 min-w-0 truncate transition-colors',
-										task.status === 'Done' ? 'line-through text-text' : 'text-heading hover:text-accent',
-									]">{{ task.title }}</p>
-									<span :class="[
-										columnConfig[task.status]?.labelClass,
-										columnConfig[task.status]?.bg,
-										'text-sm px-2 py-0.5 rounded-full font-bold inline-flex items-center gap-1 whitespace-nowrap shrink-0',
-									]">
-										<span :class="[columnConfig[task.status]?.dotClass, 'w-1 h-1 rounded-full', task.status === 'In Progress' ? 'animate-pulse' : '']" />
-										{{ task.status }}
-									</span>
-									<span :class="[priorityConfig[task.priority]?.cls, 'text-sm px-2 py-0.5 rounded-full font-bold whitespace-nowrap shrink-0']">
-										{{ task.priority }}
-									</span>
-									<div class="flex items-center shrink-0">
-										<div v-for="(ini, ai) in task.assignees.slice(0, 2)" :key="ini"
-											:class="[memberColorMap[ini] || 'bg-accent', 'w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0 ring-2 ring-panel', ai > 0 ? '-ml-1' : '']"
-											:title="ini">
-											{{ ini }}
-										</div>
-										<div v-if="task.assignees.length > 2"
-											class="w-6 h-6 rounded-full bg-heading/10 flex items-center justify-center text-[9px] font-bold text-text shrink-0 ring-2 ring-panel -ml-1">
-											+{{ task.assignees.length - 2 }}
-										</div>
-									</div>
-									<div class="w-16 text-right shrink-0">
-										<span v-if="task.due" :class="[
-											'text-sm tabular-nums',
-											isDueOverdue(task.due) && task.status !== 'Done' ? 'text-red-400 font-semibold'
-												: isDueSoon(task.due) && task.status !== 'Done' ? 'text-amber-400 font-medium'
-													: 'text-text',
-										]">{{ formatShort(task.due) }}</span>
-										<span v-else class="text-sm text-text">—</span>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<!-- Empty for project-grouped tabs -->
-					<div v-else class="bg-panel rounded-sm border border-heading/5 p-12 text-center">
-						<v-icon name="bi-search" class="text-text mx-auto mb-3" scale="2.5" />
-						<p class="text-base font-semibold text-text">{{ activeTaskSource.length > 0 ? 'No tasks found' : (activeTab === 'delegated' ? "You haven't assigned any tasks yet" : 'No tasks assigned to you') }}</p>
-						<p v-if="activeTaskSource.length > 0" class="text-sm text-text mt-1">Try adjusting your filters</p>
-					</div>
-				</template>
-
-				<!-- ═══ TAB: Assignments with dates (grouped by date) ═══ -->
-				<template v-if="activeTab === 'dated'">
-					<div v-if="dateGroups.length > 0" class="flex flex-col gap-4">
-						<div v-for="group in dateGroups" :key="group.key"
-							class="bg-panel rounded-sm border border-heading/5 overflow-hidden">
-
-							<!-- Date group header -->
-							<div
-								class="flex items-center gap-3 px-5 py-3.5 cursor-pointer hover:bg-heading/[0.02] transition-colors select-none"
-								@click="toggleCollapse(group.key)">
-								<v-icon
-									:name="isCollapsed(group.key) ? 'bi-chevron-right' : 'bi-chevron-down'"
-									class="text-text transition-transform duration-200" scale="0.85" />
-								<span :class="[group.dotCls, 'w-3 h-3 rounded-full shrink-0']" />
-								<span :class="[group.cls, 'text-base font-bold']">{{ group.label }}</span>
-								<span class="text-sm font-bold tabular-nums px-1.5 py-0.5 rounded-sm bg-heading/8 text-text leading-none">
-									{{ group.tasks.length }}
-								</span>
-							</div>
-
-							<!-- Task rows -->
-							<div v-show="!isCollapsed(group.key)" class="divide-y divide-heading/[0.04]">
-								<div v-for="task in group.tasks" :key="task.id"
-									class="flex items-center gap-4 px-5 py-3 hover:bg-heading/[0.02] transition-colors cursor-pointer"
-									@click="openTask(task.projectId, task.id)">
-									<span :class="[priorityConfig[task.priority]?.dot, 'w-1.5 h-1.5 rounded-full shrink-0']" />
-									<p :class="[
-										'text-base font-medium flex-1 min-w-0 truncate transition-colors',
-										task.status === 'Done' ? 'line-through text-text' : 'text-heading hover:text-accent',
-									]">{{ task.title }}</p>
-									<!-- Project pill -->
-									<button
-										class="text-sm px-2 py-0.5 rounded-full font-bold whitespace-nowrap shrink-0 bg-heading/5 text-text hover:text-accent transition-colors inline-flex items-center gap-1.5"
-										@click.stop="openProject(task.projectId)">
-										<span :class="[task.projectColor, 'w-1.5 h-1.5 rounded-full']" />
-										{{ task.projectName }}
-									</button>
-									<span :class="[
-										columnConfig[task.status]?.labelClass,
-										columnConfig[task.status]?.bg,
-										'text-sm px-2 py-0.5 rounded-full font-bold inline-flex items-center gap-1 whitespace-nowrap shrink-0',
-									]">
-										<span :class="[columnConfig[task.status]?.dotClass, 'w-1 h-1 rounded-full', task.status === 'In Progress' ? 'animate-pulse' : '']" />
-										{{ task.status }}
-									</span>
-									<span :class="[priorityConfig[task.priority]?.cls, 'text-sm px-2 py-0.5 rounded-full font-bold whitespace-nowrap shrink-0']">
-										{{ task.priority }}
-									</span>
-									<div class="w-16 text-right shrink-0">
-										<span v-if="task.due" :class="[
-											'text-sm tabular-nums',
-											isDueOverdue(task.due) && task.status !== 'Done' ? 'text-red-400 font-semibold'
-												: isDueSoon(task.due) && task.status !== 'Done' ? 'text-amber-400 font-medium'
-													: 'text-text',
-										]">{{ formatShort(task.due) }}</span>
-										<span v-else class="text-sm text-text">—</span>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<!-- Empty for dated tab -->
-					<div v-else class="bg-panel rounded-sm border border-heading/5 p-12 text-center">
-						<v-icon name="bi-calendar-week" class="text-text mx-auto mb-3" scale="2.5" />
-						<p class="text-base font-semibold text-text">{{ myDatedAssignments.length > 0 ? 'No tasks found' : 'No tasks with due dates' }}</p>
-						<p v-if="myDatedAssignments.length > 0" class="text-sm text-text mt-1">Try adjusting your filters</p>
-					</div>
-				</template>
-
 			</div>
-		</div>
+
+			<!-- Empty for project-grouped tabs -->
+			<div v-else class="card p-12 text-center">
+				<div class="w-12 h-12 rounded-xl bg-heading/5 flex items-center justify-center mx-auto mb-4">
+					<v-icon :name="activeTaskSource.length > 0 ? 'bi-search' : 'bi-clipboard-check'"
+						class="text-text" scale="1.4" />
+				</div>
+				<h3 class="section-title mb-1">{{ activeTaskSource.length > 0 ? 'No tasks found' : (activeTab === 'delegated' ? "You haven't assigned any tasks yet" : 'No tasks assigned to you') }}</h3>
+				<p class="text-sm text-text">
+					{{ activeTaskSource.length > 0 ? 'Try adjusting your search or filters.' : 'Tasks will appear here as soon as they land on your plate.' }}
+				</p>
+			</div>
+		</template>
+
+		<!-- ═══ TAB: Assignments with dates (grouped by date) ═══ -->
+		<template v-if="activeTab === 'dated'">
+			<div v-if="dateGroups.length > 0" class="flex flex-col gap-4">
+				<div v-for="group in dateGroups" :key="group.key" class="card overflow-hidden">
+
+					<!-- Date group header -->
+					<div
+						class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-heading/3 transition-colors select-none"
+						@click="toggleCollapse(group.key)">
+						<v-icon
+							:name="isCollapsed(group.key) ? 'bi-chevron-right' : 'bi-chevron-down'"
+							class="text-text shrink-0" scale="0.8" />
+						<span :class="[group.dotCls, 'w-2.5 h-2.5 rounded-full shrink-0']" />
+						<span :class="[group.cls, 'text-sm font-semibold']">{{ group.label }}</span>
+						<span class="badge badge-neutral tabular-nums shrink-0">{{ group.tasks.length }}</span>
+					</div>
+
+					<!-- Task rows -->
+					<div v-show="!isCollapsed(group.key)" class="border-t border-heading/8 divide-y divide-heading/6">
+						<div v-for="task in group.tasks" :key="task.id"
+							class="group flex items-center gap-3 px-4 py-3 hover:bg-heading/3 transition-colors cursor-pointer"
+							@click="openTask(task.projectId, task.id)">
+							<span :class="[priorityConfig[task.priority]?.dot, 'w-1.5 h-1.5 rounded-full shrink-0']" />
+							<p :class="[
+								'text-sm font-medium flex-1 min-w-0 truncate transition-colors',
+								task.status === 'Done' ? 'line-through text-text' : 'text-heading group-hover:text-accent',
+							]">{{ task.title }}</p>
+							<!-- Project pill -->
+							<button
+								class="badge badge-neutral text-sm px-2 py-0.5 shrink-0 hidden lg:inline-flex hover:text-accent transition-colors"
+								@click.stop="openProject(task.projectId)">
+								<span :class="[task.projectColor, 'w-1.5 h-1.5 rounded-full']" />
+								{{ task.projectName }}
+							</button>
+							<span :class="[
+								columnConfig[task.status]?.bg,
+								columnConfig[task.status]?.labelClass,
+								'badge text-sm px-2 py-0.5 shrink-0 hidden sm:inline-flex',
+							]">
+								<span :class="[columnConfig[task.status]?.dotClass, 'w-1.5 h-1.5 rounded-full', task.status === 'In Progress' ? 'animate-pulse' : '']" />
+								{{ task.status }}
+							</span>
+							<span :class="[priorityConfig[task.priority]?.cls, 'badge text-sm px-2 py-0.5 shrink-0 hidden md:inline-flex']">
+								{{ task.priority }}
+							</span>
+							<div class="w-16 text-right shrink-0">
+								<span v-if="task.due" :class="[
+									'text-sm tabular-nums',
+									isDueOverdue(task.due) && task.status !== 'Done' ? 'text-red-500 font-semibold'
+										: isDueSoon(task.due) && task.status !== 'Done' ? 'text-amber-600 font-medium'
+											: 'text-text',
+								]">{{ formatShort(task.due) }}</span>
+								<span v-else class="text-sm text-text">—</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Empty for dated tab -->
+			<div v-else class="card p-12 text-center">
+				<div class="w-12 h-12 rounded-xl bg-heading/5 flex items-center justify-center mx-auto mb-4">
+					<v-icon name="bi-calendar-week" class="text-text" scale="1.4" />
+				</div>
+				<h3 class="section-title mb-1">{{ myDatedAssignments.length > 0 ? 'No tasks found' : 'No tasks with due dates' }}</h3>
+				<p class="text-sm text-text">
+					{{ myDatedAssignments.length > 0 ? 'Try adjusting your search or filters.' : 'Scheduled work will show up here, grouped by when it is due.' }}
+				</p>
+			</div>
+		</template>
 
 	</div>
 </template>

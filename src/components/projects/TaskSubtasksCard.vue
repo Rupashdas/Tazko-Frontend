@@ -70,7 +70,7 @@ const onDragChange = (event) => {
 </script>
 
 <template>
-	<div class="bg-panel rounded-sm border border-heading/5 p-5">
+	<div class="card p-5">
 		<div class="flex items-center justify-between mb-4">
 			<div class="flex items-center gap-3">
 				<h3 class="text-base font-bold text-heading">Subtasks</h3>
@@ -85,7 +85,7 @@ const onDragChange = (event) => {
 				</div>
 			</div>
 			<button v-if="canManage" @click="showSubtaskInput = !showSubtaskInput"
-				class="inline-flex items-center gap-1.5 text-sm font-bold text-accent hover:text-accent/70 px-2.5 py-1.5 rounded-sm hover:bg-accent/8 transition-colors">
+				class="inline-flex items-center gap-1.5 text-sm font-bold text-accent hover:text-accent/70 px-2.5 py-1.5 rounded-md hover:bg-accent/8 transition-colors">
 				<v-icon name="bi-plus-circle" scale="0.8" />
 				Add
 			</button>
@@ -112,7 +112,7 @@ const onDragChange = (event) => {
 			class="space-y-0.5">
 			<template #item="{ element: sub }">
 				<div
-					class="flex items-center gap-2 px-2 py-3 rounded-sm hover:bg-heading/[0.03] transition-colors group select-none"
+					class="flex items-center gap-2 px-2 py-3 rounded-md hover:bg-heading/[0.03] transition-colors group select-none"
 					:class="sub._pending && 'opacity-60'">
 					<!-- Drag handle (only if user can reorder) -->
 					<button
@@ -153,7 +153,7 @@ const onDragChange = (event) => {
 		<!-- Add subtask input -->
 		<div v-if="showSubtaskInput && canManage" class="flex items-center gap-2 mt-3 pt-3 border-t border-heading/5">
 			<input v-model="newSubtask" type="text" placeholder="New subtask…"
-				class="flex-1 text-base px-3.5 py-2 rounded-sm border border-accent/30 bg-accent/5 focus:border-accent/60 focus:outline-none transition-colors placeholder-text/30"
+				class="flex-1 text-base px-3.5 py-2 rounded-md border border-accent/30 bg-accent/5 focus:border-accent/60 focus:outline-none transition-colors placeholder-text/30"
 				@keydown.enter="addSubtaskItem" @keydown.esc="showSubtaskInput = false" autofocus />
 			<button @click="addSubtaskItem" :disabled="saving" class="tazko-btn disabled:opacity-60">
 				<v-icon name="bi-plus" scale="1" />

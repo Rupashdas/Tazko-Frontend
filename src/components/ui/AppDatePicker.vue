@@ -167,7 +167,7 @@ const triggerBg = computed(() =>
 			ref="triggerRef"
 			type="button"
 			@click="openPicker"
-			class="w-full flex items-center rounded-sm border transition-colors focus:outline-none focus:border-accent cursor-pointer text-left leading-tight"
+			class="w-full flex items-center rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-accent/10 focus:border-accent cursor-pointer text-left leading-tight"
 			:class="[triggerPadding, triggerBg, open ? 'border-accent' : '']">
 
 			<v-icon
@@ -201,7 +201,7 @@ const triggerBg = computed(() =>
 					v-if="open"
 					id="app-datepicker-dropdown"
 					:style="dropdownStyle"
-					class="bg-panel border border-heading/10 rounded-sm shadow-xl shadow-heading/8 p-3 w-72">
+					class="bg-panel border border-heading/8 rounded-lg shadow-xl shadow-heading/10 p-3 w-72">
 
 					<!-- Month/year navigation -->
 					<div class="flex items-center justify-between mb-3">
@@ -230,21 +230,21 @@ const triggerBg = computed(() =>
 					<!-- Days grid -->
 					<div class="grid grid-cols-7 gap-y-0.5">
 						<div v-for="(date, i) in calendarDays" :key="i">
-							<button
-								v-if="date"
-								type="button"
-								@click="selectDate(date)"
-								:disabled="isDisabled(date)"
-								class="w-full aspect-square rounded-sm text-sm font-medium transition-all flex items-center justify-center select-none"
-								:class="[
-									isSelected(date)
-										? 'bg-accent text-white font-bold shadow-sm shadow-accent/30'
-										: isToday(date)
-											? 'bg-accent/12 text-accent font-bold'
-											: isDisabled(date)
-												? 'text-text/25 cursor-not-allowed'
-												: 'text-heading hover:bg-heading/8'
-								]">
+						<button
+							v-if="date"
+							type="button"
+							@click="selectDate(date)"
+							:disabled="isDisabled(date)"
+							class="w-full aspect-square rounded-md text-sm font-medium transition-all flex items-center justify-center select-none"
+							:class="[
+								isSelected(date)
+									? 'bg-accent text-white font-bold shadow-sm shadow-accent/30'
+									: isToday(date)
+										? 'bg-accent/12 text-accent font-bold'
+										: isDisabled(date)
+											? 'text-text/25 cursor-not-allowed'
+											: 'text-heading hover:bg-heading/8'
+							]">
 								{{ date.getDate() }}
 							</button>
 							<div v-else class="w-full aspect-square" />

@@ -6,6 +6,7 @@ import {
 	BiCalendar3, BiCheckCircle, BiCash, BiTrash, BiPencil,
 	BiFilter, BiChevronLeft, BiChevronRight, BiArrowLeftRight,
 	BiLightningCharge, BiStopwatch, BiCalendarWeek, BiDash,
+	BiDownload, BiX,
 } from 'oh-vue-icons/icons'
 import { useTimeTrackingStore } from '@/stores/useTimeTrackingStore'
 import AppSelect from '@/components/ui/AppSelect.vue'
@@ -13,9 +14,10 @@ import AppDatePicker from '@/components/ui/AppDatePicker.vue'
 
 addIcons(
 	BiClock, BiPlayFill, BiStopFill, BiPlusCircle,
-	BiCalendar3, BiCheckCircle, BiCash,
+	BiCalendar3, BiCheckCircle, BiCash, BiTrash, BiPencil,
 	BiFilter, BiChevronLeft, BiChevronRight, BiArrowLeftRight,
 	BiLightningCharge, BiStopwatch, BiCalendarWeek, BiDash,
+	BiDownload, BiX,
 )
 
 const store = useTimeTrackingStore()
@@ -186,52 +188,51 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<div class="pb-20 pt-0 px-0 min-h-screen" style="background: var(--color-body);">
+	<div class="pb-20 min-h-screen bg-body">
 
 		<!-- ── Top Bar ─────────────────────────────────── -->
-		<div class="sticky top-0 z-40 bg-panel border-b border-heading/8 px-4 py-3">
-			<div class="max-w-screen-2xl mx-auto flex items-center justify-between gap-4">
+		<div class="sticky top-0 z-40 bg-panel/90 backdrop-blur-md border-b border-heading/8 px-4 py-3">
+			<div class="max-w-screen-2xl mx-auto flex flex-wrap items-center justify-between gap-4">
 				<!-- Left: Title -->
-				<div class="flex items-center gap-3">
-					<div class="w-10 h-10 rounded-sm bg-accent/10 flex items-center justify-center">
+				<div class="flex items-center gap-3 min-w-0">
+					<div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
 						<v-icon name="bi-stopwatch" class="text-accent" scale="1.1" />
 					</div>
-					<div>
-						<h1 class="text-lg font-bold text-heading leading-tight">Time Tracking</h1>
-						<p class="text-xs text-text">Track and manage your work hours</p>
+					<div class="min-w-0">
+						<h1 class="text-base font-semibold text-heading leading-tight truncate">Time Tracking</h1>
+						<p class="text-xs text-text truncate">Track and manage your work hours</p>
 					</div>
 				</div>
 
 				<!-- Center: Date Navigation -->
-				<div class="flex items-center gap-1">
-					<button @click="prevDay"
-						class="w-8 h-8 rounded-sm flex items-center justify-center hover:bg-heading/6 text-text hover:text-heading transition-colors">
+				<div class="flex items-center gap-1 order-3 lg:order-none w-full lg:w-auto">
+					<button @click="prevDay" aria-label="Previous day"
+						class="w-9 h-9 rounded-md flex items-center justify-center hover:bg-heading/5 text-text hover:text-heading transition-all duration-150 active:scale-95 shrink-0">
 						<v-icon name="bi-chevron-left" scale="1" />
 					</button>
 					<button @click="goToToday"
-						class="px-3 h-8 rounded-sm flex items-center justify-center hover:bg-heading/6 text-text hover:text-heading transition-colors text-sm font-medium">
+						class="px-3 h-9 rounded-md flex items-center justify-center hover:bg-heading/5 text-text hover:text-heading transition-all duration-150 text-sm font-medium shrink-0"
+						:class="isToday ? 'text-accent bg-accent/10' : ''">
 						Today
 					</button>
-					<button @click="nextDay"
-						class="w-8 h-8 rounded-sm flex items-center justify-center hover:bg-heading/6 text-text hover:text-heading transition-colors">
+					<button @click="nextDay" aria-label="Next day"
+						class="w-9 h-9 rounded-md flex items-center justify-center hover:bg-heading/5 text-text hover:text-heading transition-all duration-150 active:scale-95 shrink-0">
 						<v-icon name="bi-chevron-right" scale="1" />
 					</button>
-					<div class="ml-2 min-w-[200px]">
+					<div class="ml-2 flex-1 lg:flex-none min-w-[200px]">
 						<AppDatePicker v-model="selectedDate" size="sm" />
 					</div>
 				</div>
 
 				<!-- Right: Actions -->
-				<div class="flex items-center gap-2">
-					<button @click="openAddEntry"
-						class="inline-flex items-center gap-2 px-4 py-2 rounded-sm bg-accent text-white text-sm font-semibold hover:bg-accent/90 active:scale-95 transition-all">
+				<div class="flex items-center gap-2 shrink-0">
+					<button @click="openAddEntry" class="tazko-btn">
 						<v-icon name="bi-plus-circle" scale="0.85" />
 						Add Entry
 					</button>
-					<button
-						class="inline-flex items-center gap-2 px-4 py-2 rounded-sm border border-heading/10 text-sm font-semibold text-text hover:bg-heading/5 hover:text-heading transition-all">
+					<button class="tazko-btn-outline">
 						<v-icon name="bi-download" scale="0.85" />
-						Export
+						<span class="hidden sm:inline">Export</span>
 					</button>
 				</div>
 			</div>
@@ -239,159 +240,155 @@ onBeforeUnmount(() => {
 
 		<div class="max-w-screen-2xl mx-auto px-4 py-6">
 			<!-- ── Stats Row ─────────────────────────────── -->
-			<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-				<div class="bg-panel rounded-sm border border-heading/8 p-4 flex items-center gap-3">
-					<div class="w-10 h-10 rounded-sm bg-indigo-500/10 flex items-center justify-center shrink-0">
-						<v-icon name="bi-stopwatch" class="text-indigo-500" scale="1.1" />
+			<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+				<div class="card card-hover p-4 flex items-center gap-3">
+					<div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+						<v-icon name="bi-stopwatch" class="text-accent" scale="1.2" />
 					</div>
-					<div>
-						<p class="text-xl font-bold text-heading tabular-nums">{{ dateTotal.toFixed(1) }}<span
+					<div class="min-w-0">
+						<p class="text-xl font-bold text-heading leading-none tabular-nums">{{ dateTotal.toFixed(1) }}<span
 								class="text-sm font-medium text-text">h</span></p>
-						<p class="text-xs text-text">{{ formattedDate.split(',')[0] }}</p>
+						<p class="text-xs text-text mt-1 font-medium truncate">{{ formattedDate.split(',')[0] }}</p>
 					</div>
 				</div>
-				<div class="bg-panel rounded-sm border border-heading/8 p-4 flex items-center gap-3">
-					<div class="w-10 h-10 rounded-sm bg-violet-500/10 flex items-center justify-center shrink-0">
-						<v-icon name="bi-calendar-week" class="text-violet-500" scale="1.1" />
+				<div class="card card-hover p-4 flex items-center gap-3">
+					<div class="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0">
+						<v-icon name="bi-calendar-week" class="text-violet-600" scale="1.2" />
 					</div>
-					<div>
-						<p class="text-xl font-bold text-heading tabular-nums">{{ store.weekTotal.toFixed(1) }}<span
+					<div class="min-w-0">
+						<p class="text-xl font-bold text-heading leading-none tabular-nums">{{ store.weekTotal.toFixed(1) }}<span
 								class="text-sm font-medium text-text">h</span></p>
-						<p class="text-xs text-text">This Week</p>
+						<p class="text-xs text-text mt-1 font-medium">This Week</p>
 					</div>
 				</div>
-				<div class="bg-panel rounded-sm border border-heading/8 p-4 flex items-center gap-3">
-					<div class="w-10 h-10 rounded-sm bg-emerald-500/10 flex items-center justify-center shrink-0">
-						<v-icon name="bi-cash" class="text-emerald-500" scale="1.1" />
+				<div class="card card-hover p-4 flex items-center gap-3">
+					<div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+						<v-icon name="bi-cash" class="text-emerald-600" scale="1.2" />
 					</div>
-					<div>
-						<p class="text-xl font-bold text-heading tabular-nums">{{ store.totalBillable.toFixed(1) }}<span
+					<div class="min-w-0">
+						<p class="text-xl font-bold text-heading leading-none tabular-nums">{{ store.totalBillable.toFixed(1) }}<span
 								class="text-sm font-medium text-text">h</span></p>
-						<p class="text-xs text-text">Billable</p>
+						<p class="text-xs text-text mt-1 font-medium">Billable</p>
 					</div>
 				</div>
-				<div class="bg-panel rounded-sm border border-heading/8 p-4 flex items-center gap-3">
-					<div class="w-10 h-10 rounded-sm bg-amber-500/10 flex items-center justify-center shrink-0">
-						<v-icon name="bi-lightning-charge" class="text-amber-500" scale="1.1" />
+				<div class="card card-hover p-4 flex items-center gap-3">
+					<div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+						<v-icon name="bi-lightning-charge" class="text-amber-600" scale="1.2" />
 					</div>
-					<div>
-						<p class="text-xl font-bold text-heading tabular-nums">{{ store.totalNonBillable.toFixed(1) }}<span
+					<div class="min-w-0">
+						<p class="text-xl font-bold text-heading leading-none tabular-nums">{{ store.totalNonBillable.toFixed(1) }}<span
 								class="text-sm font-medium text-text">h</span></p>
-						<p class="text-xs text-text">Non-Billable</p>
+						<p class="text-xs text-text mt-1 font-medium">Non-Billable</p>
 					</div>
 				</div>
 			</div>
 
 			<!-- ── Main Grid ─────────────────────────────── -->
-			<div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+			<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
 				<!-- LEFT: Timer + Timeline -->
-				<div class="lg:col-span-8 space-y-5">
+				<div class="lg:col-span-8 flex flex-col gap-6">
 
 					<!-- Timer Card -->
-					<div class="bg-panel rounded-sm border border-heading/8 overflow-hidden">
-						<div class="p-6 flex flex-col sm:flex-row items-center gap-6"
-							style="background: linear-gradient(135deg, #f8f6ff 0%, #fff9f0 100%);">
+					<div class="card overflow-hidden">
+						<div class="p-6 flex flex-col sm:flex-row items-center gap-6 timer-surface">
 							<!-- Timer Display -->
 							<div class="relative shrink-0">
-								<div class="w-32 h-32 rounded-full border-[3px] border-heading/10 flex items-center justify-center"
-									style="background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,252,245,1) 100%); box-shadow: 0 0 30px rgba(108,99,255,0.08);">
+								<div class="w-32 h-32 rounded-full border-2 border-heading/10 bg-panel flex items-center justify-center">
 									<div class="text-center">
-										<p class="text-3xl font-bold text-heading tracking-tight tabular-nums leading-none"
-											style="font-family: 'Manrope', sans-serif;">
+										<p class="text-2xl font-bold text-heading tracking-tight tabular-nums leading-none">
 											{{ displayTime }}
 										</p>
-										<p class="text-[10px] text-text mt-1.5 font-medium uppercase tracking-wider">Elapsed</p>
+										<p class="text-xs text-text mt-2 font-medium uppercase tracking-wider">Elapsed</p>
 									</div>
 								</div>
 								<div v-if="running"
-									class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-lg shadow-red-500/50">
+									class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse ring-4 ring-red-500/20">
 								</div>
 							</div>
 
 							<!-- Controls -->
 							<div class="flex-1 text-center sm:text-left">
 								<div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-									<button v-if="!running" @click="startTimer"
-										class="inline-flex items-center gap-2 px-6 py-3 rounded-sm bg-accent text-white text-sm font-bold hover:bg-accent/90 active:scale-95 transition-all shadow-lg shadow-accent/30">
+									<button v-if="!running" @click="startTimer" class="tazko-btn">
 										<v-icon name="bi-play-fill" scale="1" />
 										Start Timer
 									</button>
-									<button v-else @click="stopTimer"
-										class="inline-flex items-center gap-2 px-6 py-3 rounded-sm bg-red-500 text-white text-sm font-bold hover:bg-red-600 active:scale-95 transition-all shadow-lg shadow-red-500/30">
+									<button v-else @click="stopTimer" class="tazko-btn-danger">
 										<v-icon name="bi-stop-fill" scale="1" />
 										Stop Timer
 									</button>
 								</div>
 								<div v-if="store.activeTimer" class="mt-3">
 									<p class="text-sm font-semibold text-accent">{{ store.activeTimer.task_title }}</p>
-									<p class="text-xs text-text">{{ store.activeTimer.project_name }}</p>
+									<p class="text-xs text-text mt-0.5">{{ store.activeTimer.project_name }}</p>
 								</div>
-								<p v-else class="mt-2 text-xs text-text italic">Select a task or start the timer</p>
+								<p v-else class="mt-3 text-sm text-text">Select a task or start the timer</p>
 							</div>
 
 							<!-- Total for day -->
 							<div class="text-center sm:text-right shrink-0">
-								<p class="text-3xl font-bold text-heading tabular-nums">{{ dateTotal.toFixed(1) }}h</p>
-								<p class="text-xs text-text">Total on {{ isToday ? 'today' : 'this day' }}</p>
-								<p class="text-xs text-text mt-1">{{ selectedDateEntries.length }} entries</p>
+								<p class="text-2xl font-bold text-heading tabular-nums leading-none">{{ dateTotal.toFixed(1) }}h</p>
+								<p class="text-xs text-text mt-1.5">Total on {{ isToday ? 'today' : 'this day' }}</p>
+								<p class="text-xs text-text mt-0.5 tabular-nums">{{ selectedDateEntries.length }} entries</p>
 							</div>
 						</div>
 					</div>
 
 					<!-- Vertical Timeline -->
-					<div class="bg-panel rounded-sm border border-heading/8 overflow-hidden">
-						<div class="px-5 py-4 border-b border-heading/8 flex items-center justify-between">
-							<h2 class="section-title">Activity Timeline</h2>
-							<span class="text-xs text-text">{{ selectedDateEntries.length }} entries</span>
+					<div class="card overflow-hidden">
+						<div class="px-5 py-4 border-b border-heading/8 flex items-center justify-between gap-3">
+							<div>
+								<h2 class="section-title">Activity Timeline</h2>
+								<p class="section-desc">Everything logged on this day</p>
+							</div>
+							<span class="badge badge-neutral shrink-0 tabular-nums">{{ selectedDateEntries.length }} entries</span>
 						</div>
 
-						<div v-if="selectedDateEntries.length" class="divide-y divide-heading/5">
+						<div v-if="selectedDateEntries.length" class="divide-y divide-heading/6">
 							<!-- Timeline entries grouped by hour -->
 							<div v-for="group in timelineGroups.filter(g => g.entries.length > 0)" :key="group.hour">
-								<div class="px-5 py-2 bg-heading/[0.02]">
-									<span class="text-xs font-bold text-text uppercase tracking-wider">{{ group.label }}</span>
+								<div class="px-5 py-2 bg-heading/3 border-b border-heading/6">
+									<span class="text-xs font-semibold text-text uppercase tracking-wider">{{ group.label }}</span>
 								</div>
 								<div v-for="entry in group.entries" :key="entry.id"
-									class="px-5 py-3.5 hover:bg-heading/[0.02] transition-colors group">
+									class="px-5 py-4 hover:bg-heading/3 transition-colors group">
 									<div class="flex items-start gap-4">
 										<!-- Project indicator -->
-										<div class="shrink-0 mt-1">
-											<div class="w-3 h-3 rounded-sm" :style="{ background: entry.project_color }"></div>
+										<div class="shrink-0 mt-1.5">
+											<div class="w-2.5 h-2.5 rounded-full" :style="{ background: entry.project_color }"></div>
 										</div>
 
 										<!-- Content -->
 										<div class="flex-1 min-w-0">
 											<div class="flex items-start justify-between gap-3">
-												<div>
-													<p class="text-sm font-semibold text-heading">{{ entry.task_title }}</p>
-													<p class="text-xs text-text mt-0.5">{{ entry.project_name }} · {{ entry.description || 'No description' }}</p>
+												<div class="min-w-0">
+													<p class="text-sm font-semibold text-heading truncate">{{ entry.task_title }}</p>
+													<p class="text-xs text-text mt-1">{{ entry.project_name }} · {{ entry.description || 'No description' }}</p>
 												</div>
 												<div class="flex items-center gap-2 shrink-0">
-													<span
-														class="inline-flex items-center px-2 py-0.5 rounded bg-heading/8 text-xs font-semibold text-heading">
+													<span class="badge badge-neutral tabular-nums">
 														{{ entry.duration_hours.toFixed(1) }}h
 													</span>
-													<span v-if="entry.billable"
-														class="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
+													<span v-if="entry.billable" class="badge badge-success hidden sm:inline-flex">
 														<v-icon name="bi-cash" scale="0.7" />
 														Billable
 													</span>
 												</div>
 											</div>
-											<div class="flex items-center gap-4 mt-1.5">
-												<span class="text-xs text-text">{{ entry.start_time }} – {{ entry.end_time }}</span>
+											<div class="flex items-center gap-4 mt-2">
+												<span class="text-xs text-text tabular-nums">{{ entry.start_time }} – {{ entry.end_time }}</span>
 											</div>
 										</div>
 
 										<!-- Actions -->
-										<div class="shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-											<button @click="editEntry(entry)"
-												class="w-7 h-7 rounded-sm flex items-center justify-center hover:bg-heading/8 text-text hover:text-heading transition-colors">
+										<div class="shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+											<button @click="editEntry(entry)" aria-label="Edit entry"
+												class="w-8 h-8 rounded-md flex items-center justify-center hover:bg-heading/8 text-text hover:text-heading transition-all duration-150">
 												<v-icon name="bi-pencil" scale="0.75" />
 											</button>
-											<button @click="removeEntry(entry.id)"
-												class="w-7 h-7 rounded-sm flex items-center justify-center hover:bg-red-50 text-text hover:text-red-500 transition-colors">
+											<button @click="removeEntry(entry.id)" aria-label="Delete entry"
+												class="w-8 h-8 rounded-md flex items-center justify-center hover:bg-red-500/10 text-text hover:text-red-600 transition-all duration-150">
 												<v-icon name="bi-trash" scale="0.75" />
 											</button>
 										</div>
@@ -403,13 +400,12 @@ onBeforeUnmount(() => {
 						<!-- Empty State -->
 						<div v-else class="text-center py-16 px-5">
 							<div class="w-14 h-14 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-								<v-icon name="bi-calendar3" class="text-accent" scale="1.2" />
+								<v-icon name="bi-calendar3" class="text-accent" scale="1.4" />
 							</div>
-							<h3 class="text-sm font-semibold text-heading mb-1">No entries on this day</h3>
-							<p class="text-xs text-text mb-4">Start the timer or add a manual entry to track your work.</p>
-							<button @click="openAddEntry"
-								class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-heading/10 text-xs font-medium text-text hover:bg-heading/5 transition-all">
-								<v-icon name="bi-plus-circle" scale="0.7" />
+							<h3 class="section-title mb-1.5">No entries on this day</h3>
+							<p class="text-sm text-text mb-5">Start the timer or add a manual entry to track your work.</p>
+							<button @click="openAddEntry" class="tazko-btn-outline">
+								<v-icon name="bi-plus-circle" scale="0.85" />
 								Add Entry
 							</button>
 						</div>
@@ -417,14 +413,15 @@ onBeforeUnmount(() => {
 				</div>
 
 				<!-- RIGHT: Sidebar -->
-				<div class="lg:col-span-4 space-y-5">
+				<div class="lg:col-span-4 flex flex-col gap-6">
 
 					<!-- Weekly Overview -->
-					<div class="bg-panel rounded-sm border border-heading/8 overflow-hidden">
+					<div class="card overflow-hidden">
 						<div class="px-5 py-4 border-b border-heading/8">
 							<h2 class="section-title">This Week</h2>
+							<p class="section-desc">Hours logged per day</p>
 						</div>
-						<div class="p-4">
+						<div class="p-5">
 							<div class="flex items-end gap-2 h-28">
 								<div v-for="(day, i) in [
 									{ label: 'Mon', hours: 6.5, isToday: false },
@@ -435,67 +432,68 @@ onBeforeUnmount(() => {
 									{ label: 'Sat', hours: 0, isToday: false },
 									{ label: 'Sun', hours: 0, isToday: false },
 								].concat(store.weekTotal > 0 ? [{ label: 'Now', hours: store.weekTotal % 10, isToday: true }] : [])" :key="i"
-									class="flex-1 flex flex-col items-center gap-1.5">
+									class="flex-1 flex flex-col items-center gap-2">
 									<div class="w-full flex items-end" style="height: 100px;">
-										<div class="w-full rounded-t-sm transition-all"
-											:class="day.isToday ? 'bg-accent' : 'bg-accent/30'"
+										<div class="w-full rounded-t-md transition-all duration-300"
+											:class="day.isToday ? 'bg-accent' : 'bg-accent/25'"
 											:style="{ height: `${Math.max((day.hours / 10) * 100, 4)}%` }">
 										</div>
 									</div>
-									<span class="text-[10px] font-medium"
+									<span class="text-xs font-medium"
 										:class="day.isToday ? 'text-accent' : 'text-text'">
 										{{ day.label }}
 									</span>
 								</div>
 							</div>
-							<div class="mt-3 pt-3 border-t border-heading/5 flex items-center justify-between">
-								<span class="text-xs text-text">Weekly goal: 40h</span>
-								<span class="text-xs font-semibold text-accent">{{ store.weekTotal.toFixed(1) }}h</span>
+							<div class="mt-4 pt-4 border-t border-heading/6 flex items-center justify-between gap-3">
+								<span class="text-sm text-text">Weekly goal: 40h</span>
+								<span class="text-sm font-semibold text-accent tabular-nums">{{ store.weekTotal.toFixed(1) }}h</span>
 							</div>
 						</div>
 					</div>
 
 					<!-- Quick Start Tasks -->
-					<div class="bg-panel rounded-sm border border-heading/8 overflow-hidden">
+					<div class="card overflow-hidden">
 						<div class="px-5 py-4 border-b border-heading/8">
 							<h2 class="section-title">Recent Tasks</h2>
-							<p class="text-xs text-text mt-0.5">Start timer on recent work</p>
+							<p class="section-desc">Start the timer on recent work</p>
 						</div>
-						<div class="divide-y divide-heading/5">
+						<div class="divide-y divide-heading/6">
 							<button v-for="task in recentTasks" :key="task.id"
 								@click="running ? '' : quickStart(task.id, task.title, task.project)"
-								class="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-heading/[0.02] transition-colors text-left"
+								class="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-heading/3 transition-colors text-left group"
 								:class="{ 'opacity-50 cursor-not-allowed': running }">
 								<div class="w-2.5 h-2.5 rounded-full shrink-0" :style="{ background: task.color }"></div>
 								<div class="flex-1 min-w-0">
 									<p class="text-sm font-medium text-heading truncate">{{ task.title }}</p>
-									<div class="flex items-center gap-2 mt-0.5">
-										<span class="text-xs text-text">{{ task.project }}</span>
+									<div class="flex items-center gap-2 mt-1">
+										<span class="text-xs text-text truncate">{{ task.project }}</span>
 										<span class="text-xs text-text/50">·</span>
-										<span class="text-xs text-text/60">{{ task.lastUsed }}</span>
+										<span class="text-xs text-text/70 shrink-0">{{ task.lastUsed }}</span>
 									</div>
 								</div>
-								<v-icon name="bi-play-fill" class="text-accent shrink-0" scale="0.75" />
+								<v-icon name="bi-play-fill" class="text-accent shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" scale="0.85" />
 							</button>
 						</div>
 					</div>
 
 					<!-- Project Breakdown -->
-					<div class="bg-panel rounded-sm border border-heading/8 overflow-hidden">
+					<div class="card overflow-hidden">
 						<div class="px-5 py-4 border-b border-heading/8">
 							<h2 class="section-title">By Project</h2>
+							<p class="section-desc">Time distribution</p>
 						</div>
-						<div class="p-5 space-y-3">
+						<div class="p-5 flex flex-col gap-4">
 							<div v-for="project in store.projectHours" :key="project.name">
-								<div class="flex items-center justify-between mb-1.5">
-									<div class="flex items-center gap-2">
-										<div class="w-2 h-2 rounded-full" :style="{ background: project.color }"></div>
-										<span class="text-sm font-medium text-heading">{{ project.name }}</span>
+								<div class="flex items-center justify-between gap-3 mb-2">
+									<div class="flex items-center gap-2 min-w-0">
+										<div class="w-2 h-2 rounded-full shrink-0" :style="{ background: project.color }"></div>
+										<span class="text-sm font-medium text-heading truncate">{{ project.name }}</span>
 									</div>
-									<span class="text-xs font-semibold text-text">{{ project.hours.toFixed(1) }}h</span>
+									<span class="text-sm font-semibold text-text shrink-0 tabular-nums">{{ project.hours.toFixed(1) }}h</span>
 								</div>
 								<div class="h-1.5 bg-heading/8 rounded-full overflow-hidden">
-									<div class="h-full rounded-full"
+									<div class="h-full rounded-full transition-all duration-300"
 										:style="{
 											width: `${(project.hours / Math.max(...store.projectHours.map(p => p.hours), 1)) * 100}%`,
 											background: project.color
@@ -507,17 +505,18 @@ onBeforeUnmount(() => {
 					</div>
 
 					<!-- Filters -->
-					<div class="bg-panel rounded-sm border border-heading/8 overflow-hidden">
+					<div class="card overflow-hidden">
 						<div class="px-5 py-4 border-b border-heading/8">
 							<h2 class="section-title">Filters</h2>
+							<p class="section-desc">Narrow down your entries</p>
 						</div>
-						<div class="p-5 space-y-4">
+						<div class="p-5 flex flex-col gap-4">
 							<div>
-								<label class="text-xs font-semibold uppercase tracking-wide text-text block mb-1.5">Project</label>
+								<label class="form-label">Project</label>
 								<AppSelect v-model="store.filterProject" :options="projectOptions" size="sm" />
 							</div>
 							<div>
-								<label class="text-xs font-semibold uppercase tracking-wide text-text block mb-1.5">Billable</label>
+								<label class="form-label">Billable</label>
 								<AppSelect v-model="store.filterDateFrom" :options="[
 									{ label: 'All', value: '' },
 									{ label: 'Billable Only', value: 'billable' },
@@ -526,7 +525,7 @@ onBeforeUnmount(() => {
 							</div>
 							<button v-if="store.filterProject || store.filterDateFrom"
 								@click="store.filterProject = ''; store.filterDateFrom = ''"
-								class="text-xs text-accent hover:text-accent/80 font-semibold">
+								class="text-sm text-accent hover:brightness-110 font-semibold self-start transition-all">
 								Clear all filters
 							</button>
 						</div>
@@ -538,63 +537,60 @@ onBeforeUnmount(() => {
 		<!-- ── Add/Edit Entry Modal ─────────────────── -->
 		<Teleport to="body">
 			<Transition name="modal">
-				<div v-if="showAddEntry"
-					class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-heading/30 backdrop-blur-sm"
-					@click.self="showAddEntry = false">
-					<div class="bg-panel rounded-sm border border-heading/10 shadow-2xl w-full max-w-lg overflow-hidden">
-						<div class="px-6 py-4 border-b border-heading/8 flex items-center justify-between"
-							style="background: linear-gradient(135deg, #f8f6ff 0%, #fff9f0 100%);">
+				<div v-if="showAddEntry" class="modal-overlay" @click.self="showAddEntry = false">
+					<div class="modal-content w-full max-w-lg" @click.stop>
+						<div class="px-6 py-5 border-b border-heading/8 flex items-start justify-between gap-4">
 							<div>
-								<h2 class="text-xl font-bold text-heading">{{ editingEntry ? 'Edit Entry' : 'New Time Entry' }}</h2>
-								<p class="text-sm text-text mt-0.5">{{ editingEntry ? 'Update your time entry' : 'Add a manual time entry' }}</p>
+								<h2 class="text-lg font-semibold text-heading">{{ editingEntry ? 'Edit Entry' : 'New Time Entry' }}</h2>
+								<p class="text-sm text-text mt-1">{{ editingEntry ? 'Update your time entry' : 'Add a manual time entry' }}</p>
 							</div>
-							<button @click="showAddEntry = false"
-								class="w-8 h-8 rounded-sm flex items-center justify-center hover:bg-heading/10 text-text hover:text-heading transition-colors">
+							<button @click="showAddEntry = false" aria-label="Close"
+								class="w-9 h-9 rounded-md flex items-center justify-center hover:bg-heading/8 text-text hover:text-heading transition-all duration-150 shrink-0 active:scale-95">
 								<v-icon name="bi-x" scale="1" />
 							</button>
 						</div>
 
-						<form @submit.prevent="saveEntry" class="p-6 space-y-4">
-							<div class="grid grid-cols-2 gap-4">
+						<form @submit.prevent="saveEntry" class="p-6 flex flex-col gap-4">
+							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 								<div>
-									<label class="text-xs font-semibold uppercase tracking-wide text-text block mb-1.5">Date</label>
+									<label class="form-label">Date</label>
 									<AppDatePicker v-model="newEntry.date" size="sm" />
 								</div>
 								<div>
-									<label class="text-xs font-semibold uppercase tracking-wide text-text block mb-1.5">Billable</label>
-									<div class="flex items-center h-9 gap-4 mt-0.5">
+									<label class="form-label">Billable</label>
+									<div class="flex items-center gap-5 h-10">
 										<label class="flex items-center gap-2 cursor-pointer">
-											<input type="radio" v-model="newEntry.billable" :value="true" class="accent-accent" />
+											<input type="radio" v-model="newEntry.billable" :value="true" class="accent-accent w-4 h-4" />
 											<span class="text-sm text-text">Yes</span>
 										</label>
 										<label class="flex items-center gap-2 cursor-pointer">
-											<input type="radio" v-model="newEntry.billable" :value="false" class="accent-accent" />
+											<input type="radio" v-model="newEntry.billable" :value="false" class="accent-accent w-4 h-4" />
 											<span class="text-sm text-text">No</span>
 										</label>
 									</div>
 								</div>
 							</div>
 
-							<div class="grid grid-cols-2 gap-4">
+							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 								<div>
-									<label class="text-xs font-semibold uppercase tracking-wide text-text block mb-1.5">Start Time</label>
-									<input v-model="newEntry.start_time" type="time" class="input-field text-sm w-full" required />
+									<label class="form-label">Start Time</label>
+									<input v-model="newEntry.start_time" type="time" class="input-field" required />
 								</div>
 								<div>
-									<label class="text-xs font-semibold uppercase tracking-wide text-text block mb-1.5">End Time</label>
-									<input v-model="newEntry.end_time" type="time" class="input-field text-sm w-full" required />
+									<label class="form-label">End Time</label>
+									<input v-model="newEntry.end_time" type="time" class="input-field" required />
 								</div>
 							</div>
 
 							<div>
-								<label class="text-xs font-semibold uppercase tracking-wide text-text block mb-1.5">Task</label>
+								<label class="form-label">Task</label>
 								<input v-model="newEntry.task_title" type="text"
 									placeholder="What were you working on?"
-									class="input-field text-sm w-full" required />
+									class="input-field" required />
 							</div>
 
 							<div>
-								<label class="text-xs font-semibold uppercase tracking-wide text-text block mb-1.5">Project</label>
+								<label class="form-label">Project</label>
 								<AppSelect v-model="newEntry.project_id" :options="[
 									{ label: 'Tazko App', value: 1 },
 									{ label: 'Brand Refresh', value: 2 },
@@ -603,16 +599,16 @@ onBeforeUnmount(() => {
 							</div>
 
 							<div>
-								<label class="text-xs font-semibold uppercase tracking-wide text-text block mb-1.5">Description</label>
+								<label class="form-label">Description</label>
 								<input v-model="newEntry.description" type="text"
-									placeholder="Optional notes..."
-									class="input-field text-sm w-full" />
+									placeholder="Optional notes…"
+									class="input-field" />
+								<p class="form-hint">Add context so this entry is easy to recognise later.</p>
 							</div>
 
 							<div class="flex items-center justify-end gap-3 pt-2">
 								<button type="button" @click="showAddEntry = false" class="tazko-btn-cancel">Cancel</button>
-								<button type="submit"
-									class="inline-flex items-center gap-2 px-6 py-2.5 rounded-sm bg-accent text-white text-sm font-semibold hover:bg-accent/90 active:scale-95 transition-all">
+								<button type="submit" class="tazko-btn">
 									{{ editingEntry ? 'Update' : 'Add Entry' }}
 								</button>
 							</div>
@@ -625,6 +621,15 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+/* Subtle accent-tinted surface for the timer, derived from theme tokens */
+.timer-surface {
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--color-accent) 6%, var(--color-panel)) 0%,
+		var(--color-panel) 100%
+	);
+}
+
 .modal-enter-active,
 .modal-leave-active {
 	transition: all 0.2s ease;
@@ -633,8 +638,8 @@ onBeforeUnmount(() => {
 .modal-leave-to {
 	opacity: 0;
 }
-.modal-enter-from > div,
-.modal-leave-to > div {
+.modal-enter-from .modal-content,
+.modal-leave-to .modal-content {
 	transform: scale(0.97);
 }
 </style>

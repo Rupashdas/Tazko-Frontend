@@ -153,7 +153,7 @@ const textCls = computed(() =>
 			type="button"
 			@click="openDropdown"
 			:disabled="disabled"
-			class="w-full flex items-center gap-2 rounded-sm border transition-colors focus:outline-none focus:border-accent text-left leading-tight min-w-0"
+			class="w-full flex items-center gap-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-accent/10 focus:border-accent text-left leading-tight min-w-0"
 			:class="[triggerPadding, triggerBg, open ? 'border-accent' : '', disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']">
 
 			<!-- Multi: chips (hidden when hideValue is true) -->
@@ -196,17 +196,17 @@ const textCls = computed(() =>
 			leave-to-class="opacity-0 -translate-y-1">
 			<div
 				v-if="open"
-				class="absolute z-50 top-full mt-1 w-full min-w-max bg-panel border border-heading/10 rounded-sm shadow-xl shadow-heading/8 overflow-hidden">
+				class="dropdown-menu absolute z-50 top-full mt-1 w-full min-w-max">
 
 				<!-- Search -->
-				<div v-if="searchable" class="p-2 border-b border-heading/8">
-					<input
-						ref="searchInput"
-						v-model="search"
-						type="text"
-						placeholder="Search…"
-						class="w-full px-3 py-1.5 rounded-sm border border-heading/8 bg-heading/3 text-sm text-heading placeholder:text-text focus:outline-none focus:border-accent/40 transition-colors" />
-				</div>
+			<div v-if="searchable" class="p-2 border-b border-heading/8">
+				<input
+					ref="searchInput"
+					v-model="search"
+					type="text"
+					placeholder="Search…"
+					class="tazko-search" />
+			</div>
 
 				<!-- Options (no v-scrollbar — OverlayScrollbars rewraps children inside
 				     .os-viewport>.os-content, breaking Vue's insertBefore anchors) -->
@@ -221,7 +221,7 @@ const textCls = computed(() =>
 						<!-- Group header: rendered as a styled div inside the <li> -->
 						<div
 							v-if="item._type === 'group'"
-							class="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-text select-none border-t border-heading/8">
+							class="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-widest text-text/60 select-none">
 							{{ item.label }}
 						</div>
 
@@ -230,11 +230,11 @@ const textCls = computed(() =>
 							v-else
 							type="button"
 							@click="toggle(item.value)"
-							class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left transition-colors"
+							class="dropdown-item dropdown-item-hover w-full"
 							:class="[
 								disabledValues.includes(item.value)
 									? 'opacity-50 cursor-default'
-									: isSelected(item.value) ? 'text-accent bg-accent/5 hover:bg-accent/5' : 'text-heading hover:bg-heading/5'
+									: isSelected(item.value) ? 'text-accent bg-accent/5' : 'text-heading'
 							]">
 
 							<!-- Avatar / initials -->

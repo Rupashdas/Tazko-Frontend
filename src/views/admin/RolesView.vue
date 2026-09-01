@@ -7,13 +7,13 @@ import { useToast } from '@/utils/toast'
 import { validators } from '@/utils/validators'
 import { addIcons } from 'oh-vue-icons'
 import {
-	BiList, BiTrash, BiPlus, BiCheck2, BiX, BiSearch, CoWarning, BiChevronDown, BiShield, MdErroroutlineRound, BiArrowRepeat,
+	BiList, BiTrash, BiPlus, BiCheck2, BiX, BiSearch, BiExclamationTriangle, BiChevronDown, BiShield, BiExclamationCircleFill, BiArrowRepeat,
 	BiPeopleFill, BiFolder, BiCheckSquareFill, BiGearFill, BiBarChartFill, BiCreditCardFill, BiPersonBadgeFill, BiPeople,
 	BiSpeedometer2, BiFileEarmark, BiChatDotsFill, BiGraphUp, BiTools,
 	BiActivity, BiBellFill, BiChatFill, BiClockFill, BiGearWideConnected
 } from 'oh-vue-icons/icons'
 
-addIcons(BiList, BiTrash, BiPlus, BiCheck2, BiX, BiSearch, CoWarning, BiChevronDown, BiShield, MdErroroutlineRound, BiArrowRepeat,
+addIcons(BiList, BiTrash, BiPlus, BiCheck2, BiX, BiSearch, BiExclamationTriangle, BiChevronDown, BiShield, BiExclamationCircleFill, BiArrowRepeat,
 	BiPeopleFill, BiFolder, BiCheckSquareFill, BiGearFill, BiBarChartFill, BiCreditCardFill, BiPersonBadgeFill, BiPeople,
 	BiSpeedometer2, BiFileEarmark, BiChatDotsFill, BiGraphUp, BiTools,
 	BiActivity, BiBellFill, BiChatFill, BiClockFill, BiGearWideConnected)
@@ -142,7 +142,7 @@ function getModuleIcon(module) {
 		<!-- PAGE LOADING OVERLAY -->
 		<Transition name="fade">
 			<div v-if="roleStore.isPageLoading"
-				class="absolute inset-0 bg-panel/80 backdrop-blur-sm flex flex-col items-center justify-center z-40 rounded-sm gap-3">
+				class="absolute inset-0 bg-panel/80 backdrop-blur-sm flex flex-col items-center justify-center z-40 rounded-lg gap-3">
 				<div class="w-10 h-10 rounded-full border-3 border-accent border-t-transparent animate-spin" />
 				<p class="text-base text-text font-medium">Loading roles…</p>
 			</div>
@@ -179,8 +179,8 @@ function getModuleIcon(module) {
 		<div class="flex flex-1">
 
 			<!-- ── SIDEBAR (desktop: always visible & self-scrolling) ───── -->
-			<aside
-				class="hidden lg:flex w-64 border-r border-heading/10 bg-panel flex-col shrink-0 sticky top-24 self-start max-h-[calc(100vh-7rem)] rounded-sm shadow-sm">
+		<aside
+			class="hidden lg:flex w-64 border-r border-heading/10 bg-panel flex-col shrink-0 sticky top-24 self-start max-h-[calc(100vh-7rem)] rounded-lg shadow-sm">
 
 				<!-- Sidebar Header -->
 				<div class="px-5 pt-5 pb-4 border-b border-heading/10 shrink-0">
@@ -200,8 +200,8 @@ function getModuleIcon(module) {
 				<!-- Role List — this part scrolls independently -->
 				<div v-scrollbar class="flex-1 overflow-y-auto"><ul class="py-3 px-3 space-y-1">
 					<li v-for="role in roleStore.roles" :key="role.id">
-						<button @click="roleStore.selectRole(role)"
-							class="w-full text-base text-left px-3 py-3 rounded-sm transition-all duration-150 flex items-center gap-3 group"
+				<button @click="roleStore.selectRole(role)"
+					class="w-full text-base text-left px-3 py-3 rounded-md transition-all duration-150 flex items-center gap-3 group"
 							:class="roleStore.selectedRole?.id === role.id
 								? 'bg-accent/15 text-heading'
 								: 'hover:bg-heading/5 text-text'">
@@ -261,9 +261,9 @@ function getModuleIcon(module) {
 							</span>
 						</div>
 
-						<button v-if="canDelete && !roleStore.selectedRole.is_system_role"
-							@click="showDeleteConfirm = true"
-							class="inline-flex items-center gap-2 px-6 py-3 rounded-sm text-base font-medium text-red-500 border border-red-500/20 hover:bg-red-500/8 hover:border-red-500/30 active:scale-95 transition-all cursor-pointer">
+					<button v-if="canDelete && !roleStore.selectedRole.is_system_role"
+						@click="showDeleteConfirm = true"
+						class="inline-flex items-center gap-2 px-6 py-3 rounded-md text-base font-medium text-red-500 border border-red-500/20 hover:bg-red-500/8 hover:border-red-500/30 active:scale-95 transition-all cursor-pointer">
 							<v-icon name="bi-trash" scale="0.8" />
 							Delete
 						</button>
@@ -296,7 +296,7 @@ function getModuleIcon(module) {
 							class="absolute left-3.5 top-1/2 -translate-y-1/2 text-text pointer-events-none"
 							scale="0.85" />
 						<input v-model="searchQuery" type="text" placeholder="Search permissions…"
-							class="w-full pl-9 pr-4 py-2 text-base bg-heading/3 border border-heading/8 focus:border-accent/40 focus:outline-none rounded-sm transition-colors" />
+							class="input-field pl-9" />
 					</div>
 				</div>
 
@@ -336,7 +336,7 @@ function getModuleIcon(module) {
 					<!-- Module Cards -->
 					<div v-else class="space-y-3">
 						<div v-for="(caps, module) in filteredCapabilities" :key="module"
-							class="bg-panel border border-heading/10 rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
+							class="card overflow-hidden hover:shadow-md transition-shadow duration-200">
 
 							<!-- Module Header -->
 							<button type="button"
@@ -428,7 +428,7 @@ function getModuleIcon(module) {
 					<!-- Drawer panel -->
 					<Transition name="slide-left">
 						<div v-if="mobileSidebarOpen"
-							class="relative w-72 max-w-[85vw] bg-panel h-full flex flex-col shadow-2xl">
+							class="relative w-72 max-w-[85vw] bg-panel h-full flex flex-col shadow-2xl rounded-r-xl">
 
 							<!-- Drawer Header -->
 							<div
@@ -453,8 +453,8 @@ function getModuleIcon(module) {
 							<!-- Role List -->
 							<div v-scrollbar class="flex-1 overflow-y-auto"><ul class="py-3 px-3 space-y-1">
 								<li v-for="role in roleStore.roles" :key="role.id">
-									<button @click="selectRoleAndClose(role)"
-										class="w-full text-left px-3 py-3 rounded-sm transition-all duration-150 flex items-center gap-3 group"
+								<button @click="selectRoleAndClose(role)"
+									class="w-full text-left px-3 py-3 rounded-md transition-all duration-150 flex items-center gap-3 group"
 										:class="roleStore.selectedRole?.id === role.id
 											? 'bg-accent/15 text-heading'
 											: 'hover:bg-heading/5 text-text'">
@@ -499,7 +499,7 @@ function getModuleIcon(module) {
 			<Transition name="modal">
 				<div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
 					<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="showDeleteConfirm = false" />
-					<div class="relative w-full max-w-sm bg-panel rounded-sm shadow-2xl p-6 border border-heading/10 transition-all">
+					<div class="relative w-full max-w-sm bg-panel rounded-xl shadow-2xl p-6 border border-heading/10 transition-all">
 						<button @click="showDeleteConfirm = false"
 							class="absolute top-3 right-3 w-7 h-7 rounded-sm flex items-center justify-center text-text hover:bg-heading/8 transition-all">
 							<v-icon name="bi-x" scale="1.3" />
@@ -537,7 +537,7 @@ function getModuleIcon(module) {
 				<div v-if="showAddRole && canCreate" class="fixed inset-0 z-50 flex items-center justify-center p-4">
 					<div class="absolute inset-0 bg-heading/50 backdrop-blur-sm" @click="closeModal" />
 					<div
-						class="relative w-full max-w-md bg-panel rounded-sm shadow-2xl border border-heading/10 overflow-hidden transition-all">
+						class="relative w-full max-w-md bg-panel rounded-xl shadow-2xl border border-heading/10 overflow-hidden transition-all">
 
 						<div class="px-6 py-5 border-b border-heading/10 flex items-center justify-between">
 							<div class="flex items-center gap-3">
@@ -554,9 +554,7 @@ function getModuleIcon(module) {
 						<form @submit.prevent="handleAddRole">
 							<div class="p-6 space-y-5">
 								<div class="flex flex-col gap-2">
-									<label class="block text-base font-semibold text-text">
-										Role Display Name <span class="text-red-400">*</span>
-									</label>
+									<label class="form-label">Role Display Name <span class="text-red-400">*</span></label>
 									<input @input="generateRoleName(); addRoleErrors.label = null" v-model="newRoleLabel" type="text"
 										placeholder="e.g. Project Manager" class="input-field"
 										:class="(addRoleErrors.label || roleStore.errors?.label) ? 'border-red-400 bg-red-50/30' : ''" />

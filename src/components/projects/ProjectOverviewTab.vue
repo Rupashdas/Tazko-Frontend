@@ -60,9 +60,9 @@ const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'shor
 						{ label: 'In Progress', value: inProgressCount, icon: 'bi-lightning-charge', cls: 'text-accent', bg: 'bg-accent/10' },
 						{ label: 'In Review', value: reviewCount, icon: 'bi-exclamation-circle', cls: 'text-violet-500', bg: 'bg-violet-500/10' },
 						{ label: 'Completed', value: doneCount, icon: 'bi-check-circle', cls: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-					]" :key="stat.label" class="bg-panel rounded-sm border border-heading/5 px-4 py-3 flex items-center gap-3">
+					]" :key="stat.label" class="card p-4 flex items-center gap-3">
 						<div
-							:class="[stat.bg, 'w-12 h-12 rounded-sm flex items-center justify-center shrink-0']">
+							:class="[stat.bg, 'w-12 h-12 rounded-md flex items-center justify-center shrink-0']">
 							<v-icon :name="stat.icon" :class="stat.cls" scale="1.4" />
 						</div>
 						<div>
@@ -73,8 +73,8 @@ const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'shor
 					</div>
 				</div>
 
-				<!-- Progress card -->
-				<div class="bg-panel rounded-sm border border-heading/8 shadow-sm p-5">
+			<!-- Progress card -->
+			<div class="card p-5">
 					<p class="text-sm font-bold uppercase text-text mb-4 flex items-center gap-1.5">
 						<v-icon name="bi-lightning-charge" scale="0.75" class="text-accent" />
 						Overall Progress
@@ -99,8 +99,8 @@ const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'shor
 					</div>
 				</div>
 
-				<!-- Goal card -->
-				<div class="bg-panel rounded-sm border border-heading/8 shadow-sm p-5">
+			<!-- Goal card -->
+			<div class="card p-5">
 					<p class="text-sm font-bold uppercase text-text mb-3 flex items-center gap-1.5">
 						<v-icon name="bi-check2" scale="0.75" class="text-accent" />
 						Project Goal
@@ -108,8 +108,8 @@ const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'shor
 					<p class="text-base text-text leading-relaxed">{{ project.goal }}</p>
 				</div>
 
-				<!-- Timeline card -->
-				<div class="bg-panel rounded-sm border border-heading/8 shadow-sm p-5">
+			<!-- Timeline card -->
+			<div class="card p-5">
 					<p class="text-sm font-bold uppercase text-text mb-4 flex items-center gap-1.5">
 						<v-icon name="bi-calendar3" scale="0.75" class="text-violet-500" />
 						Timeline
@@ -138,8 +138,8 @@ const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'shor
 			<!-- ── Right col (1/3 width) ── -->
 			<div class="space-y-4">
 
-				<!-- Team card -->
-				<div class="bg-panel rounded-sm border border-heading/8 shadow-sm p-4">
+			<!-- Team card -->
+			<div class="card p-4">
 					<div class="flex items-center justify-between mb-3">
 						<p class="text-sm font-bold uppercase text-text flex items-center gap-1.5">
 							<v-icon name="bi-people" scale="0.75" class="text-emerald-500" />
@@ -166,8 +166,8 @@ const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'shor
 					</div>
 				</div>
 
-				<!-- Activity card -->
-				<div class="bg-panel rounded-sm border border-heading/8 shadow-sm p-4">
+			<!-- Activity card -->
+			<div class="card p-4">
 					<p class="text-sm font-bold uppercase text-text mb-3 flex items-center gap-1.5">
 						<v-icon name="bi-activity" scale="0.75" class="text-accent" />
 						Recent Activity

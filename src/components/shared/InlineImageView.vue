@@ -91,21 +91,18 @@ function onAltKeydown(e) {
 </script>
 
 <template>
-    <NodeViewWrapper as="span" class="inline-image-wrapper group relative"
+    <NodeViewWrapper as="span" class="inline-flex items-start flex-col relative"
         :class="{ 'is-selected': selected }"
     >
-        <span class="inline-image-frame relative inline-block align-middle">
-            <!-- Show the image as soon as we have a src — even while uploading,
-                 src is the local blob URL so the user sees their picture
-                 immediately. -->
+        <span class="relative inline-block align-middle">
             <img
                 v-if="node.attrs.src"
                 ref="imgEl"
                 :src="node.attrs.src"
                 :alt="node.attrs.alt || 'image'"
-                class="inline-image"
+                class="file-attachment-image rounded-md object-contain block"
+                :style="displayWidth ? { width: displayWidth, maxWidth: '100%', maxHeight: '640px' } : { maxWidth: '100%', maxHeight: '320px' }"
                 :class="{ 'opacity-80': node.attrs.uploading }"
-                :style="displayWidth ? { width: displayWidth } : null"
             />
             <!-- Progress bar overlay along the bottom edge of the image. -->
             <span

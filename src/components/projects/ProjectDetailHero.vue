@@ -4,14 +4,14 @@ import { useRouter } from 'vue-router'
 import { addIcons } from 'oh-vue-icons'
 import {
 	BiChevronRight, BiPlus, BiThreeDotsVertical, BiPencil, BiArchive, BiTrash,
-	BiCalendar3, BiClock, BiPersonPlus, BiX, MdFolderspecialOutlined,
+	BiCalendar3, BiClock, BiPersonPlus, BiX, BiFolder2Open,
 } from 'oh-vue-icons/icons'
 import { sanitize } from '@/utils/sanitize'
 import RichTextEditor from '@/components/shared/RichTextEditor.vue'
 
 addIcons(
 	BiChevronRight, BiPlus, BiThreeDotsVertical, BiPencil, BiArchive, BiTrash,
-	BiCalendar3, BiClock, BiPersonPlus, BiX, MdFolderspecialOutlined,
+	BiCalendar3, BiClock, BiPersonPlus, BiX, BiFolder2Open,
 )
 
 const props = defineProps({
@@ -89,7 +89,7 @@ const hasAnyAction = computed(() => props.canUpdate || props.canArchive || props
 
 const statusConfig = {
 	'Planning':    { cls: 'bg-slate-400/15 text-slate-500',     dot: 'bg-slate-400' },
-	'In Progress': { cls: 'bg-accent/10 text-accent',           dot: 'bg-accent animate-pulse' },
+	'In Progress': { cls: 'bg-accent/10 text-accent',           dot: 'bg-accent' },
 	'On Hold':     { cls: 'bg-amber-500/15 text-amber-600',     dot: 'bg-amber-500' },
 	'Completed':   { cls: 'bg-emerald-500/15 text-emerald-600', dot: 'bg-emerald-500' },
 }
@@ -120,184 +120,215 @@ const hasDescription = computed(() => {
 	</div>
 
 	<!-- Hero panel -->
-	<div class="relative rounded-t-sm">
+	<div class="relative rounded-lg">
 		<div class="absolute inset-0 bg-accent/8" />
-		<div class="absolute inset-0 bg-panel/80 backdrop-blur-sm border border-b-0 border-heading/8 rounded-t-sm" />
+		<div class="relative bg-panel/80 backdrop-blur-sm border border-b-0 border-heading/8 rounded-lg">
 
-		<div class="relative px-6 pt-5">
+			<div class="px-5 pt-5">
 
-			<!-- Title row -->
-			<div class="flex flex-wrap gap-5 items-start justify-between mb-4">
-				<div class="flex items-start gap-4 flex-1 min-w-0">
-					<div :class="[project.color || 'bg-accent', 'w-12 h-12 rounded-sm flex items-center justify-center shrink-0 shadow-lg']">
-						<v-icon name="md-folderspecial-outlined" class="text-white" scale="1.3" />
-					</div>
-					<div class="min-w-0 flex-1">
-						<div class="flex items-start gap-2.5 flex-wrap mb-2">
-							<input
-								v-if="editingTitle"
-								ref="titleInputRef"
-								v-model="titleDraft"
-								type="text"
-								class="page-title bg-transparent border-0 border-b-2 border-accent outline-none min-w-0 flex-1"
-								@blur="commitTitle"
-								@keydown.enter.prevent="commitTitle"
-								@keydown.escape.prevent="cancelTitle"
-							/>
-							<h1
-								v-else
-								class="page-title transition-colors"
-								:class="canUpdate ? 'cursor-text hover:text-accent' : ''"
-								@click="startEditTitle"
-							>{{ project.name }}</h1>
-							<span :class="[statusConfig[project.status]?.cls, 'inline-flex items-center gap-1.5 text-sm px-2.5 py-1 rounded-full font-bold border border-current/10']">
-								<span :class="[statusConfig[project.status]?.dot, 'w-1.5 h-1.5 rounded-full']" />
-								{{ project.status }}
-							</span>
+				<!-- Title row -->
+				<div class="flex flex-wrap gap-4 items-start justify-between mb-4">
+					<div class="flex items-start gap-3 flex-1 min-w-0">
+						<div :class="[project.color || 'bg-accent', 'w-11 h-11 rounded-md flex items-center justify-center shrink-0 shadow-sm']">
+							<v-icon name="bi-folder2-open" class="text-white" scale="1.3" />
 						</div>
-					</div>
-				</div>
-
-				<!-- Action buttons -->
-				<div class="flex items-center gap-2 shrink-0 mt-1">
-					<button v-if="canCreateTask" @click="emit('add-task', 'Todo')" class="tazko-btn shadow-md shadow-accent/20">
-						<v-icon name="bi-plus" scale="0.9" />
-						Add Task
-					</button>
-
-					<div v-if="hasAnyAction" class="relative" @click.stop>
-						<button
-							@click="emit('toggle-more-menu', $event)"
-							class="p-2 rounded-sm border border-heading/10 text-text hover:text-heading hover:bg-heading/5 transition-all"
-							title="More actions">
-							<v-icon name="bi-three-dots-vertical" scale="0.9" />
-						</button>
-						<Transition
-							enter-active-class="transition-all duration-150 ease-in-out"
-							leave-active-class="transition-all duration-150 ease-in-out"
-							enter-from-class="opacity-0 -translate-y-1.5"
-							leave-to-class="opacity-0 -translate-y-1.5">
-							<div v-if="moreMenuOpen"
-								class="absolute right-0 top-full mt-1 w-52 bg-panel rounded-sm border border-heading/10 shadow-xl z-30 overflow-hidden">
-								<button v-if="canUpdate" @click="emit('edit')"
-									class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-heading/5 transition-colors">
-									<v-icon name="bi-pencil" scale="0.85" /> Edit Project
-								</button>
-								<button v-if="canArchive" @click="emit('archive')"
-									class="w-full flex items-center gap-2 px-4 py-3 text-base text-text hover:bg-amber-500/10 hover:text-amber-600 transition-colors">
-									<v-icon name="bi-archive" scale="0.85" /> Archive
-								</button>
-								<div v-if="canDelete && (canUpdate || canArchive)" class="h-px bg-heading/5 mx-2" />
-								<button v-if="canDelete" @click="emit('delete')"
-									class="w-full flex items-center gap-2 px-4 py-3 text-base text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
-									<v-icon name="bi-trash" scale="0.85" /> Delete
-								</button>
+						<div class="min-w-0 flex-1">
+							<div class="flex items-start gap-2.5 flex-wrap mb-2">
+								<input
+									v-if="editingTitle"
+									ref="titleInputRef"
+									v-model="titleDraft"
+									type="text"
+									class="page-title bg-transparent border-0 border-b-2 border-accent outline-none min-w-0 flex-1"
+									@blur="commitTitle"
+									@keydown.enter.prevent="commitTitle"
+									@keydown.escape.prevent="cancelTitle"
+								/>
+								<h1
+									v-else
+									class="page-title transition-colors"
+									:class="canUpdate ? 'cursor-text hover:text-accent' : ''"
+									@click="startEditTitle"
+								>{{ project.name }}</h1>
+								<span :class="[statusConfig[project.status]?.cls, 'badge inline-flex items-center gap-1.5']">
+									<span :class="[statusConfig[project.status]?.dot, 'w-1.5 h-1.5 rounded-full']" />
+									{{ project.status }}
+								</span>
 							</div>
-						</Transition>
-					</div>
-				</div>
-			</div>
-
-			<!-- Description -->
-			<div class="rounded-sm mb-4">
-				<template v-if="!editingDesc">
-					<!-- View mode: rendered HTML keeps links/files/embeds
-					     interactive. Editing is opened via the hover-revealed
-					     pencil button (or by clicking the empty placeholder). -->
-					<div
-						v-if="hasDescription"
-						class="group/desc relative project-rich-content px-2 py-1 -ml-2 rounded-sm transition-colors hover:bg-heading/4">
-						<div v-html="sanitize(project.description)" />
-						<button
-							v-if="canUpdate"
-							type="button"
-							@click="startEditDesc"
-							class="absolute top-1 right-1 inline-flex items-center gap-1 px-2 py-1 rounded-sm text-xs font-semibold text-text bg-panel/90 border border-heading/10 opacity-0 group-hover/desc:opacity-100 hover:text-accent hover:border-accent/40 transition-all"
-							title="Edit description">
-							<v-icon name="bi-pencil" scale="0.7" />
-							Edit
-						</button>
-					</div>
-					<p
-						v-else
-						class="text-sm px-2 py-1 -ml-2 rounded-sm transition-colors"
-						:class="canUpdate ? 'text-text/50 italic cursor-text hover:bg-heading/4' : 'text-text italic opacity-60'"
-						@click="canUpdate && startEditDesc()"
-					>{{ canUpdate ? 'Click to add a description…' : 'No description yet.' }}</p>
-				</template>
-				<template v-else>
-					<RichTextEditor
-						v-model="descDraft"
-						:project-id="project.id"
-						:show-toolbar="true"
-						min-height="80px"
-						:autofocus="true"
-					/>
-					<div class="flex items-center justify-end gap-2 mt-2">
-						<button type="button" class="tazko-btn-cancel-sm" @click="cancelDesc">Cancel</button>
-						<button type="button" class="tazko-btn-sm" @click="commitDesc">
-							<v-icon name="bi-check2" scale="0.8" />
-							Save
-						</button>
-					</div>
-				</template>
-			</div>
-
-			<!-- Progress + meta strip -->
-			<div class="flex flex-wrap items-center gap-5 mb-5">
-				<div class="flex items-center gap-2.5 min-w-52">
-					<div class="flex-1 h-1.5 bg-heading/10 rounded-full overflow-hidden">
-						<div class="h-full bg-accent rounded-full transition-all duration-700"
-							:style="`width:${liveProgress}%`" />
-					</div>
-					<span class="text-sm font-bold text-heading tabular-nums">{{ liveProgress }}%</span>
-				</div>
-				<div class="flex items-center gap-1.5 text-sm text-text">
-					<v-icon name="bi-calendar3" scale="0.75" />
-					{{ formatDate(project.startDate) }} → {{ formatDate(project.endDate) }}
-				</div>
-				<div class="flex items-center gap-1.5 text-sm"
-					:class="daysLeft <= 14 ? 'text-amber-500 font-semibold' : 'text-text'">
-					<v-icon name="bi-clock" scale="0.75" />
-					{{ daysLeft > 0 ? `${daysLeft} days remaining` : 'Past deadline' }}
-				</div>
-
-				<!-- Member avatars -->
-				<div class="flex items-center ml-auto">
-					<div v-for="(m, i) in project.members" :key="m.id"
-						class="relative group -ml-4 first:ml-0"
-						:style="`z-index: ${project.members.length - i}`">
-						<div :class="[!m.avatar && m.color, 'w-12 h-12 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-panel shadow-sm hover:scale-110 transition-transform cursor-pointer overflow-hidden']"
-							:title="`${m.name}${m.role ? ' — ' + m.role : ''}`">
-							<img v-if="m.avatar" :src="m.avatar" class="w-full h-full object-cover" :alt="m.name" />
-							<span v-else>{{ m.initials }}</span>
 						</div>
-						<button v-if="canManageMembers" @click="emit('remove-member', m.id)"
-							class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-500 text-white opacity-0 invisible group-hover:opacity-100 group-hover:visible flex items-center justify-center shadow-sm z-10 transition-all"
-							:title="`Remove ${m.name}`">
-							<v-icon name="bi-x" scale="0.8" />
+					</div>
+
+					<!-- Action buttons -->
+					<div class="flex items-center gap-2 shrink-0 mt-1">
+						<button v-if="canCreateTask" @click="emit('add-task', 'Todo')" class="tazko-btn shadow-sm shadow-accent/10">
+							<v-icon name="bi-plus" scale="0.9" />
+							Add Task
+						</button>
+
+						<div v-if="hasAnyAction" class="relative" @click.stop>
+							<button
+								@click="emit('toggle-more-menu', $event)"
+								class="p-2 rounded-md border border-heading/10 text-text hover:text-heading hover:bg-heading/5 transition-all"
+								title="More actions">
+								<v-icon name="bi-three-dots-vertical" scale="0.9" />
+							</button>
+							<Transition
+								enter-active-class="transition-all duration-150 ease-in-out"
+								leave-active-class="transition-all duration-150 ease-in-out"
+								enter-from-class="opacity-0 -translate-y-1.5"
+								leave-to-class="opacity-0 -translate-y-1.5">
+								<div v-if="moreMenuOpen"
+									class="absolute right-0 top-full mt-1 w-52 bg-panel rounded-lg border border-heading/10 shadow-sm z-30 overflow-hidden">
+									<button v-if="canUpdate" @click="emit('edit')"
+										class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-text hover:bg-heading/5 transition-colors">
+										<v-icon name="bi-pencil" scale="0.85" /> Edit Project
+									</button>
+									<button v-if="canArchive" @click="emit('archive')"
+										class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-text hover:bg-amber-500/10 hover:text-amber-600 transition-colors">
+										<v-icon name="bi-archive" scale="0.85" /> Archive
+									</button>
+									<div v-if="canDelete && (canUpdate || canArchive)" class="h-px bg-heading/5 mx-2" />
+									<button v-if="canDelete" @click="emit('delete')"
+										class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+										<v-icon name="bi-trash" scale="0.85" /> Delete
+									</button>
+								</div>
+							</Transition>
+						</div>
+					</div>
+				</div>
+
+				<!-- Description -->
+				<div class="rounded-md mb-4">
+					<template v-if="!editingDesc">
+						<div
+							v-if="hasDescription"
+							class="group/desc relative project-rich-content px-2 py-1 -ml-2 rounded-md transition-colors hover:bg-heading/4">
+							<div v-html="sanitize(project.description)" />
+							<button
+								v-if="canUpdate"
+								type="button"
+								@click="startEditDesc"
+								class="absolute top-1 right-1 inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold text-text bg-panel/90 border border-heading/10 opacity-0 group-hover/desc:opacity-100 hover:text-accent hover:border-accent/40 transition-all"
+								title="Edit description">
+								<v-icon name="bi-pencil" scale="0.7" />
+								Edit
+							</button>
+						</div>
+						<p
+							v-else
+							class="text-sm px-2 py-1 -ml-2 rounded-md transition-colors"
+							:class="canUpdate ? 'text-text/50 italic cursor-text hover:bg-heading/4' : 'text-text italic opacity-60'"
+							@click="canUpdate && startEditDesc()"
+						>{{ canUpdate ? 'Click to add a description…' : 'No description yet.' }}</p>
+					</template>
+					<template v-else>
+						<RichTextEditor
+							v-model="descDraft"
+							:project-id="project.id"
+							:show-toolbar="true"
+							min-height="80px"
+							:autofocus="true"
+						/>
+						<div class="flex items-center justify-end gap-2 mt-2">
+							<button type="button" class="tazko-btn-cancel-sm" @click="cancelDesc">Cancel</button>
+							<button type="button" class="tazko-btn-sm" @click="commitDesc">
+								<v-icon name="bi-check2" scale="0.8" />
+								Save
+							</button>
+						</div>
+					</template>
+				</div>
+
+				<!-- Progress + meta strip -->
+				<div class="flex flex-wrap items-center gap-4 mb-4">
+					<div class="flex items-center gap-2.5 min-w-52">
+						<div class="flex-1 h-1.5 bg-heading/10 rounded-full overflow-hidden">
+							<div class="h-full bg-accent rounded-full transition-all duration-700"
+								:style="`width:${liveProgress}%`" />
+						</div>
+						<span class="text-sm font-bold text-heading tabular-nums">{{ liveProgress }}%</span>
+					</div>
+					<div class="flex items-center gap-1.5 text-sm text-text">
+						<v-icon name="bi-calendar3" scale="0.75" />
+						{{ formatDate(project.startDate) }} → {{ formatDate(project.endDate) }}
+					</div>
+					<div class="flex items-center gap-1.5 text-sm"
+						:class="daysLeft <= 14 ? 'text-amber-500 font-semibold' : 'text-text'">
+						<v-icon name="bi-clock" scale="0.75" />
+						{{ daysLeft > 0 ? `${daysLeft} days remaining` : 'Past deadline' }}
+					</div>
+
+					<!-- Member avatars -->
+					<div class="flex items-center ml-auto">
+						<div v-for="(m, i) in project.members" :key="m.id"
+							class="relative group -ml-4 first:ml-0"
+							:style="`z-index: ${project.members.length - i}`">
+							<div :class="[!m.avatar && m.color, 'w-11 h-11 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-panel shadow-sm hover:scale-110 transition-transform cursor-pointer overflow-hidden']"
+								:title="`${m.name}${m.role ? ' — ' + m.role : ''}`">
+								<img v-if="m.avatar" :src="m.avatar" class="w-full h-full object-cover" :alt="m.name" />
+								<span v-else>{{ m.initials }}</span>
+							</div>
+							<button v-if="canManageMembers" @click="emit('remove-member', m.id)"
+								class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-500 text-white opacity-0 invisible group-hover:opacity-100 group-hover:visible flex items-center justify-center shadow-sm z-10 transition-all"
+								:title="`Remove ${m.name}`">
+								<v-icon name="bi-x" scale="0.8" />
+							</button>
+						</div>
+						<button v-if="canManageMembers" @click="emit('add-member')"
+							class="w-11 h-11 rounded-full border-2 border-dashed border-heading/20 flex items-center justify-center bg-panel -ml-1.5 text-text hover:text-accent hover:border-accent/40 transition-all"
+							title="Add member">
+							<v-icon name="bi-person-plus" scale="1" />
 						</button>
 					</div>
-					<button v-if="canManageMembers" @click="emit('add-member')"
-						class="w-12 h-12 rounded-full border-2 border-dashed border-heading/20 flex items-center justify-center bg-panel -ml-1.5 text-text hover:text-accent hover:border-accent/40 transition-all"
-						title="Add member">
-						<v-icon name="bi-person-plus" scale="1" />
+				</div>
+
+				<!-- Tab bar -->
+				<div class="flex items-center gap-1 flex-wrap">
+					<button v-for="tab in tabs" :key="tab.key" @click="emit('set-active-tab', tab.key)" :class="[
+						'inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold transition-all border-b-2 -mb-px select-none',
+						activeTab === tab.key
+							? 'text-accent border-accent'
+							: 'text-text border-transparent hover:text-heading hover:border-heading/15',
+					]">
+						<v-icon :name="tab.icon" scale="0.85" />
+						{{ tab.label }}
 					</button>
 				</div>
-			</div>
-
-			<!-- Tab bar -->
-			<div class="flex items-center gap-1 flex-wrap">
-				<button v-for="tab in tabs" :key="tab.key" @click="emit('set-active-tab', tab.key)" :class="[
-					'inline-flex items-center gap-1.5 px-4 py-3 text-base font-semibold transition-all border-b-2 -mb-px select-none',
-					activeTab === tab.key
-						? 'text-accent border-accent'
-						: 'text-text border-transparent hover:text-heading hover:border-heading/15',
-				]">
-					<v-icon :name="tab.icon" scale="0.85" />
-					{{ tab.label }}
-				</button>
 			</div>
 		</div>
 	</div>
 </template>
+
+<style scoped>
+.project-rich-content p { margin: 0 0 0.4em 0; }
+.project-rich-content p:last-child { margin-bottom: 0; }
+.project-rich-content strong { font-weight: 650; }
+.project-rich-content em { font-style: italic; }
+.project-rich-content s { opacity: 0.5; text-decoration: line-through; }
+.project-rich-content code {
+	font-family: ui-monospace, monospace;
+	font-size: 0.85em;
+	background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+	color: var(--color-accent);
+	padding: 0.15em 0.4em;
+	border-radius: 4px;
+}
+.project-rich-content ul { list-style: disc; padding-left: 1.5em; margin: 0.3em 0; }
+.project-rich-content ol { list-style: decimal; padding-left: 1.5em; margin: 0.3em 0; }
+.project-rich-content blockquote {
+	border-left: 3px solid var(--color-accent);
+	padding-left: 1em;
+	opacity: 0.7;
+	margin: 0.4em 0;
+}
+  .project-rich-content .mention-chip {
+  	display: inline-block;
+  	background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  	color: var(--color-accent);
+  	font-weight: 600;
+  	font-size: 0.85em;
+  	padding: 0.15em 0.45em;
+  	border-radius: 5px;
+  }
+</style>

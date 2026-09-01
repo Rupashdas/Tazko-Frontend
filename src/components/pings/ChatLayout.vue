@@ -20,7 +20,7 @@ const showOnMobile = computed(() => store.mobileSidebarOpen || !store.activeConv
             We never use v-show here — it would set inline display:none
             which overrides Tailwind's md:block responsive rule.
         -->
-        <div class="shrink-0 overflow-hidden md:w-[272px] transition-all duration-200"
+        <div class="shrink-0 overflow-hidden md:w-[268px] lg:w-[300px] transition-all duration-200"
              :class="showOnMobile ? 'w-full block' : 'hidden md:block'">
             <ChatSidebar />
         </div>
@@ -36,7 +36,14 @@ const showOnMobile = computed(() => store.mobileSidebarOpen || !store.activeConv
 
 <style scoped>
 .chat-layout {
-    height: calc(100dvh - 89px);
+    /* app header (4rem) + main vertical padding (2rem × 2) */
+    height: calc(100dvh - 8rem);
     min-height: 480px;
+}
+
+@media (max-width: 767px) {
+    .chat-layout {
+        height: calc(100dvh - 6rem);
+    }
 }
 </style>
